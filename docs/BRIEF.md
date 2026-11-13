@@ -40,7 +40,7 @@ When the internet goes down, sound still gets through.
 ## 3. Scope: three weeks
 
 ### Must have (the demo depends on these)
-1. **Send / Receive.** Type up to ~140 characters, tap, and it screeches. Any device in earshot decodes it live. Built on `ggwave` (MIT, WASM, Reed-Solomon error correction, 8–16 bytes/sec). Disclose it and credit it.
+1. **Send / Receive.** Type up to ~100 bytes of text, tap, and it screeches. Any device in earshot decodes it live. Built on `ggwave` (MIT, WASM, Reed-Solomon error correction, 8–16 bytes/sec). Disclose it and credit it.
 2. **The Screech, visualized.** A live spectrogram and waveform. A handshake animation, plus decode progress shown byte by byte as characters "resolve" out of noise.
 3. **Relay ("pass it on").** One-tap re-broadcast with a hop count (`📡 hop 2 · via Shelter B`). Message IDs prevent duplicates, and a TTL limits how far messages spread.
 4. **End-to-end encryption.** Share a group key by QR code or a short "key screech". Relays can't read what they forward.

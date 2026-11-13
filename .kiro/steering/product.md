@@ -8,7 +8,7 @@ Tagline: "The internet can be switched off. Sound can't."
 People hit by internet shutdowns or disasters (hurricanes, earthquakes, wildfires) where ordinary voice calls still work. Demo persona: Amara, a volunteer coordinator relaying a message between shelters.
 
 ## Core features (must have)
-- Send/receive short text (~140 chars) via `ggwave` (MIT, WASM). Credit and disclose it.
+- Send/receive short text (~100 bytes of text) via `ggwave` (MIT, WASM). Credit and disclose it.
 - Live spectrogram and waveform; byte-by-byte decode visualization.
 - Relay ("pass it on"): hop count, message IDs to dedupe, TTL to bound spread.
 - End-to-end encryption with a shared group key (QR code or "key screech"). Relays can't read content.
