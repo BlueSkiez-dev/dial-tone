@@ -54,12 +54,8 @@ Status: stack chosen, no application code yet (only `docs/`, `LICENSE`, `.kiro/`
 - If deployed to GitHub Pages under a subpath, set Vite `base` and the PWA `scope`/`start_url` to match.
 - Disclose pre-existing code (ggwave, fonts) in the README.
 
-## Protocol findings that shape code
-- Dual-tone (~1.1-2.6 kHz) is the only protocol that survived simulated narrowband channels. Field-verified for mobile calls only. Use it for Call mode.
-- Audible (up to ~6.4 kHz) is for Room only. Ultrasound is for Quiet only.
-- Decoding depends on frame alignment (see parallel decoders above).
-- Voice notes work at low Opus bitrates (12-16 kbps) and fail at higher ones.
-- Measure noise against the transmit level.
+## Protocol findings
+Channel rules (dual-tone for Call, audible for Room, ultrasound for Quiet, frame alignment, noise measurement, voice-note bitrates, no untested-channel claims) are in `field-findings.md`. It loads when editing protocol or audio code.
 
 ## Testing approach
 - Tests live next to the code. `*.test.ts` for unit tests, `*.prop.test.ts` for property tests.
