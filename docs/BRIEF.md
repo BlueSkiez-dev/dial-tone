@@ -1,7 +1,7 @@
 # DIAL TONE — Concept Brief (locked)
 
 > **Dial-up is back, and it can't be shut down.**
-> A messenger that turns text into modem screech, so messages travel over anything that carries sound: speaker to mic, a phone call, a walkie-talkie, FM radio, a voice note.
+> A messenger that turns text into modem screech, so messages travel over anything that carries sound. Verified on real phones: speaker to mic, a phone call, a voice note. Not yet tested: walkie-talkies and radio, so we don't claim them.
 
 | | |
 |---|---|
@@ -23,7 +23,7 @@ Stage 1 is pass/fail: does the project fit the theme and properly use Kiro? Stag
 | **Technological Implementation** | Variety and depth of Kiro tools, a thoughtful AI strategy, experimentation | Specs, hooks, steering, **custom agents**, a **custom power**, a custom MCP server, **property-based testing**, Kiro CLI in CI, and a **Kiro Crew app**. See §5. |
 | **Design** | A complete, coherent product, not a proof of concept | The designer's home turf: an instrument-grade UI with full flows (onboarding → key share → send → relay → SOS) |
 | **Innovation/Idea** | Novel, different from existing concepts; unusual tech or public datasets | Data-over-sound as a *network* (relay + encryption + channel profiles). Uses Access Now's public #KeepItOn / STOP shutdown dataset for the problem story. |
-| **Presentation** | End-to-end working demo; clear problem / audience / why; creative and memorable | The screech moment, a real radio relay, and a tight 3-minute story. Also competes for **Best Demo** (highest Presentation score within the top 10% overall). |
+| **Presentation** | End-to-end working demo; clear problem / audience / why; creative and memorable | The screech moment, a real relay across a phone call and a voice note, and a tight 3-minute story. Also competes for **Best Demo** (highest Presentation score within the top 10% overall). |
 
 ## 2. The story
 
@@ -149,10 +149,28 @@ Their pages report measured multipliers: commits per developer, share of code ha
 
 ## 6. Design direction
 
-- **Mood:** an instrument, not an app. Think Teenage Engineering meets an oscilloscope, at 1996 dusk.
-- **Palette:** deep phosphor black, signal green for the carrier, warm amber for the handshake, one hot red reserved for SOS
-- **Type:** a precise grotesk for UI, plus monospace for the frame and byte readout
-- **Signature visual:** the spectrogram as the hero. Each message leaves a unique "voiceprint" you can save and share (good for the Social Blitz post).
+**Approved direction (Nov 13): "Ghost in the Line."** The app is a physical modem rendered with hardware-grade realism. This replaces the earlier dark "phosphor black" idea.
+
+- **Source of truth:** the Figma file "Dial Tone" frame (390 px phone width), captured from the approved prototype at https://blueskiez-dev.github.io/dial-tone-prototype/ (repo BlueSkiez-dev/dial-tone-prototype). The prototype is a design reference only. The app is rebuilt from specs, and Figma is read through the Figma MCP.
+- **Material:** a frosted, see-through "ghost" shell with the circuit board visible through it. Inside is a light, screwed-down faceplate with grain texture and raised lettering. A beige 1996 variant exists as a token swap.
+- **Parts, each with a real job:**
+  - a smoked-glass status window with six domed LEDs (MR, AA, CD, OH, RD, SD) and a modem result-code readout (OK, RING, CARRIER, CONNECT, NO CARRIER, ATDT)
+  - a rocker power switch, which is the tap that starts audio
+  - a CRT scope behind curved glass
+  - a ridged three-way slide switch (Room, Call, Quiet)
+  - a recessed message well with a 24-segment byte meter and real airtime
+  - a Transmit keycap
+  - a hold-to-send SOS button with a progress ring
+  - a thermal-printer Tape showing the three latest slips, with See more
+  - a raised signal line on the faceplate that pulses up when sending and down when receiving
+- **Palette:** light faceplate greys; phosphor green (#7dffb2) inside the glass only; green and amber LEDs; red (#d9301f) reserved for SOS only
+- **Type:** Barlow Condensed for silkscreen labels, IBM Plex Sans for body text, IBM Plex Mono for data and the Tape. All are open-licensed fonts and must be bundled locally (no remote fonts).
+- **Motion:**
+  - power-on self-test, with an LED sweep and a CRT warm-up
+  - the slide switch springs between positions
+  - slips print line by line
+  - reduced-motion is respected
+- **Signature visual:** the scope, with decoded text resolving out of static (the "ghost moment"). Each message leaves a unique "voiceprint" you can save and share (good for the Social Blitz post).
 - **Halloween:** "the scream from the dead internet." Keep it in the copy and sound design, and keep the UI usable.
 - **Accessibility:** every sound event also has a visual and haptic cue. Large tap targets for use under stress.
 

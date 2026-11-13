@@ -51,7 +51,7 @@ The microphone works on `localhost`. **Phones need HTTPS** (see Field test below
 | Ultrasound · fast | 0/4 | 0/4 | 0/4 | 0/4 |
 
 ### What this means for the product
-1. **Dual-tone (DT) is our "Radio/Phone" mode.** Its tones sit around 1.1–2.6 kHz, inside the voice band. It's the only family that survived every narrowband channel. **DT · fastest** (~3 s per message) is the sweet spot.
+1. **Dual-tone (DT) is our Call mode** (phone calls and voice notes; radio is untested). Its tones sit around 1.1–2.6 kHz, inside the voice band. It's the only family that survived every narrowband channel. **DT · fastest** (~3 s per message) is the sweet spot.
 2. **Audible is the "Room" mode** (fastest is 1.5 s), but it dies on any narrowband path because its tones reach ~6.4 kHz.
 3. **Ultrasound is only for short-range "Quiet" mode.** Nothing narrowband carries it.
 4. **Voice notes probably work at low bitrates and fail at higher ones.** That's the reverse of what you'd expect, and the cause is unverified. My guess: Opus switches to its music mode (CELT) above ~20 kbps. Voice-note apps generally use low bitrates, so this may work in practice, but only a real field test will tell.
