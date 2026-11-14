@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/protocol/**"
+fileMatchPattern: "src/protocol/**"
 ---
 
 # Byte budget rules

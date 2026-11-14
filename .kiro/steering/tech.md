@@ -94,5 +94,5 @@ Shell note: on this Windows machine PowerShell blocks `npm.ps1`. Run `npm.cmd` o
 ## Kiro conventions
 - Spec-driven: one spec per feature (`frame-protocol`, `relay`, `crypto`, `channel-modes`, `ui-flows`, `base-station`) with EARS acceptance criteria.
 - `.kiro/` must stay committed (not in `.gitignore`).
-- Planned hooks: PBT on save in `/protocol`, offline guard, byte-budget check, UI contrast check, journal entry in `docs/kiro-journal.md` on task completion.
+- Planned hooks: PBT on save in `src/protocol`, offline guard, byte-budget check, UI contrast check, journal entry in `docs/kiro-journal.md` on task completion.
 - When the agent repeats a mistake, add a steering rule.

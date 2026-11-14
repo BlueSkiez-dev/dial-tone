@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ["**/protocol/**", "**/audio/**"]
+fileMatchPattern: ["src/protocol/**", "src/audio/**"]
 ---
 
 # Field findings as rules
