@@ -32,7 +32,7 @@ Status: stack chosen, no application code yet (only `docs/`, `LICENSE`, `.kiro/`
 - The app must reject over-length payloads before calling encode. Never rely on ggwave to report it. Count encoded bytes (UTF-8), not characters, in the UI length limit and the byte meter.
 - Airtime is about 0.1 s per byte. A full 140-byte payload in DT_FASTEST takes 13.4 s. Every byte costs airtime.
 - Encryption cost: the 12-byte IV plus 16-byte tag is 28 bytes, about 3 s extra per Call message. Sending the IV is what costs the extra 12 bytes (about 1.2 s), so the derived IV below matters.
-- Budget per message: 140 - crypto overhead - header (type, message ID, TTL, hop, frame index; aim for ~10). With a transmitted IV that leaves about 100 bytes of text. This is the figure used in product copy ("~100 bytes of text").
+- Budget per message: 140 - header and CRC trailer (12 bytes in a single frame: 10-byte header plus 2-byte CRC) - crypto overhead. With the derived IV only the 16-byte tag remains, so an encrypted single frame holds 140 - 12 - 16 = 112 bytes of text. Product copy rounds this to "~110 bytes of text per encrypted message", because the `crypto` spec may still change the tag length. The exact numbers (128 plaintext, 112 encrypted) come from `plaintextCapacity`.
 - Encryption: AES-128-GCM. Relays hold no key, and TTL and hop count change in transit, so they must stay outside the authenticated data. Authenticate message ID and type as AAD.
 - IV decision (preferred, to be specified in the `crypto` spec): derive the 12-byte IV from the 8-byte message ID plus a 4-byte frame index instead of transmitting it. That drops overhead to the 16-byte tag. Rules:
   - A message ID is random and never reused under the same key.

@@ -20,7 +20,7 @@ The 140-byte cap, airtime (~0.1 s per byte), AES-128-GCM overhead, IV derivation
 | ...   | n     | why it exists |
 | Header total | n | |
 | Crypto overhead | n | tag, plus IV if transmitted |
-| Remaining text | 140 - above | ~100 bytes is the product figure |
+| Remaining text | 140 - above | ~110 bytes of text per encrypted message is the product figure |
 ```
 
 ## Checks
