@@ -22,7 +22,7 @@ Status: stack chosen, no application code yet (only `docs/`, `LICENSE`, `.kiro/`
 - Decode in a Web Worker that owns the ggwave WASM instances. Connect worklet to worker with a `MessageChannel` so audio never touches the main thread. Transfer `ArrayBuffer`s, don't copy.
 - Do not use `SharedArrayBuffer`. It needs COOP/COEP headers, which GitHub Pages can't set.
 - Run 3-4 decoder instances in parallel, offset by 256 samples. Measure CPU on a low-end phone before settling on the count.
-- Create ggwave with the `AudioContext`'s actual `sampleRate` (44.1 or 48 kHz). Don't hardcode it and don't resample.
+- Encode at the `AudioContext`'s actual rate. Decode only at 48,000 Hz, and resample capture to 48 kHz when the context rate differs, because ggwave 0.4.0 can't decode at 44,100 Hz. Detail: `.kiro/specs/audio-transport/design.md` ("Sample rates").
 - The spectrogram and scope read an `AnalyserNode` on the main thread. Keep that separate from the decode path.
 - `vendor/ggwave.js` (0.4.0, verified) is a UMD build with the WASM inlined as base64. It is one file with no separate `.wasm`, so there is nothing extra to precache. It loads in a classic worker via `importScripts()`, so the decode worker must be a classic worker, not a module worker. Don't edit the vendored file.
 - The worklet, the decode worker and `vendor/ggwave.js` must all be in the service worker precache, or offline mode breaks. Verify with the built app (`npm run preview`), not `vite dev`.

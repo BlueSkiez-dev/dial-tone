@@ -2,3 +2,7 @@
 dist/
 coverage/
 *.log
+tmp*
+*-out*.txt
+out-*.txt
+*.tmp*

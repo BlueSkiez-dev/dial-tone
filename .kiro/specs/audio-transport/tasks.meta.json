@@ -1,0 +1,645 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `src/audio/result.ts` and `src/audio/modem.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949612142
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949746740
+      }
+    ],
+    "1.2 Create `src/audio/profiles.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949751537
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950148307
+      }
+    ],
+    "5.1 Create `src/audio/phase-chunker.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949751781
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950148516
+      }
+    ],
+    "6.1 Create `src/audio/sibling-merge.ts` and test it": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949752069
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950148793
+      }
+    ],
+    "6.2 Create `src/audio/own-echo.ts` and test it": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949752954
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950149473
+      }
+    ],
+    "9.1 Create `src/audio/mic-state.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794949753399
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950150141
+      }
+    ],
+    "6. Implement the sibling merge and own-echo modules": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950149569
+      }
+    ],
+    "1.3 Write unit and property tests for `profiles.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950157333
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950767008
+      }
+    ],
+    "2.1 Create `src/audio/ggwave-modem.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950157562
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950767235
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957548936
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230239
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959237588
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961617353
+      }
+    ],
+    "4.1 Create `src/audio/testing/fake-modem.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950157692
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950767864
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959231048
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961622563
+      }
+    ],
+    "5.2 Write the property test for the phase chunker": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950158400
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950768720
+      }
+    ],
+    "7.1 Create `src/audio/carrier.ts`": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950158956
+      },
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950769423
+      },
+      {
+        "executionId": "8e0fa1cf-3d2d-40d3-ad0a-6343711d4e37",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794952711412
+      },
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954301262
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956342413
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957548611
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961628104
+      }
+    ],
+    "1. Create the shared types, the profile table and the Modem interface": [
+      {
+        "executionId": "08170bd1-9810-4443-9b48-1f673955f727",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794950767106
+      }
+    ],
+    "5.3 Create `src/audio/chunk-accumulator.ts` and test it": [
+      {
+        "executionId": "bc26bf00-2542-41e1-b032-f9bcef5ead65",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794951003210
+      },
+      {
+        "executionId": "8e0fa1cf-3d2d-40d3-ad0a-6343711d4e37",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794952711246
+      },
+      {
+        "executionId": "8e0fa1cf-3d2d-40d3-ad0a-6343711d4e37",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794952738467
+      },
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954300719
+      }
+    ],
+    "9.2 Write tests for the microphone helpers": [
+      {
+        "executionId": "bc26bf00-2542-41e1-b032-f9bcef5ead65",
+        "chatSessionId": "sess_4eeed207-6b78-4f33-ba9c-e225970e28ec",
+        "timestamp": 1794951003471
+      },
+      {
+        "executionId": "8e0fa1cf-3d2d-40d3-ad0a-6343711d4e37",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794952711518
+      },
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954301474
+      }
+    ],
+    "5. Implement the chunking modules": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954301014
+      }
+    ],
+    "9. Implement the microphone helpers": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954301592
+      }
+    ],
+    "2.2 Write a slow round-trip test for the real modem wrapper": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954308574
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956340898
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957813782
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230389
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961617597
+      }
+    ],
+    "2.3 Write the speed sweep script and the replay test": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954308728
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956340997
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961618623
+      }
+    ],
+    "2.4 Write the slow toggle-isolation and serialization test": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954309015
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341090
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957814523
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230559
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959238578
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961620121
+      }
+    ],
+    "3.1 Write the band measurement test and set the profile bands": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954309199
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341191
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957549234
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230685
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961621125
+      }
+    ],
+    "4.2 Write unit tests for the Fake_Modem": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954309345
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341344
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961623109
+      }
+    ],
+    "4.3 Create `src/audio/airtime.ts` and test it with the Fake_Modem": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954429029
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341432
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961624558
+      }
+    ],
+    "7.2 Write tests for carrier detection": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954429612
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341567
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961629124
+      }
+    ],
+    "8.1 Create `src/audio/rx-pipeline.ts`": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954430261
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957548735
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961630560
+      }
+    ],
+    "8.2 Write the property tests for the pipeline using the Fake_Modem": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954562280
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341650
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961631570
+      }
+    ],
+    "8.3 Write unit tests for the pipeline": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954562790
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341742
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961632591
+      }
+    ],
+    "8.4 Write the property test for receiving every family": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954563548
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341836
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961633647
+      }
+    ],
+    "10.1 Create `src/audio/layering.test.ts`": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954564347
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341923
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961634827
+      }
+    ],
+    "10.4 Write the `wavToChunks` helper and a fixture builder": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954564844
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956342191
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956342316
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957548832
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961637868
+      }
+    ],
+    "10.2 Create `src/audio/index.ts`": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954722733
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956341999
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961636052
+      }
+    ],
+    "10.3 Write the slow pipeline properties with the real modem": [
+      {
+        "executionId": "031647a1-cb81-4d3f-b556-b4ff9f9aba18",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794954722881
+      },
+      {
+        "executionId": "0ba86f4f-0132-4b8b-a323-257b54cd340d",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794956342089
+      },
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957815368
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230955
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961637047
+      }
+    ],
+    "5.4 Create `src/audio/resampler.ts`": [
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957549066
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230775
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961625536
+      }
+    ],
+    "5.5 Write tests for the resampler": [
+      {
+        "executionId": "a27a1218-a2af-4a8a-a3bc-2c8a01518cd7",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794957813657
+      },
+      {
+        "executionId": "d135fd62-1363-41b7-bf30-de36cfb39c8a",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794959230854
+      },
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961626604
+      }
+    ],
+    "2. Implement the real modem wrapper and gather speed evidence": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961620209
+      }
+    ],
+    "3. Measure the carrier bands and set the Quiet band": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961621201
+      }
+    ],
+    "4. Implement the Fake_Modem and `airtime.ts`": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961624616
+      }
+    ],
+    "7. Implement carrier detection": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961629251
+      }
+    ],
+    "8. Implement the receive pipeline": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961633774
+      }
+    ],
+    "10. Layering test, public index and the real-modem slow properties": [
+      {
+        "executionId": "e6674aec-6af2-4f62-a080-01fc3512c429",
+        "chatSessionId": "sess_83b3fd80-4f2c-4f61-9992-ed05915190bd",
+        "timestamp": 1794961637960
+      }
+    ]
+  }
+}
