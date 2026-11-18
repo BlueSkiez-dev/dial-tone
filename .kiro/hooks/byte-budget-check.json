@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Byte-budget check",
+      "trigger": "PostFileSave",
+      "action": {
+        "type": "agent",
+        "prompt": "Check that the header length, CRC length and the four capacities in src/protocol/budget.ts and src/protocol/frame.ts still match the size table in .kiro/specs/frame-protocol/design.md. Report any mismatch, and say that a header change needs a size-table update (Requirement 15). Don't edit any file."
+      },
+      "description": "Checks the frame header and capacities against the size table whenever frame code changes.",
+      "matcher": "src[\\\\/]protocol[\\\\/](budget|frame)\\.ts$",
+      "enabled": true
+    }
+  ]
+}

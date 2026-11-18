@@ -12,7 +12,7 @@ export const MAX_FRAMES = 16;
 export const MAX_HOP = 15;
 export const MAX_TTL = 15;
 
-/** Header bytes for a message with `total` frames: 10 for one frame, 11 for more. */
+/** Header bytes for a message with `total` frames: 10 for one frame, 11 for more (the extra byte is the multi-frame index byte). */
 export function headerLength(total: number): 10 | 11 {
   return total > 1 ? HEADER_LEN_MULTI : HEADER_LEN_SINGLE;
 }

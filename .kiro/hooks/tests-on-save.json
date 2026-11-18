@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Tests on save",
+      "trigger": "PostFileSave",
+      "action": {
+        "type": "command",
+        "command": "npm.cmd test"
+      },
+      "description": "Runs the fast test suite whenever protocol or audio code is saved. Includes the offline guard once that test exists.",
+      "matcher": "src[\\\\/].*\\.tsx?$",
+      "timeout": 120,
+      "enabled": true
+    }
+  ]
+}

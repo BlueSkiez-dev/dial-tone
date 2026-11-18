@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Typecheck and lint after each task",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "command",
+        "command": "cmd /c \"npm.cmd run typecheck && npm.cmd run lint\""
+      },
+      "description": "Checks types and code style every time a spec task finishes.",
+      "timeout": 120,
+      "enabled": true
+    }
+  ]
+}
