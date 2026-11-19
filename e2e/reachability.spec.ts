@@ -166,7 +166,7 @@ test("States 01 to 15 are reachable through the real controls", async ({
   await expect(page.locator("[data-sheet='microphone']")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-sheet]")).toHaveCount(0);
-  await expect(page.locator(".status-code")).toHaveText("NO CARRIER");
+  await expect(page.locator(".status-code")).toHaveText("OK");
   await expectLike(page, "mic-off");
   await expect(page.locator(".listen-latch-text")).toHaveText("No mic");
 });
@@ -201,7 +201,8 @@ test("State 16: ?state=beige changes Token values and moves nothing", async ({
       };
     }, parts);
 
-  await openGallery(page, "first-power"); // same screen as beige, in Ghost
+  // Same screen as beige, in Ghost: both fixtures carry the first power-on system slip.
+  await openGallery(page, "first-power");
   const ghost = await measure();
   await openGallery(page, "beige");
   const beige = await measure();
@@ -209,6 +210,7 @@ test("State 16: ?state=beige changes Token values and moves nothing", async ({
   expect(ghost.plate).toBe("#c4c5c7");
   expect(beige.plate).toBe("#e1d8c3");
   expect(beige.boxes).toEqual(ghost.boxes);
+  expect(await page.locator('.part-tape .slip[data-kind="system"]').count()).toBe(1);
   expect(beige.boxes.every((b) => b !== null)).toBe(true);
 });
 

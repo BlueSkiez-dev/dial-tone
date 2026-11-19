@@ -80,6 +80,11 @@ describe("gallery fixtures", () => {
     expect(listenState(state)).toBe("listening");
   });
 
+  it("State 07 (sos-held) is held: ring filled, MR and AA lit", () => {
+    const { state, now, extras } = galleryFixture("sos-held");
+    expect(extras.sosRing).toBeGreaterThan(0);
+    expect(statusView(state, now).leds).toMatchObject({ MR: true, AA: true });
+  });
   it("State 03 draft is 41 bytes", () => {
     expect(draftView(galleryFixture("ready").state.draft).bytes).toBe(41);
   });
@@ -94,6 +99,16 @@ describe("gallery fixtures", () => {
   it("State 06 sets passOn and State 16 sets the beige theme", () => {
     expect(galleryFixture("received").extras.passOn).toBe(true);
     expect(galleryFixture("beige").state.theme).toBe("beige");
+  });
+
+  it("prints the same first power-on system slip in first-power and beige", () => {
+    const first = galleryFixture("first-power").state.tape;
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatchObject({
+      kind: "system",
+      noticeKey: "listening-open",
+    });
+    expect(galleryFixture("beige").state.tape).toEqual(first);
   });
 
   it("calls no storage", () => {

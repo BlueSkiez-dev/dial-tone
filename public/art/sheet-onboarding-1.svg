@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="110" viewBox="0 0 280 110" fill="none">
+  <!-- Figma Sheet Onboarding 1, node 270:17 (Icon): two phones and a wave. The YOU and ANY PHONE labels are HTML text in the sheet. -->
+  <g transform="translate(23 17)" stroke="#7DFFB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 1H35C39.4183 1 43 4.58172 43 9V67C43 71.4183 39.4183 75 35 75H9C4.58172 75 1 71.4183 1 67V9C1 4.58172 4.58172 1 9 1Z"/>
+    <path d="M199 1H225C229.418 1 233 4.58172 233 9V67C233 71.4183 229.418 75 225 75H199C194.582 75 191 71.4183 191 67V9C191 4.58172 194.582 1 199 1Z"/>
+    <path d="M17 67H27M207 67H217"/>
+  </g>
+  <path transform="translate(78.75 41.75)" stroke="#7DFFB2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M1.25033 13.25C6.25033 -2.75 10.2503 -2.75 15.2503 13.25C20.2503 29.25 24.2503 29.25 29.2503 13.25C34.2503 -2.75 38.2503 -2.75 43.2503 13.25C48.2503 29.25 52.2503 29.25 57.2503 13.25C62.2503 -2.75 66.2503 -2.75 71.2503 13.25C76.2503 29.25 80.2503 29.25 85.2503 13.25C90.2503 -2.75 94.2503 -2.75 99.2503 13.25C104.25 29.25 108.25 29.25 113.25 13.25"/>
+</svg>

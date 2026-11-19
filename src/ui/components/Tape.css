@@ -39,6 +39,10 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 0;
   border-radius: var(--radius-10);
   background: linear-gradient(to bottom, var(--cap-hi), var(--cap-lo));
@@ -54,4 +58,8 @@
 .tape-toggle:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 3px;
+}
+
+.tape-toggle-caret {
+  flex: none;
 }

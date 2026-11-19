@@ -28,6 +28,8 @@ export interface SheetProps {
   primary: SheetButton;
   /** Called on Escape and after the secondary button. */
   onClose: () => void;
+  /** Page dots under the buttons: the lit step (1 to 3) of 3. Onboarding only (Figma 270:37). */
+  step?: 1 | 2 | 3;
   /** Name for the Figma type, used by the Gallery and tests (`data-sheet`). */
   type?: string;
 }
@@ -71,6 +73,7 @@ export function Sheet(props: SheetProps) {
     secondary,
     primary,
     onClose,
+    step,
     type,
   } = props;
   const panel = useRef<HTMLDivElement>(null);
@@ -130,17 +133,20 @@ export function Sheet(props: SheetProps) {
         <span class="sheet-screw sheet-screw-left" aria-hidden="true" />
         <span class="sheet-screw sheet-screw-right" aria-hidden="true" />
         <span class="sheet-grip" aria-hidden="true" />
-        <div class="sheet-content">
+        <div
+          class="sheet-content"
+          data-art={art && !artPlain ? "glass" : art ? "plain" : undefined}
+        >
           <p class="sheet-kicker">{kicker}</p>
           <h2 class="sheet-title" id="sheet-title">
             {title}
           </h2>
-          <div class="sheet-body">{children}</div>
           {art ? (
             <div class={artPlain ? "sheet-art sheet-art-plain" : "sheet-art"}>
               {art}
             </div>
           ) : null}
+          <div class="sheet-body">{children}</div>
           <div class="sheet-buttons" data-count={secondary ? 2 : 1}>
             {secondary ? (
               <button
@@ -159,6 +165,13 @@ export function Sheet(props: SheetProps) {
               {primary.label}
             </button>
           </div>
+          {step ? (
+            <div class="sheet-dots" aria-hidden="true">
+              {[1, 2, 3].map((n) => (
+                <span key={n} class="sheet-dot" data-on={n === step} />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

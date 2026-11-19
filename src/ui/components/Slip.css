@@ -38,6 +38,19 @@
     bottom / 10px 5px repeat-x;
 }
 
+/* System paper (Figma 261:9, 246:231): grey, with the same grain tile. The stripes are drawn here. */
+.slip[data-kind="system"] .slip-paper,
+.slip[data-kind="update-ready"] .slip-paper {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 4px,
+      var(--paper-system-stripe) 4px 6px
+    ),
+    url("/art/paper-grain.png") top left / 180px 180px,
+    var(--paper-system);
+}
+
 .slip[data-kind="relayed"] .slip-paper,
 .slip[data-kind="safe"] .slip-paper {
   padding-top: 14px;

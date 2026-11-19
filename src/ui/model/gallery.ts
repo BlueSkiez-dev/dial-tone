@@ -120,6 +120,14 @@ const HEARD: Slip = {
   hop: 1,
 };
 
+/** What the first power-on prints (reducer `power-tap`), shown by first-power and beige. */
+const FIRST_POWER_SLIP: Slip = {
+  kind: "system",
+  id: "demo-first-power",
+  at: T,
+  noticeKey: "listening-open",
+};
+
 function base(): UiState {
   const s = initialState(null);
   return {
@@ -215,7 +223,8 @@ function build(name: GalleryName): GalleryFixture {
     case "legend":
       return fixture({ ...on, legendOpen: true });
     case "beige":
-      return fixture({ ...on, theme: "beige" });
+      // Same screen as first-power, in Beige: the e2e beige test compares the two.
+      return fixture({ ...on, theme: "beige", tape: [FIRST_POWER_SLIP] });
     case "onboarding-1":
     case "onboarding-2":
     case "onboarding-3":
@@ -225,7 +234,8 @@ function build(name: GalleryName): GalleryFixture {
         flags: { ...off.flags, onboarded: false },
       });
     case "first-power":
-      return fixture({ ...on, flags: { ...on.flags, firstPowerShown: false } });
+      // Figma New 04 (246:2): the "Listening while open" system slip is on the Tape.
+      return fixture({ ...on, tape: [FIRST_POWER_SLIP] });
     case "mic-denied":
       return fixture({ ...on, mic: "denied", sheet: "mic-denied" });
     case "mic-reset":

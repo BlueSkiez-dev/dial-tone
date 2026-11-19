@@ -87,6 +87,11 @@ describe("reducer fixed paths", () => {
       code: "ATDT",
       airtimeMs: 2000,
     });
+    expect(statusView(s, 1500).leds).toMatchObject({
+      MR: true,
+      AA: true,
+      SD: true,
+    });
     expect(signalDirection(s, 1500)).toBe("up");
     s = run(s, [{ type: "tx-end", now: 3000, ok: true, slip: sent }]);
     expect(s.draft).toBe("");
@@ -119,6 +124,7 @@ describe("reducer fixed paths", () => {
     const s = run(ready(), [{ type: "slip", slip: heard, now: 1000 }]);
     expect(statusView(s, 1001)).toMatchObject({ code: "CONNECT" });
     expect(statusView(s, 1001).leds.RD).toBe(true);
+    expect(statusView(s, 1001).leds.AA).toBe(true);
     expect(signalDirection(s, 1001)).toBe("down");
     expect(statusView(s, 1000 + CONNECT_HOLD_MS).code).toBe("OK");
   });
@@ -139,15 +145,24 @@ describe("reducer fixed paths", () => {
     expect(statusView(s, 7500).code).toBe("CARRIER");
   });
 
-  it("State 12: a denied mic reads No mic, AA dark, sending still works", () => {
+  it("State 12: a denied mic reads No mic, OK with the Figma hint, AA dark, sending still works", () => {
     const s = run(ready(), [
       { type: "mic", mic: "denied" },
       { type: "draft", text: "ok" },
     ]);
     expect(listenState(s)).toBe("no-mic");
     expect(statusView(s, 0).leds.AA).toBe(false);
+    expect(statusView(s, 0)).toMatchObject({ code: "OK", hintKey: "no-mic" });
     expect(transmitState(s)).toBe("default");
     expect(run(s, [{ type: "latch-tap" }])).toBe(s);
+  });
+
+  it("State 11: a draft over the limit reads the too-long hint on OK", () => {
+    const s = run(ready(), [{ type: "draft", text: "a".repeat(200) }]);
+    expect(statusView(s, 700)).toMatchObject({
+      code: "OK",
+      hintKey: "too-long",
+    });
   });
 
   it("State 13: releasing the latch reads NO CARRIER and AA dark", () => {

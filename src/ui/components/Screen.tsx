@@ -183,7 +183,17 @@ export function Screen(props: ScreenProps) {
       }
       statusWindow={
         <StatusWindow
-          view={statusView(state, now)}
+          view={
+            // Gallery only (Figma State 07). Live SOS readout comes with the SOS spec.
+            extras && extras.sosRing > 0
+              ? {
+                  ...statusView(state, now),
+                  code: "ATDT",
+                  hintKey: "sos-hold",
+                  airtimeMs: null,
+                }
+              : statusView(state, now)
+          }
           power={state.power}
           legendOpen={state.legendOpen}
           onLedTap={actions.legendToggle}

@@ -2,6 +2,8 @@ import { AppIcon } from "./AppIcon";
 import { Sheet } from "./Sheet";
 import { type MicSheetReason, sheetCopy } from "./sheet-copy";
 
+const BASE = import.meta.env.BASE_URL;
+
 /** Onboarding step 1 (Figma 270:41). */
 export function Onboarding1(props: { onSkip: () => void; onNext: () => void }) {
   const c = sheetCopy.onboarding1;
@@ -13,16 +15,23 @@ export function Onboarding1(props: { onSkip: () => void; onNext: () => void }) {
       onClose={props.onSkip}
       secondary={{ label: c.skip }}
       primary={{ label: c.next, onClick: props.onNext }}
+      step={1}
       art={
-        <>
-          <span>{c.glassYou}</span>
-          <span class="sheet-art-strong">)))</span>
-          <span>{c.glassAnyPhone}</span>
-        </>
+        <div class="sheet-art-icon">
+          <img
+            class="sheet-art-img"
+            src={`${BASE}art/sheet-onboarding-1.svg`}
+            width={280}
+            height={110}
+            alt=""
+          />
+          <span class="sheet-art-label sheet-art-you">{c.glassYou}</span>
+          <span class="sheet-art-label sheet-art-any">{c.glassAnyPhone}</span>
+        </div>
       }
     >
       <p>{c.body}</p>
-      <p class="sheet-note">{c.note}</p>
+      <p class="sheet-strong">{c.note}</p>
     </Sheet>
   );
 }
@@ -42,11 +51,21 @@ export function Onboarding2(props: {
       onClose={props.onClose}
       secondary={{ label: c.back, onClick: props.onBack, closes: false }}
       primary={{ label: c.next, onClick: props.onNext }}
+      step={2}
       art={
-        <>
-          <span class="sheet-art-strong">{c.glassLed}</span>
-          <span>{c.glassCaption}</span>
-        </>
+        <div class="sheet-art-icon">
+          <img
+            class="sheet-art-img"
+            src={`${BASE}art/sheet-onboarding-2.svg`}
+            width={280}
+            height={110}
+            alt=""
+          />
+          <span class="sheet-art-label sheet-art-led">{c.glassLed}</span>
+          <span class="sheet-art-label sheet-art-caption">
+            {c.glassCaption}
+          </span>
+        </div>
       }
     >
       <p>
@@ -54,7 +73,7 @@ export function Onboarding2(props: {
         <strong>{c.bodyStrong}</strong>
         {c.bodyAfter}
       </p>
-      <p class="sheet-note">{c.note}</p>
+      <p>{c.note}</p>
     </Sheet>
   );
 }
@@ -75,6 +94,7 @@ export function Onboarding3(props: {
       onClose={props.onClose}
       secondary={{ label: c.back, onClick: props.onBack, closes: false }}
       primary={{ label: c.gotIt, onClick: props.onDone }}
+      step={3}
       art={<AppIcon />}
       artPlain
     >

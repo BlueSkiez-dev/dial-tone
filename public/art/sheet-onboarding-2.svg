@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="110" viewBox="0 0 280 110" fill="none">
+  <!-- Figma Sheet Onboarding 2, node 270:57 (Icon): a microphone and the green AA lamp. The AA label and the caption are HTML text in the sheet. -->
+  <g transform="translate(84.9 14.9)" stroke="#7DFFB2" stroke-width="2.2" stroke-linecap="round">
+    <path d="M24.1 1.1C31.2797 1.1 37.1 6.9203 37.1 14.1V32.1C37.1 39.2797 31.2797 45.1 24.1 45.1C16.9203 45.1 11.1 39.2797 11.1 32.1V14.1C11.1 6.9203 16.9203 1.1 24.1 1.1Z"/>
+    <path d="M1.1 31.1C1.1 37.2 3.5232 43.0501 7.83654 47.3635C12.1499 51.6768 18 54.1 24.1 54.1M24.1 54.1C30.2 54.1 36.0501 51.6768 40.3635 47.3635C44.6768 43.0501 47.1 37.2 47.1 31.1M24.1 54.1V66.1M12.1 67.1H36.1"/>
+  </g>
+  <circle cx="186" cy="38" r="7" fill="#5CFF7A"/>
+</svg>

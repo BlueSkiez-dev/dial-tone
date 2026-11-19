@@ -25,7 +25,9 @@ export type HintKey =
   | "processing"
   | "hidden"
   | "latch-off"
-  | "no-mic";
+  | "no-mic"
+  | "too-long"
+  | "sos-hold";
 
 export interface StatusView {
   readonly leds: Readonly<Record<LedId, boolean>>;
@@ -73,13 +75,16 @@ export function statusView(s: UiState, now: number): StatusView {
     };
   }
   const oh: LedId[] = s.channel === "call" ? ["OH"] : [];
+  const live = s.mic === "live";
+  /** AA follows listening in every powered-on row (Figma, user decision). */
+  const aa: LedId[] = s.latchPressed && live && s.foreground ? ["AA"] : [];
   const row = (
     on: readonly LedId[],
     code: ResultCode,
     hintKey: HintKey,
     airtimeMs: number | null = null,
   ): StatusView => ({
-    leds: leds([...on, ...oh]),
+    leds: leds([...on, ...aa, ...oh]),
     code,
     hintKey,
     airtimeMs,
@@ -94,22 +99,23 @@ export function statusView(s: UiState, now: number): StatusView {
   if (now < s.carrier.shownUntil) {
     return row(["MR", "CD"], "CARRIER", "carrier");
   }
-  const live = s.mic === "live";
-  if (s.latchPressed && live && s.foreground) {
+  const tooLong = draftView(s.draft).status === "too-long";
+  if (aa.length > 0) {
     return row(
-      ["MR", "AA"],
+      ["MR"],
       "OK",
-      s.micProcessingWarn ? "processing" : "listening",
+      tooLong ? "too-long" : s.micProcessingWarn ? "processing" : "listening",
     );
   }
-  const hint: HintKey = NO_MIC.includes(s.mic)
-    ? "no-mic"
-    : s.latchPressed && live
-      ? "hidden"
-      : "latch-off";
-  return row(["MR"], "NO CARRIER", hint);
+  if (NO_MIC.includes(s.mic)) {
+    return row(["MR"], "OK", tooLong ? "too-long" : "no-mic");
+  }
+  return row(
+    ["MR"],
+    "NO CARRIER",
+    s.latchPressed && live ? "hidden" : "latch-off",
+  );
 }
-
 export function transmitState(s: UiState): TransmitState {
   if (s.power !== "on" || s.fault !== null) return "disabled";
   if (s.tx.phase === "sending") return "sending";

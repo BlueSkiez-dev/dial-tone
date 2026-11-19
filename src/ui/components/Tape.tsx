@@ -52,6 +52,25 @@ export function Tape(props: TapeProps) {
           onClick={() => props.onToggle?.()}
         >
           {expanded ? copy.tape.showLess : copy.tape.seeMore}
+          {expanded ? (
+            <svg
+              class="tape-toggle-caret"
+              viewBox="0 0 12 12"
+              width="12"
+              height="12"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M2.5 7.5 L6 4 L9.5 7.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          ) : null}
         </button>
       ) : null}
     </section>

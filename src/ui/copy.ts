@@ -21,13 +21,16 @@ export const copy = {
   circuitBoardLabel: "Circuit board",
   /** Tape and Slip (task 4.7). */
   tape: {
-    /** Figma 273:2 empty tape text. */
-    empty: "No paper yet",
+    /** Figma 273:2 and 271:230 empty tape text. */
+    empty:
+      "No paper yet. Messages you send and hear print here, and anything you hear can be passed on to the next phone.",
     seeMore: "See more",
     showLess: "Show less",
     /** Written for this task. */
     label: "Tape",
   },
+  /** Figma State 01 scope tag (271:98). */
+  scope: { standby: "Standby" },
   slip: {
     sent: "Sent",
     heard: "Heard",
@@ -101,7 +104,12 @@ export const copy = {
         "Listening, but this phone may filter the sound. Signals can be missed.",
       hidden: "Listening stopped. Screen is off.",
       "latch-off": "Not listening. Press Listen to hear messages.",
-      "no-mic": "No microphone. You can still send.",
+      /** Figma State 12 (282:2). */
+      "no-mic": "Ready to send. Microphone is off, so you can’t hear messages.",
+      /** Figma State 11 (281:2). */
+      "too-long": "Message is too long to send. Shorten it.",
+      /** Figma State 07 (277:2). Gallery only until the SOS spec. */
+      "sos-hold": "Keep holding to send SOS…",
     },
   },
 } as const;

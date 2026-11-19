@@ -74,6 +74,14 @@
   --print-meta: #55585c;
   --print-hop: #127a43;
   --print-sos: #c42b1c;
+  /*
+   * System paper (first power-on, Update ready, notices). Figma 261:9 and its
+   * siblings fill this paper with the grain tile only, so Figma renders the
+   * empty base as mid grey (sampled #7c7d7f). The Figma file has no stripe
+   * layer; the stripe overlay below is drawn in CSS to match the "striped paper"
+   * wording of the Slip description (213:481).
+   */
+  --paper-system: #7c7d7f;
 
   /* Sheet */
   --scrim: #14161a; /* used at 45% opacity */
@@ -83,6 +91,18 @@
   --meter-unlit: rgba(0, 0, 0, 0.09);
   --amber-55: rgba(255, 178, 26, 0.55);
   --panel-hairline: rgba(255, 255, 255, 0.07);
+  --paper-system-stripe: rgba(0, 0, 0, 0.07);
+  /* Sheet page dots (Figma 270:39): unlit dot fill. */
+  --dot-off: rgba(0, 0, 0, 0.18);
+  /* Sheet glass panel (Figma 270:16): outer ring and the gloss over the top. */
+  --shadow-glass-ring:
+    0 0 0 1px rgba(0, 0, 0, 0.6), 0 1px 0 1.5px rgba(255, 255, 255, 0.6);
+  --glass-gloss: linear-gradient(
+    176.93deg,
+    rgba(255, 255, 255, 0.11) 5.3%,
+    rgba(255, 255, 255, 0.035) 37.5%,
+    rgba(255, 255, 255, 0) 38.4%
+  );
 
   /* Radii (px) */
   --radius-1: 1px;

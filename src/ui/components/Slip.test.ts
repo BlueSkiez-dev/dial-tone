@@ -118,9 +118,11 @@ describe("GhostText", () => {
 });
 
 describe("Tape", () => {
-  it("shows No paper yet when empty", () => {
+  it("shows the empty tape text from Figma when empty", () => {
     const html = renderToString(h(Tape, { slips: [], expanded: false }));
-    expect(html).toContain("No paper yet");
+    expect(html).toContain(
+      "No paper yet. Messages you send and hear print here, and anything you hear can be passed on to the next phone.",
+    );
     expect(html).not.toContain("See more");
   });
 

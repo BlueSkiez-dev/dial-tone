@@ -98,26 +98,21 @@ describe("Property 5: Status window", () => {
         if (v.leds.SD !== (v.code === "ATDT")) return false;
         if (v.leds.RD !== (v.code === "CONNECT")) return false;
         if (v.leds.CD !== (v.code === "CARRIER")) return false;
-        if (v.leds.AA !== (v.code === "OK")) return false;
-        if (v.code === "OK") {
-          if (!(s.latchPressed && s.mic === "live" && s.foreground))
-            return false;
-        }
-        if (
-          v.leds.AA &&
-          !(s.latchPressed && s.mic === "live" && s.foreground)
-        ) {
-          return false;
-        }
+        const listening = s.latchPressed && s.mic === "live" && s.foreground;
+        // AA follows listening in every powered-on row (Figma, user decision).
+        if (v.leds.AA !== listening) return false;
         if (s.fault !== null && v.code !== "ERROR") return false;
-        if (v.code === "NO CARRIER") {
-          return !(s.latchPressed && s.mic === "live" && s.foreground);
+        if (v.code === "OK") {
+          if (!(listening || NO_MIC.includes(s.mic))) return false;
         }
+        if (v.code === "NO CARRIER") {
+          return !listening && !NO_MIC.includes(s.mic);
+        }
+        if (v.hintKey === "too-long" && v.code !== "OK") return false;
         return true;
       }),
     );
   });
-
   it("lights SD only when sending, RD only in a connect hold, CD only in the carrier hold", () => {
     fc.assert(
       fc.property(uiState, t, (s, now) => {

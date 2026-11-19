@@ -15,30 +15,32 @@ interface Row {
 
 const READY = { code: "OK", leds: ["MR", "AA"] };
 const NO_CARRIER = { code: "NO CARRIER", leds: ["MR"] };
+// State 12 and the denied sheets: Figma reads OK, AA dark.
+const MIC_OFF = { code: "OK", leds: ["MR"] };
 
 const ROWS: Record<string, Row> = {
   off: { code: "— — —", leds: [] },
   selftest: { code: "ATZ", leds: ["MR", "AA", "CD", "OH", "RD", "SD"] },
   ready: { ...READY, lit: 8 },
-  sending: { code: "ATDT", leds: ["MR", "SD"], lit: 8 },
-  hearing: { code: "CARRIER", leds: ["MR", "CD"] },
-  received: { code: "CONNECT", leds: ["MR", "RD"], slips: 2 },
-  "sos-held": READY,
+  sending: { code: "ATDT", leds: ["MR", "AA", "SD"], lit: 8 },
+  hearing: { code: "CARRIER", leds: ["MR", "AA", "CD"] },
+  received: { code: "CONNECT", leds: ["MR", "AA", "RD"], slips: 2 },
+  "sos-held": { code: "ATDT", leds: ["MR", "AA"] },
   "sos-received": { code: "OK", leds: ["MR", "AA", "OH"] },
   call: { code: "OK", leds: ["MR", "AA", "OH"] },
   quiet: READY,
   "too-long": { ...READY, lit: 24, over: true },
-  "mic-off": NO_CARRIER,
+  "mic-off": MIC_OFF,
   "not-listening": NO_CARRIER,
   "tape-expanded": { ...READY, slips: 5 },
   legend: READY,
-  beige: READY,
+  beige: { ...READY, slips: 1 }, // same slip as first-power; the reachability test compares them
   "onboarding-1": { code: "— — —", leds: [], sheet: "onboarding-1" },
   "onboarding-2": { code: "— — —", leds: [], sheet: "onboarding-2" },
   "onboarding-3": { code: "— — —", leds: [], sheet: "onboarding-3" },
-  "first-power": READY,
-  "mic-denied": { ...NO_CARRIER, sheet: "microphone" },
-  "mic-reset": { ...NO_CARRIER, sheet: "microphone" },
+  "first-power": { ...READY, slips: 1 }, // the "Listening while open" system slip (Figma New 04)
+  "mic-denied": { ...MIC_OFF, sheet: "microphone" },
+  "mic-reset": { ...MIC_OFF, sheet: "microphone" },
   "install-sheet": { ...READY, sheet: "install" },
   "install-notice": READY,
   "update-ready": { ...READY, slips: 1 },
@@ -61,7 +63,9 @@ for (const [name, row] of Object.entries(ROWS)) {
     await expect(page.locator(".listen-latch-caption")).toHaveText("Tape");
     const slips = row.slips ?? 0;
     if (slips === 0) {
-      await expect(page.locator(".tape-empty")).toHaveText("No paper yet");
+      await expect(page.locator(".tape-empty")).toHaveText(
+        "No paper yet. Messages you send and hear print here, and anything you hear can be passed on to the next phone.",
+      );
     } else {
       await expect(page.locator(".tape .slip")).toHaveCount(slips);
     }

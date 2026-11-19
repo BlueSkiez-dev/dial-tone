@@ -36,6 +36,13 @@ function html(name: (typeof GALLERY_NAMES)[number]): string {
 }
 
 describe("Screen", () => {
+  it("shows the Standby tag only when off, and the SOS hold readout on sos-held", () => {
+    expect(html("off")).toContain("Standby");
+    expect(html("ready")).not.toContain("Standby");
+    expect(html("sos-held")).toContain("Keep holding to send SOS");
+    expect(html("too-long")).toContain("Message is too long to send");
+  });
+
   it("renders every gallery fixture", () => {
     for (const name of GALLERY_NAMES) expect(html(name)).toContain("faceplate");
   });

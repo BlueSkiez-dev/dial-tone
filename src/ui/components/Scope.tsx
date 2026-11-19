@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { SpectrumSource } from "../../audio/index";
+import { copy } from "../copy";
 import { binRange, formatKHz, type ScopeWindow } from "../model/scope-map";
 import {
   axisTicks,
@@ -165,6 +166,9 @@ export function Scope(props: ScopeProps) {
               </span>
             ))}
         </div>
+        {props.power === "off" ? (
+          <span class="scope-standby">{copy.scope.standby}</span>
+        ) : null}
         {bandHz && mode !== "warmup" && props.power !== "off" ? (
           <div class="scope-band" aria-hidden="true">
             <i

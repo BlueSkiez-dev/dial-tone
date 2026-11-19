@@ -67,3 +67,15 @@
   text-transform: uppercase;
   color: var(--scope-band);
 }
+
+/* Figma State 01 (271:98): "STANDBY" tag, top right of the glass. */
+.scope-standby {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font: var(--type-scope-band-caption);
+  letter-spacing: var(--type-scope-band-caption-tracking);
+  text-transform: uppercase;
+  color: var(--scope-band);
+  pointer-events: none;
+}

@@ -278,10 +278,12 @@ LED and readout table (derived from the States page notes):
 | sending | MR, SD | `ATDT` plus airtime |
 | connect hold active (a frame was just received) | MR, RD | `CONNECT` |
 | carrier shown | MR, CD (amber) | `CARRIER` |
-| listening (latch pressed and mic `live`) | MR, AA | `OK` |
-| otherwise (latch released, or mic not live) | MR | `NO CARRIER` |
+| listening (latch pressed, mic `live`, page visible) | MR | `OK` |
+| mic unavailable (denied, lost and so on) | MR | `OK`, hint "Ready to send. Microphone is off, so you can’t hear messages." (State 12) |
+| otherwise (latch released, mic not live, or page hidden) | MR | `NO CARRIER` |
+AA (green) is added in every powered-on row while listening is active (latch pressed, mic `live`, page visible), as in Figma (user decision). State 12 reads `OK` as in Figma, because sending works. When the draft is over the limit, the `OK` row shows the hint "Message is too long to send. Shorten it." (State 11).
 
-OH (amber) is added whenever `channel = call`, in any row except off and self-test. The off row wins outright: with the power off no LED is lit, OH included, even on the Call channel. AA is lit only while listening. The Figma note for State 12 does not name a readout, so `NO CARRIER` with a mic hint is the design choice (open question 3).
+OH (amber) is added whenever `channel = call`, in any row except off and self-test. The off row wins outright: with the power off no LED is lit, OH included, even on the Call channel.
 
 ### model/reducer.ts
 
@@ -395,7 +397,7 @@ export function pushSlip(tape: readonly Slip[], slip: Slip): readonly Slip[];
 export function visibleSlips(tape: readonly Slip[], expanded: boolean): { slips: readonly Slip[]; hidden: number };
 ```
 
-The tape is stored oldest first and shown newest first. Collapsed shows the latest 3, expanded all, and the button reads "See more" or "Show less" (State 14). With 0 slips the Tape shows "No paper yet". With 3 or fewer slips no button is shown (open question 4).
+The tape is stored oldest first and shown newest first. Collapsed shows the latest 3, expanded all, and the button reads "See more" or "Show less" (State 14). With 0 slips the Tape shows the Figma sentence that starts "No paper yet." (`copy.tape.empty`). With 3 or fewer slips no button is shown (open question 4).
 
 ### model/scope-map.ts
 
@@ -694,11 +696,13 @@ function statusView(s, now): StatusView {
   if (now < s.connectUntil)      return view({ MR, RD, OH: oh }, "CONNECT");
   if (now < s.carrier.shownUntil) return view({ MR, CD, OH: oh }, "CARRIER");
   const hearing = s.latchPressed && s.mic === "live" && s.foreground;
-  return hearing ? view({ MR, AA, OH: oh }, "OK") : view({ MR, OH: oh }, "NO CARRIER");
+  // AA = hearing is added to every row above as well.
+  if (hearing) return view({ MR, AA, OH: oh }, "OK");
+  return noMic(s.mic) ? view({ MR, OH: oh }, "OK") : view({ MR, OH: oh }, "NO CARRIER");
 }
 ```
 
-**Postconditions:** total over `UiState` and `now`. In `off` no LED is lit. In `selftest` all six are lit. `AA` is lit only in the last row, so a released latch, a mic that is not `live`, or a hidden page never shows AA. No output refers to a red token.
+**Postconditions:** total over `UiState` and `now`. In `off` no LED is lit. In `selftest` all six are lit. `AA` is lit exactly when the latch is pressed, the mic is `live` and the page is visible, in every powered-on row, so a released latch, a mic that is not `live`, or a hidden page never shows AA. No output refers to a red token.
 
 ### Update guard
 
@@ -791,7 +795,7 @@ For every event sequence from `initialState`, `reduce` never throws and never mu
 **Validates: Requirements 8.1, 8.2, 10.4, 11.1**
 
 ### Property 5: Status window
-For every `UiState` and `now`, `statusView` returns exactly the LEDs and code in the table: none lit and `— — —` when off, all six and `ATZ` in self-test, SD only while sending, RD only during a connect hold, CD only while the carrier hold is active, AA only when the latch is pressed, the mic is `live` and the page is visible, OH if and only if the channel is `call` (when powered on). `transmitState` is `disabled` when off, when the draft is empty or too long, on a fault, and `sending` while `tx.phase = sending`. `listenState` is `disabled` when off and `no-mic` when the mic is denied, and a hidden page with a live mic and a pressed latch still gives `listening`. With the power off no LED is lit and OH is dark on every channel.
+For every `UiState` and `now`, `statusView` returns exactly the LEDs and code in the table: none lit and `— — —` when off, all six and `ATZ` in self-test, SD only while sending, RD only during a connect hold, CD only while the carrier hold is active, AA exactly when the latch is pressed, the mic is `live` and the page is visible, OH if and only if the channel is `call` (when powered on). `transmitState` is `disabled` when off, when the draft is empty or too long, on a fault, and `sending` while `tx.phase = sending`. `listenState` is `disabled` when off and `no-mic` when the mic is denied, and a hidden page with a live mic and a pressed latch still gives `listening`. With the power off no LED is lit and OH is dark on every channel.
 **Validates: Requirements 8.3, 8.5, 8.9, 6.1, 11.1, 11.3, 11.7**
 
 ### Property 6: Receive path
@@ -889,7 +893,7 @@ Existing: `vendor/ggwave.js` 0.4.0, Biome, Vitest, fast-check, TypeScript. Playw
 
 1. Strings that Figma does not show (non-denied microphone first lines, the "unsupported message" system slip, the "Not now" restart line, hint lines for fault and hidden page) are written by the implementer. The user reviews them in the Design QA task.
 2. A successful send clears the draft. Figma does not say. Easy to flip in the controller.
-3. State 12 (Microphone off) and State 13 (Not listening) both show `NO CARRIER`. The Figma note names it only for State 13.
+3. Resolved: State 12 (Microphone off) reads `OK` as in Figma. State 13 (Not listening) reads `NO CARRIER`.
 4. The Tape button is hidden when there are 3 or fewer slips. Figma shows it only on the expanded frame.
 5. Figma's Quiet caption says 15 to 19.5 kHz and the measured band is 15,000 to 19,400 Hz. The app follows the measurement.
 6. Heard slips show no mode, because decoders do not report which protocol they heard (audio-transport design). If Figma's Heard slip shows a mode, the value would have to come from the last carrier band, which is not reliable.

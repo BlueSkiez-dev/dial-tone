@@ -111,3 +111,6 @@ Compared all 25 gallery states with Figma; wrote docs/ui-design-qa.md. Fixed Cal
 
 ## 2026-11-19 - ui-shell 8.1
 Full run green: typecheck, lint (7 warnings), test 589, props 162, slow 60, e2e 38/38 twice. Fixed a real bug: restartMic and send did not wait for a pending start(), so Try again could be dropped on a slow phone (mic-denied e2e failed 3/3 under load, 8/8 after). Also fixed offline e2e false failure. Unverified: real phones, iOS, CPU measurement.
+
+## 2026-11-19 - ui-shell 7.1 (design decisions pass)
+Applied 8 Figma decisions: AA lit whenever listening (req 8.3 updated), too-long and mic-off hints, Figma empty-tape sentence, SOS-held gallery readout, STANDBY tag, Show less caret, CSS striped system paper with first-power slip, onboarding art and page dots. 593 tests, 162 props, e2e 38/38 clean. Finding: Figma has no stripe layer, so stripe is our addition; ink on system paper is about 4.0:1, below AA 4.5.
