@@ -1,0 +1,68 @@
+.notice {
+  margin-top: 16px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 304px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(to bottom, var(--cap-hi), var(--cap));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, black 10%, transparent),
+    0 1px 2px color-mix(in srgb, black 12%, transparent),
+    var(--shadow-edge-light);
+}
+
+.notice-led {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: var(--radius-4);
+  background: var(--amber);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, black 25%, transparent),
+    0 0 7px var(--amber);
+}
+
+.notice-text {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  font: var(--type-mode-description);
+  color: var(--ink-2);
+}
+
+.notice-text strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.notice-key {
+  flex: none;
+  align-self: flex-start;
+  min-width: 76px;
+  min-height: 34px;
+  margin-top: -2px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-10);
+  background: linear-gradient(to bottom, var(--cap-hi), var(--cap-lo));
+  box-shadow: var(--shadow-keycap-lift), var(--shadow-edge-light);
+  color: var(--ink);
+  font: var(--type-mini-key);
+  letter-spacing: var(--type-mini-key-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.notice-key:active {
+  transform: translateY(1px);
+}
+
+.notice-key:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}

@@ -1,0 +1,111 @@
+/* LED (Figma 213:40): 44.33 x 39, lens 12 high, label 11. The bezel ring #040504 is the only literal colour. */
+
+.led {
+  display: grid;
+  grid-template-columns: 44.33px;
+  grid-template-rows: 12px 11px;
+  gap: 8px;
+  justify-items: center;
+  box-sizing: border-box;
+  width: 44.33px;
+  height: 39px;
+  padding: 4px 0;
+  border-radius: var(--radius-8);
+}
+
+.led-lens {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--radius-6);
+}
+.led-glint {
+  position: absolute;
+  top: 2px;
+  left: 2.5px;
+  width: 4.5px;
+  height: 3px;
+  border-radius: var(--radius-1-837);
+  background: color-mix(in srgb, var(--cap-hi) 40%, transparent);
+}
+
+.led-label {
+  font: var(--type-led-label);
+  letter-spacing: var(--type-led-label-tracking);
+  color: var(--led-label);
+  white-space: nowrap;
+}
+
+/* Off lens: dark dome, recessed. */
+.led[data-on="false"] .led-lens {
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--key) 55%,
+    var(--screen) 100%
+  );
+  box-shadow: var(--shadow-bezel), var(--shadow-recess-2);
+}
+
+/* On lens, green. */
+.led[data-on="true"][data-color="green"] .led-lens {
+  overflow: visible;
+  border-radius: var(--radius-6);
+  background: radial-gradient(
+    circle at 50% 55%,
+    var(--cap-hi) 14%,
+    var(--green) 40%,
+    var(--meter-ok) 100%
+  );
+  box-shadow: var(--shadow-led-green);
+}
+
+/* On lens, amber. */
+.led[data-on="true"][data-color="amber"] .led-lens {
+  overflow: visible;
+  background: radial-gradient(
+    circle at 50% 55%,
+    var(--cap-hi) 14%,
+    var(--amber) 40%,
+    var(--meter-warn) 100%
+  );
+  box-shadow:
+    0 0 0 1.5px #040504,
+    0 0 10px 1px var(--amber),
+    0 0 24px 0 var(--amber-55);
+}
+
+.led[data-on="true"] .led-label {
+  color: var(--led-label-on);
+}
+
+/* Power-on sweep: each lens brightens in turn. Dropped under reduced motion. */
+.led[data-sweep="true"] .led-lens {
+  animation: led-sweep 300ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+@keyframes led-sweep {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .led[data-sweep="true"] .led-lens {
+    animation: none;
+  }
+}
+
+.led-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

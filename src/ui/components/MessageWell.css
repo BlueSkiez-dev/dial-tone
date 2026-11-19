@@ -1,0 +1,49 @@
+/* Message well. Figma 213:319: 304 x 123.39, radius 15, recessed. */
+.message-well {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 304px;
+  height: 123.39px;
+  border-radius: var(--radius-15);
+  background: linear-gradient(180deg, var(--well-top) 0%, var(--well) 30%);
+  box-shadow: var(--shadow-raised-3);
+}
+
+.message-well::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--shadow-well-inset);
+}
+
+.message-well-field {
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px 14px 6px;
+  border: 0;
+  border-radius: var(--radius-15) var(--radius-15) 0 0;
+  background: transparent;
+  resize: none;
+  overflow: auto;
+  font: var(--type-well-text);
+  color: var(--ink);
+}
+
+.message-well-field::placeholder {
+  color: var(--ink-2);
+  opacity: 0.6;
+}
+
+.message-well-field:focus-visible {
+  outline: 2px solid var(--ink-2);
+  outline-offset: -2px;
+}
+
+.message-well-field:disabled {
+  opacity: 0.55;
+}

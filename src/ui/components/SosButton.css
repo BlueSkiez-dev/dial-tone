@@ -1,0 +1,96 @@
+/* SOS button. Figma 213:377 (Default 213:355, Holding 213:366, Disabled 213:376). Red Tokens live only here. */
+.sos-wrap {
+  display: grid;
+  grid-template-rows: 78px 11px;
+  row-gap: 6px;
+  justify-items: center;
+  width: 78px;
+  height: 95px;
+}
+
+.sos-button {
+  position: relative;
+  box-sizing: border-box;
+  width: 78px;
+  height: 78px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-39);
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sos-collar {
+  position: absolute;
+  inset: 0;
+  width: 78px;
+  height: 78px;
+  border-radius: var(--radius-39);
+  box-shadow: var(--shadow-recess-3), var(--shadow-raised-1);
+}
+
+.sos-cap {
+  position: absolute;
+  inset: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-on-sos);
+  font: var(--type-sos-label);
+  letter-spacing: var(--type-sos-label-tracking);
+  border-radius: var(--radius-39);
+  background: radial-gradient(
+    circle at 50% 30%,
+    var(--sos-hi),
+    var(--sos) 55%,
+    var(--sos-lo)
+  );
+  box-shadow: var(--shadow-sos-cap);
+}
+
+.sos-progress {
+  position: absolute;
+  inset: 0;
+  width: 78px;
+  height: 78px;
+  pointer-events: none;
+}
+
+.sos-progress circle {
+  stroke: var(--sos-hi);
+}
+
+.sos-button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.sos-button[data-state="holding"] .sos-cap {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--sos-edge);
+}
+
+.sos-button[data-state="disabled"] {
+  cursor: default;
+}
+
+.sos-button[data-state="disabled"] .sos-cap {
+  opacity: 0.4;
+  box-shadow: none;
+}
+
+.sos-label {
+  font: var(--type-sos-label);
+  letter-spacing: var(--type-sos-label-tracking);
+  color: var(--ink-2);
+  font-size: 11px;
+  text-transform: uppercase;
+  height: 11px;
+  line-height: 11px;
+}
+
+.sos-button[data-state="disabled"] + .sos-label {
+  opacity: 0.4;
+}

@@ -1,0 +1,23 @@
+/* Dev-only panel, loaded only on `vite dev`. Tokens only. */
+.dev-panel {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 50;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--glass);
+  color: var(--ink-on-glass-strong);
+  font: 12px / 1.4 var(--font-mono, monospace);
+}
+.dev-panel summary {
+  cursor: pointer;
+}
+.dev-panel-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}

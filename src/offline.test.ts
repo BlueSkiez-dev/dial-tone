@@ -22,13 +22,21 @@ const FORBIDDEN: ReadonlyArray<{ name: string; pattern: RegExp }> = [
   },
 ];
 
+// License text files (font OFL texts, vendored licenses) hold URLs as prose.
+// They are never loaded at runtime, so they are not network calls.
+const LICENSE_TEXT = /(?:-OFL|LICENSE|LICENCE)[^/\\]*\.txt$/i;
+
 function listSourceFiles(dir: string): string[] {
   const files: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       files.push(...listSourceFiles(full));
-    } else if (entry.isFile() && !TEST_FILE.test(entry.name)) {
+    } else if (
+      entry.isFile() &&
+      !TEST_FILE.test(entry.name) &&
+      !LICENSE_TEXT.test(entry.name)
+    ) {
       files.push(full);
     }
   }

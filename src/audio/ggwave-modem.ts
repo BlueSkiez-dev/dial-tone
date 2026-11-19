@@ -69,6 +69,16 @@ const ALL_GGWAVE_PROTOCOLS: readonly string[] = [
   "DT_FASTEST",
 ];
 
+declare const ggwave_factory: (() => Promise<GgwaveFactoryResult>) | undefined;
+
+/** The factory that `importScripts("vendor/ggwave.js")` defines as a global in the decode worker. */
+export function ggwaveFactoryFromGlobal(): () => Promise<GgwaveFactoryResult> {
+  if (typeof ggwave_factory !== "function") {
+    throw new ModemError("MODULATE_FAILED", "ggwave_factory is not loaded");
+  }
+  return ggwave_factory;
+}
+
 /** Setup_Mutex: one promise queue per decode module. */
 const setupQueues = new WeakMap<GgwaveFactoryResult, Promise<unknown>>();
 

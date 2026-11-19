@@ -4,6 +4,10 @@
  */
 
 export { airtimeMs } from "./airtime";
+export { CPU_CHANNEL } from "./cpu-debug";
+export type { CpuReport } from "./cpu-probe";
+export { cpuFlagFromSearch, formatCpuReport } from "./cpu-probe";
+export type { MicState } from "./mic-state";
 export type {
   ChannelProfile,
   Family,
@@ -19,3 +23,12 @@ export {
   rxProtocols,
   speedFor,
 } from "./profiles";
+export { createAudioTransport } from "./transport";
+export type {
+  AudioTransport,
+  SendErrorCode,
+  SendReport,
+  SpectrumSource,
+  StartError,
+  TransportEvent,
+} from "./transport-types";

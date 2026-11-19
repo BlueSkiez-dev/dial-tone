@@ -1,0 +1,225 @@
+.slip {
+  width: 280px;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* A mask clips box-shadow, so the shadow is a filter on the wrapper. Same recipe as --shadow-slip. */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2))
+    drop-shadow(0 5px 7px rgba(0, 0, 0, 0.08));
+}
+
+.slip-paper {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 18px 16px 20px;
+  overflow: hidden;
+  color: var(--print);
+  background:
+    url("/art/paper-grain.png") top left / 180px 180px,
+    var(--paper);
+  /* Torn bottom edge: teeth 10 wide, 5 deep. */
+  -webkit-mask:
+    linear-gradient(black 0 0) top / 100% calc(100% - 5px) no-repeat,
+    conic-gradient(
+      from -45deg at bottom,
+      transparent,
+      black 1deg 89deg,
+      transparent 90deg
+    )
+    bottom / 10px 5px repeat-x;
+  mask:
+    linear-gradient(black 0 0) top / 100% calc(100% - 5px) no-repeat,
+    conic-gradient(
+      from -45deg at bottom,
+      transparent,
+      black 1deg 89deg,
+      transparent 90deg
+    )
+    bottom / 10px 5px repeat-x;
+}
+
+.slip[data-kind="relayed"] .slip-paper,
+.slip[data-kind="safe"] .slip-paper {
+  padding-top: 14px;
+}
+
+.slip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 3px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--print-meta);
+}
+
+.slip-meta-break {
+  flex-basis: 100%;
+  height: 0;
+  /* Cancels the row gap this empty row would add (Figma 213:459: meta block is 39.3 px). */
+  margin-top: -3px;
+}
+
+.slip-meta-item {
+  font: var(--type-slip-meta);
+  letter-spacing: var(--type-slip-meta-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--print-meta);
+}
+
+.slip-meta-item[data-tone="hop"] {
+  color: var(--print-hop);
+}
+
+.slip-meta-item[data-tone="ink"] {
+  color: var(--print);
+}
+
+.slip-text {
+  margin: 0;
+  padding-top: 9px;
+  font: var(--type-slip-body);
+  color: var(--print);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Figma 270:584: the I'm safe text follows the stamp row with no extra top padding. */
+.slip[data-kind="safe"] .slip-text {
+  padding-top: 0;
+}
+
+.slip-note {
+  margin: 0;
+  padding-top: 8px;
+  font: var(--type-slip-note);
+  color: var(--print-meta);
+}
+
+.slip-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.slip-button {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 31.5px;
+  padding: 8px 11px;
+  border: 1.5px solid var(--print);
+  border-radius: var(--radius-7);
+  background: transparent;
+  color: var(--print);
+  font: var(--type-slip-button);
+  letter-spacing: var(--type-slip-button-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Grow the hit area to at least 44 px without changing the look. */
+.slip-button::after {
+  content: "";
+  position: absolute;
+  inset: -7px -4px;
+}
+
+.slip-button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.slip-stamp {
+  align-self: flex-start;
+  margin: 9px 0 8px;
+  padding: 2px 8px 3px;
+  border: 1.5px solid var(--print-hop);
+  border-radius: var(--radius-4);
+  font: 700 12px / 12px var(--font-mono);
+  letter-spacing: 2.4px;
+  color: var(--print-hop);
+}
+
+.slip-coords {
+  margin: 0;
+  font: 600 17px / 22.1px var(--font-mono);
+  letter-spacing: 0.34px;
+  color: var(--print);
+}
+
+.slip-bearing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+  font: var(--type-slip-location);
+  color: var(--print-meta);
+}
+
+.slip-bearing-arrow {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--print);
+}
+
+.slip-redacted {
+  display: grid;
+  gap: 7px;
+  padding-top: 9px;
+}
+
+.slip-redacted-bar {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-2);
+  background: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--print-meta) 30%, var(--paper)) 0 9px,
+    transparent 9px 11px
+  );
+}
+
+.slip-redacted-bar[data-bar="1"] {
+  width: 248px;
+}
+
+.slip-redacted-bar[data-bar="2"] {
+  width: 228px;
+}
+
+/* Line-by-line printing: the paper is revealed from the top in steps. */
+.slip[data-printing="true"] .slip-paper {
+  animation: slip-print 700ms steps(10, end) both;
+}
+
+@keyframes slip-print {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+.ghost-text[data-resolving="true"] {
+  color: var(--print-meta);
+}
+
+.ghost-text-real {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slip[data-printing="true"] .slip-paper {
+    animation: none;
+  }
+}

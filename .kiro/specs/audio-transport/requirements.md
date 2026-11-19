@@ -240,6 +240,15 @@ Evidence rule: a number in these requirements is either a measurement from `docs
 4. THE design SHALL state in its decision table that the sweep measured payloads of 1 to 60 bytes without noise, and that the rate for 140-byte frames and real channels is unknown.
 5. THE design SHALL record that the sweep of 12.1 ran and that the profile table was confirmed, because no first-speed wrong rate exceeded 2%.
 
+## Amendments from ui-shell
+
+The `ui-shell` spec adds four items to the Transport interface. They extend requirements 2, 3, 6 and 7 and renumber nothing. They are implemented inside tasks 11.1 and 11.2.
+
+- **Analyser.** THE Transport SHALL expose `analyser`, a `SpectrumSource` (`fftSize`, `frequencyBinCount`, `sampleRate`, `getByteFrequencyData(out)`) that wraps the main-thread `AnalyserNode` fed from the same source as the worklet, independent of decoding. It SHALL be `null` before `start()` and after `stop()`.
+- **Airtime event.** THE Transport SHALL answer `airtimeMs(byteLength, attempt?)` from a cache keyed by profile and byte length, SHALL return `null` on a miss and ask the Decode_Worker, and SHALL emit `{ kind: "airtime", profile, byteLength, attempt, ms }` when the worker answers.
+- **`setListening`.** THE Transport SHALL provide `setListening(on)`. WHEN `on` is `false`, THE Decode_Worker SHALL stop feeding Chunks to the Rx_Pipeline and SHALL stop forwarding `frame`, `rejected` and `carrier` events, while the microphone stream stays open and sending still works. WHEN `on` is `true`, listening SHALL resume with no new permission prompt. THE Transport SHALL emit `{ kind: "listening", on }`. IF `setListening` is called before `start()`, THEN THE Transport SHALL return `NOT_STARTED`, and IF there is no microphone stream, THEN it SHALL return `NO_MIC`.
+- **`start()` result.** THE Transport SHALL make `start()` return `ok({ sampleRate, mic })` only when sending works, including when only the microphone failed (`mic` then holds that Mic_State and is not `live`). THE Transport SHALL return an error from `start()` whenever sending does not work, whatever the cause: `MODEM_LOAD_FAILED`, `NO_AUDIO_CONTEXT`, or a worker crash or codec initialisation failure, the last two as the new `StartError` code `SEND_UNAVAILABLE`.
+
 ## Obligations on other specs
 
 The following duties belong to other specs. They are not requirements on `src/audio` and are not tested by this spec.

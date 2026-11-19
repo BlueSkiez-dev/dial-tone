@@ -6,3 +6,6 @@ tmp*
 *-out*.txt
 out-*.txt
 *.tmp*
+dev-dist/
+test-results/
+playwright-report/

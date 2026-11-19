@@ -1,0 +1,97 @@
+/* Rocker (Figma 213:13): 40 x 54, 4 px padding, thumb 46 high. Tokens only. */
+
+.rocker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 40px;
+  height: 54px;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-10);
+  background: var(--rocker);
+  box-shadow: var(--shadow-recess-2), var(--shadow-raised-1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rocker:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.rocker-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 46px;
+  border-radius: var(--radius-7);
+  background: linear-gradient(
+    180deg,
+    var(--key-edge) 0%,
+    var(--print) 47%,
+    var(--key-top) 53%,
+    var(--ink-2) 100%
+  );
+  box-shadow: var(--shadow-recess-4);
+  /* Off: thumb tilts to the "O" side. On: the "I" side is pressed. */
+  transition: transform 120ms ease-out;
+}
+.rocker[data-on="true"] .rocker-thumb {
+  transform: translateY(1px);
+}
+
+.rocker-i,
+.rocker-o {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font: var(--type-rocker-i);
+  letter-spacing: var(--type-rocker-i-tracking);
+  text-align: center;
+  white-space: nowrap;
+}
+.rocker-i {
+  top: 6px;
+  color: var(--rocker-i);
+}
+.rocker-o {
+  top: 29px;
+  color: var(--rocker-o);
+}
+.rocker[data-on="true"] .rocker-i {
+  color: var(--green);
+  text-shadow: var(--shadow-led-green-small);
+}
+
+/* Amber pulse until the first tap. */
+.rocker[data-pulse="amber"] {
+  animation: rocker-pulse 1.4s ease-in-out infinite;
+}
+@keyframes rocker-pulse {
+  0%,
+  100% {
+    box-shadow:
+      var(--shadow-recess-2),
+      0 0 0 0 var(--amber-55);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-recess-2),
+      0 0 0 5px var(--amber-55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rocker-thumb {
+    transition: none;
+  }
+  .rocker[data-pulse="amber"] {
+    animation: none;
+    box-shadow:
+      var(--shadow-recess-2),
+      0 0 0 3px var(--amber);
+  }
+}

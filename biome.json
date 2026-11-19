@@ -6,6 +6,8 @@
       "*.ts",
       "!**/node_modules",
       "!**/dist",
+      "!dev-dist",
+      "!public",
       "!**/coverage",
       "!vendor",
       "!package-lock.json"

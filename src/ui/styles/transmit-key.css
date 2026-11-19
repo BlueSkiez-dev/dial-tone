@@ -1,0 +1,130 @@
+.transmit-key {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  width: 210px;
+  height: 72px;
+  min-height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-15);
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--ink-on-key);
+  background: linear-gradient(
+    to bottom,
+    var(--key-top),
+    var(--key) 45%,
+    var(--key-bottom)
+  );
+  box-shadow: var(--shadow-keycap-dark);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.transmit-key::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: var(--radius-11);
+  background: radial-gradient(
+    ellipse 100px 20px at 50% 0,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0) 70%
+  );
+  pointer-events: none;
+}
+
+.transmit-key::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.transmit-key:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.transmit-key:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.transmit-key-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 15.75px;
+  text-align: center;
+  font: var(--type-transmit-label);
+  letter-spacing: var(--type-transmit-label-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-on-key);
+}
+
+.transmit-key-sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 37.75px;
+  text-align: center;
+  font: var(--type-transmit-sub);
+  letter-spacing: var(--type-transmit-sub-tracking);
+  white-space: nowrap;
+  color: var(--ink-on-key-dim);
+}
+
+.transmit-key-strip {
+  position: absolute;
+  left: 16px;
+  top: 61px;
+  width: 178px;
+  height: 3px;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.transmit-key-fill {
+  display: block;
+  height: 3px;
+  width: 0;
+  background: var(--green);
+  box-shadow: 0 0 5.9px var(--green);
+}
+
+/* Disabled: label and sub-label dim to 40%. */
+.transmit-key[data-state="disabled"] {
+  cursor: default;
+}
+
+.transmit-key[data-state="disabled"] .transmit-key-label,
+.transmit-key[data-state="disabled"] .transmit-key-sub {
+  opacity: 0.4;
+}
+
+/* BUSY flash: amber label, brief pulse. Not the Sending or Disabled look. */
+.transmit-key[data-flash="true"] .transmit-key-label {
+  color: var(--amber);
+  animation: transmit-key-busy 0.3s ease-in-out 2;
+}
+
+@keyframes transmit-key-busy {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transmit-key:active:not(:disabled) {
+    transform: none;
+  }
+  .transmit-key[data-flash="true"] .transmit-key-label {
+    animation: none;
+  }
+}

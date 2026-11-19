@@ -1,0 +1,98 @@
+/* Group key bar. Figma 270:376: Open 304 x 54, Locked 304 x 66. */
+.group-key-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 304px;
+}
+
+.group-key-bar[data-state="open"] {
+  height: 54px;
+}
+
+.group-key-bar[data-state="locked"] {
+  height: 66px;
+}
+
+.group-key-display {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: var(--radius-8);
+  background: linear-gradient(to bottom, var(--glass-hi), var(--glass));
+  box-shadow: var(--shadow-recess-3), var(--shadow-bezel);
+}
+
+.group-key-display img {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.group-key-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.group-key-title {
+  font: var(--type-key-title);
+  letter-spacing: var(--type-key-title-tracking);
+  text-transform: uppercase;
+  color: var(--ink-on-glass-strong);
+}
+
+.group-key-status {
+  font: var(--type-key-status);
+  color: var(--ink-on-glass);
+}
+
+.group-key-name {
+  font: var(--type-key-title);
+  letter-spacing: var(--type-key-title-tracking);
+  text-transform: uppercase;
+  color: var(--phosphor);
+}
+
+.group-key-words {
+  display: flex;
+  gap: 4px;
+}
+
+.group-key-word {
+  font: var(--type-fine-print-large);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 4px;
+  border-radius: var(--radius-3);
+  color: var(--phosphor);
+  background: rgba(125, 255, 178, 0.08);
+}
+
+.group-key-button {
+  flex: none;
+  width: 56px;
+  border: 0;
+  border-radius: var(--radius-8);
+  cursor: pointer;
+  color: var(--ink);
+  font: var(--type-mini-key);
+  letter-spacing: var(--type-mini-key-tracking);
+  text-transform: uppercase;
+  background: linear-gradient(
+    to bottom,
+    var(--cap-hi),
+    var(--cap) 50%,
+    var(--cap-lo)
+  );
+  box-shadow: var(--shadow-keycap-lift);
+}
+
+.group-key-button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}

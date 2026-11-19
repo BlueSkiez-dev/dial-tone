@@ -217,6 +217,7 @@ Ground rules for every task:
   - [x] 10.2 Create `src/audio/index.ts`
     - Export the public API: `PROFILES`, `RX_LISTEN_SCOPE`, `speedFor`, `protocolFor`, `allRxProtocols`, `rxProtocols`, the types from `profiles.ts`, `createAudioTransport`, the `AudioTransport` types and events, `airtimeMs`. `MIC_CONSTRAINTS` is not exported. Export no ggwave type.
     - If the browser glue files do not exist yet, export only what exists and leave a list in the task result of what task 11 must add.
+    - Amendment from ui-shell: the index also exports the types `SpectrumSource` and `StartError` (with the new `SEND_UNAVAILABLE` code), `MicState`, `SendReport` and `SendErrorCode` once the glue exists (added by task 11.1).
     - _Requirements: 10.1_
 
   - [x] 10.3 Write the slow pipeline properties with the real modem
@@ -237,41 +238,43 @@ Ground rules for every task:
     - _Requirements: 10.7, 10.4, 1.5_
 
 - [ ] 11. Browser glue (blocked until the app scaffold exists)
-  - [ ] 11.1 Confirm the scaffold and add the glue files
+  - [x] 11.1 Confirm the scaffold and add the glue files
     - Check `package.json` for `vite` and a Vite config. If missing, mark tasks 11 to 13 blocked and stop. Do not scaffold the app here.
     - Create `src/audio/capture-worklet.ts` (an `AudioWorkletProcessor` named `capture` that uses `createChunkAccumulator(1024)` and posts chunks over the port it received, transferring the buffer), `src/audio/decode-worker.ts` (classic worker: `importScripts` the URL it receives, build `createGgwaveModem` with the given rate, await `createRxPipeline` with the `rxScope` from the `init` message, apply the 64-chunk backpressure rule, answer `modulate`, forward events, handle `setProfile` only when `rxScope` is `"active"`), `src/audio/mic.ts`, `src/audio/player.ts` and `src/audio/transport.ts` as in `design.md`.
     - `transport.ts` implements `send` as in the pseudocode, including the length guard before the worker is asked to modulate, the `BUSY` rule, the gate and `noteSent` messages, `sendSequence`, `airtimeMs`, `subscribe`, and the `foreground` and `context` events. `setProfile` changes only the send profile while the scope is `"all"`.
     - Request `new AudioContext({ sampleRate: 48000 })`. If `createMediaStreamSource` throws on it (some Firefox versions), recreate the context at the default rate and use the resampler. In the decode worker, run `createResampler` and a chunk accumulator in front of the pipeline when the context rate is not 48,000 Hz, and convert gate ranges and `noteSent` frames from the context clock to the 48 kHz clock with `frame48 = round(frame × 48000 / contextRate)`, rounding gate starts down and gate ends up. The modem is created with `txSampleRate` set to the context's rate.
     - Connect the worklet node through a `GainNode` with gain 0 to the destination. Feed an `AnalyserNode` from the same source for the UI.
     - The transport maps `NO_INSTANCE` as follows: when `createRxPipeline` rejects with it at start, `start` returns `StartError("MODEM_LOAD_FAILED")` with the code in the message. When `modulate` throws it during `send`, `send` returns `MODEM_FAILED`.
+    - Amendments from ui-shell (see "Amendments from ui-shell" in `requirements.md` and `design.md`): implement `analyser` (a `SpectrumSource`, `null` before `start()` and after `stop()`), the `airtime` event (the worker answers `airtimeMs` requests, cached per profile and byte length), `setListening(on)` (the worker stops feeding the pipeline and forwarding `frame`, `rejected` and `carrier` events, the mic stays open, a `listening` event is emitted, `NOT_STARTED` before `start()`), and `start()` returning `ok({ sampleRate, mic })` whenever sending works, including when only the microphone failed. `start()` returns an error whenever sending does not work, whatever the cause: `MODEM_LOAD_FAILED`, `NO_AUDIO_CONTEXT`, or a worker crash or codec initialisation failure as the new `SEND_UNAVAILABLE`.
     - Keep every glue file under 200 lines. Logic goes to Pure_Modules.
     - Build the worklet and the worker as classic scripts (Vite `worker.format: 'iife'` for the worker and a separate classic build for the worklet) and give their URLs and the URL of `vendor/ggwave.js` to the transport through `?url` imports. Do not add network calls.
     - _Requirements: 2.3, 2.4, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12, 3.1, 3.2, 3.4, 3.5, 3.7, 3.8, 3.10, 3.11, 3.12, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 7.1, 7.6, 9.3, 10.3, 11.1, 11.4_
 
-  - [ ] 11.2 Write a transport test with a fake worker and fake context
+  - [x] 11.2 Write a transport test with a fake worker and fake context
     - Create `src/audio/transport.test.ts` (Node, no DOM) using small hand-written fakes for the `AudioContext`, the worker and the mic that the transport takes as injected factories.
     - Property 8: for lengths 0, 1 to 140 and 141 and more (including arrays whose bytes are multi-byte UTF-8), `send` gives `EMPTY`, a report, or `TOO_LONG`, and for `EMPTY` and `TOO_LONG` the fake worker records zero `modulate` messages.
     - Check: `NOT_STARTED`, `NOT_RUNNING`, `BUSY` for a second send and for `setProfile` during a send, the gate message goes out before playback with `endFrame + tail`, the caller's array is not detached, `attempt` 1 picks the retry protocol, `setProfile` changes the protocol of later sends but sends no receive-set change to the worker while the scope is `"all"`, a denied mic leaves `send` working, `restartMic` is the only path out of `denied`.
+    - Amendments from ui-shell: also check that `start()` returns ok with a non-`live` `mic` when the fake microphone is denied, and an error for each fake cause that stops sending (modem load failure, no audio context, worker crash, codec initialisation failure as `SEND_UNAVAILABLE`); `analyser` is `null` before `start()` and after `stop()`; `airtimeMs` returns `null` on a miss, the worker's answer arrives as an `airtime` event, then the cached value; after `setListening(false)` the worker's `frame` and `carrier` events are not forwarded and sending still works; `setListening` before `start()` returns `NOT_STARTED`.
     - If injection of the `AudioContext` makes `transport.ts` too large, move the injection into a small `transport-deps.ts`.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.6, 2.7, 2.10, 2.12, 6.5, 6.7, 7.1_
 
 - [ ] 12. Playwright end-to-end tests (blocked until the app scaffold exists)
-  - [ ] 12.1 Add Playwright and its config
+  - [x] 12.1 Add Playwright and its config
     - Install `@playwright/test` as an exact-pinned devDependency (version from `npm.cmd view @playwright/test version`). Add the `test:e2e` script from `tech.md`. Configure Chromium with `--use-fake-device-for-media-stream`, `--use-fake-ui-for-media-stream` and `--use-file-for-fake-audio-capture` pointing at `tests/fixtures/call-known-frame.wav`.
     - Add a minimal test page (or use the app shell if it exists) that starts the transport from a button tap and exposes received events to the test.
     - _Requirements: 10.6_
 
-  - [ ] 12.2 Write the fake-microphone decode test
+  - [x] 12.2 Write the fake-microphone decode test
     - Create `e2e/fake-mic.spec.ts`: start the transport from a tap with a send profile other than Call (Room), wait for the known Call frame, and assert its `wire` equals the bytes printed by the fixture builder. Also assert that a `carrier` event with `active: true` happened first, which shows the worklet is pulled by the graph and the port reached the worker.
     - If the `MessagePort` transfer into the worklet fails on Chromium, switch to the fallback in `design.md` (main thread forwards chunks) and note it in the task result.
     - _Requirements: 3.2, 3.4, 3.5, 10.6, 1.5_
 
-  - [ ] 12.3 Write the denied-microphone test
+  - [x] 12.3 Write the denied-microphone test
     - Create `e2e/mic-denied.spec.ts`: run without the fake-UI flag so the permission is not granted (or deny it through the context), start the transport, assert the `denied` mic state, then assert that `send` still resolves with a report and a `tx end` event.
     - _Requirements: 6.5, 6.10, 10.6_
 
 - [ ] 13. Offline test and CPU measurement (blocked until the app scaffold exists)
-  - [ ] 13.1 Write the offline decode test
+  - [x] 13.1 Write the offline decode test
     - Create `e2e/offline.spec.ts`: build the app, serve it with `npm.cmd run preview`, load it once, switch the browser context offline, reload, start the transport, and decode the fixture frame. This shows the worklet, the worker and `vendor/ggwave.js` are in the precache.
     - If the precache misses a file, report it as a defect for the scaffold task and do not paper over it in this spec.
     - _Requirements: 11.1, 11.2, 11.3, 10.6_
@@ -287,7 +290,7 @@ Ground rules for every task:
     - _Requirements: 1.9, 1.10, 1.11, 4.1, 4.5, 4.7_
 
 - [ ] 14. Final checkpoint
-  - [ ] 14.1 Run everything and report
+  - [x] 14.1 Run everything and report
     - Run `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test`, `npm.cmd run test:props`, `npm.cmd run test:slow`, and (if tasks 11 to 13 ran) `npm.cmd run test:e2e`. Fix every failure in `src/audio`. Do not change `src/protocol`.
     - Report: the speed sweep table (task 2.3), the measured bands (task 3.1), the toggle-isolation results (task 2.4), the receive scope, decoder count and CPU result (task 13.2), which tasks were blocked, and every design parameter that a test or sweep contradicted.
     - Do not commit.

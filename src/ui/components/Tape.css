@@ -1,0 +1,57 @@
+.tape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 304px;
+}
+
+/* The printer slit the slips come out of. Figma State 03 and 14: 304 wide, dark glass. */
+.tape-slot {
+  box-sizing: border-box;
+  width: 100%;
+  height: 12px;
+  margin-top: 10px;
+  margin-bottom: -2px;
+  border-radius: var(--radius-6);
+  background: var(--glass);
+  box-shadow: var(--shadow-recess-3);
+}
+
+.tape-slips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.tape-empty {
+  margin: 0;
+  width: 100%;
+  font: var(--type-empty-tape);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.tape-toggle {
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-10);
+  background: linear-gradient(to bottom, var(--cap-hi), var(--cap-lo));
+  box-shadow: var(--shadow-keycap-lift);
+  color: var(--ink);
+  font: var(--type-mini-key);
+  letter-spacing: var(--type-mini-key-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tape-toggle:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}

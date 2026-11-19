@@ -1,0 +1,118 @@
+/* Status window (Figma 213:195): 304 x 113, smoked glass. Tokens only. */
+
+.status-window {
+  position: relative;
+  box-sizing: border-box;
+  width: 304px;
+  min-height: 113px;
+  overflow: hidden;
+  padding: 14px 14px 12px;
+  border-radius: var(--radius-16);
+  background:
+    radial-gradient(
+      ellipse 40px 12px at 76px 0,
+      var(--glass-hi) 0,
+      var(--glass) 70%
+    ),
+    var(--glass);
+  box-shadow:
+    var(--shadow-recess-3),
+    0 0 0 1px var(--key-edge),
+    var(--shadow-raised-3);
+}
+
+.status-leds {
+  display: grid;
+  grid-template-columns: repeat(6, 44.33px);
+  gap: 2px;
+  width: 100%;
+  height: 39px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-8);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.status-leds:focus-visible {
+  outline: 2px solid var(--ink-on-glass-strong);
+  outline-offset: 2px;
+}
+
+.status-readout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 36px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--panel-hairline);
+}
+.status-code {
+  flex: none;
+  font: var(--type-readout-code);
+  letter-spacing: var(--type-readout-code-tracking);
+  color: var(--phosphor);
+  white-space: nowrap;
+}
+.status-hint {
+  font: var(--type-readout-hint);
+  color: var(--ink-on-glass);
+  text-align: right;
+}
+
+.status-legend {
+  display: grid;
+  grid-template-columns: 131px 131px;
+  gap: 5px 14px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  list-style: none;
+  border-top: 1px dashed color-mix(in srgb, var(--ink-legend) 25%, transparent);
+}
+.status-legend li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 16px;
+  white-space: nowrap;
+}
+.legend-id {
+  min-width: 13px;
+  font: var(--type-sheet-legend);
+  letter-spacing: var(--type-sheet-legend-tracking);
+  text-transform: uppercase;
+  color: var(--led-label-on);
+}
+.legend-meaning {
+  font: var(--type-mode-description);
+  font-size: 12px;
+  line-height: normal;
+  color: var(--ink-legend);
+}
+
+.status-reflection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 113px;
+  border-radius: var(--radius-16);
+  pointer-events: none;
+  background: linear-gradient(
+    177deg,
+    color-mix(in srgb, var(--cap-hi) 11%, transparent) 5%,
+    color-mix(in srgb, var(--cap-hi) 3.5%, transparent) 37.5%,
+    transparent 38.4%
+  );
+}
+
+/* Off: the glass keeps its shape, the readout dims. */
+.status-window[data-power="off"] .status-code {
+  color: var(--ink-on-glass);
+}

@@ -662,7 +662,17 @@ export type TransportEvent =
   | { kind: "context"; state: "running" | "suspended" | "interrupted" | "closed" }
   | { kind: "foreground"; visible: boolean }
   | { kind: "tx"; phase: "start" | "end"; protocol: ProtocolId; airtimeMs: number }
+  | { kind: "airtime"; profile: ProfileId; byteLength: number; attempt: number; ms: number } // amendment from ui-shell
+  | { kind: "listening"; on: boolean }                                                      // amendment from ui-shell
   | { kind: "overrun"; droppedChunks: number };
+
+/** Amendment from ui-shell: lets src/ui read a spectrum without the DOM AnalyserNode type. */
+export interface SpectrumSource {
+  readonly fftSize: number;
+  readonly frequencyBinCount: number;
+  readonly sampleRate: number;
+  getByteFrequencyData(out: Uint8Array): void;
+}
 
 export type SendErrorCode =
   | "EMPTY" | "TOO_LONG" | "NOT_STARTED" | "NOT_RUNNING" | "BUSY" | "MODEM_FAILED";
@@ -681,7 +691,7 @@ export interface SendOptions {
 
 export interface AudioTransport {
   /** Must be called from a user tap. Creates the AudioContext, loads the worker and worklet, asks for the mic. */
-  start(): Promise<Result<{ sampleRate: number }, StartError>>;
+  start(): Promise<Result<{ sampleRate: number; mic: MicState }, StartError>>; // amendment from ui-shell: ok whenever sending works, including when only the mic failed
   /** Re-ask for the mic after denied, lost or busy. Must be called from a user tap. */
   restartMic(): Promise<Result<void, MicError>>;
   stop(): Promise<void>;
@@ -690,18 +700,29 @@ export interface AudioTransport {
   send(wire: Uint8Array, opts?: SendOptions): Promise<Result<SendReport, { code: SendErrorCode }>>;
   /** Frames in order, with a gap in seconds between them. */
   sendSequence(wires: readonly Uint8Array[], opts?: SendOptions & { gapMs?: number }): Promise<Result<readonly SendReport[], { code: SendErrorCode; sent: number }>>;
-  airtimeMs(byteLength: number, attempt?: number): number | null;
+  airtimeMs(byteLength: number, attempt?: number): number | null; // amendment: null on a miss, the answer arrives as an "airtime" event, then it is cached
+  /** Amendment from ui-shell. false: the worker stops feeding the pipeline and forwarding frame, rejected and carrier events. The mic stays open. */
+  setListening(on: boolean): Result<void, { code: "NOT_STARTED" | "NO_MIC" }>;
   subscribe(listener: (event: TransportEvent) => void): () => void;
   readonly profile: ProfileId;
   readonly sampleRate: number | null;
+  /** Amendment from ui-shell. null before start() and after stop(). */
+  readonly analyser: SpectrumSource | null;
 }
 ```
+
+**Amendments from ui-shell** (four items, folded in without renumbering anything; implemented in tasks 11.1 and 11.2):
+
+1. `analyser`: a `SpectrumSource` wrapping the `AnalyserNode`, `null` before `start()` and after `stop()`.
+2. `airtime` event: `airtimeMs` returns the cached value or `null`, and on a miss asks the worker. The answer arrives as `{ kind: "airtime", profile, byteLength, attempt, ms }`. The cache is per profile and byte length.
+3. `setListening(on)`: `false` stops chunk feeding and the forwarding of `frame`, `rejected` and `carrier` events, keeps the mic stream open, and emits `{ kind: "listening", on }`. Sending is unaffected. Before `start()` it returns `NOT_STARTED`.
+4. `start()` returns `ok({ sampleRate, mic })` only when sending works, including when only the microphone failed. It returns an error whenever sending does not work, whatever the cause: `MODEM_LOAD_FAILED`, `NO_AUDIO_CONTEXT`, or a worker crash or codec initialisation failure, the last two as the new `StartError` code `SEND_UNAVAILABLE`.
 
 - `send` does not read the frame. It rejects `wire.length === 0` (`EMPTY`) and `wire.length > GGWAVE_MAX_PAYLOAD` (`TOO_LONG`) before any modem call. It does not check the CRC or parse the header.
 - One transmission at a time. A second `send` while one is in flight returns `BUSY`. Ordering and queuing of frames belongs to the caller, and `sendSequence` is the only convenience.
 - `sendSequence` waits `gapMs` (default `INTER_FRAME_GAP_MS` = 600, the silence padding of the recorded evidence, a design parameter) between frames and stops on the first error, reporting how many frames were sent.
 - Listen-before-talk is not enforced. The UI can read the last `carrier` event to warn that the channel is busy.
-- `start` is idempotent. Its `StartError` code is a `MicErrorCode`, `MODEM_LOAD_FAILED` or `NO_AUDIO_CONTEXT`. A mic failure leaves the transport usable for sending.
+- `start` is idempotent. Its `StartError` code is `MODEM_LOAD_FAILED`, `NO_AUDIO_CONTEXT` or (amendment from ui-shell) `SEND_UNAVAILABLE`. A mic failure leaves the transport usable for sending, so `start` returns ok with `mic` set to the failed state and no `StartError` (this replaces the earlier rule that a `MicErrorCode` could be the `StartError` code).
 
 ### Constants
 
@@ -977,7 +998,8 @@ Obligation on the `relay` spec: ignore `ownEcho: true` frames for rebroadcast de
 | `ggwave.js` fails to load or WASM init fails | `StartError("MODEM_LOAD_FAILED")`, no audio at all |
 | `createDecoders` rejects with `NO_INSTANCE` (decoder budget exceeded or a negative instance id), so `createRxPipeline` rejects | `StartError("MODEM_LOAD_FAILED")` with the code `NO_INSTANCE` in the message |
 | No `AudioContext` or no `AudioWorklet` | `StartError("NO_AUDIO_CONTEXT")` |
-| Mic errors | Mic state and `StartError` with the `MicErrorCode`. Sending stays available. |
+| Mic errors | Mic state event, and `start()` returns ok with `mic` set to that state (amendment from ui-shell). Sending stays available. |
+| Worker crash or codec initialisation failure at start | `StartError("SEND_UNAVAILABLE")` (amendment from ui-shell) |
 
 ## Correctness Properties
 
@@ -1117,6 +1139,7 @@ Every "design parameter" constant has a test that pins its behaviour, so a chang
 - `relay`: ignore `ownEcho: true` frames when deciding to rebroadcast. Dedupe by `frameKey`. Send a relay copy with `attempt` 0.
 - `ui-flows`: keep the attempt counter and pass it to `send`. Show the byte meter's airtime from `airtimeMs`. Show a "listening stopped" state when `foreground.visible` is false or the mic state is not `live`. Show the Quiet fallback hint. CARRIER copy must not say "modem detected". Give every `tx`, `frame` and `carrier` event a visual and haptic cue.
 - `channel-modes`: if it ever adds a profile, add a row to `profiles.ts` and a measured carrier band. A Radio profile is not added until radios are tested.
+- `ui-shell` (amendments): `src/ui` reads the spectrum only through `analyser`, shows airtime from the `airtime` event, uses `setListening` for the Listen latch, and treats an `err` from `start()` as "sending does not work" and an `ok` with a non-`live` `mic` as "sending works, microphone failed".
 - `crypto`: no obligation. The transport carries bytes.
 - Build scaffold (no spec yet): emit the worklet and the worker as classic scripts, expose their URLs and the URL of `vendor/ggwave.js` to `transport.ts`, and put all three in the service worker precache.
 

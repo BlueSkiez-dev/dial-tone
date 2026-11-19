@@ -1,0 +1,11 @@
+.sos-slip-band {
+  text-align: center;
+  font: var(--type-sos-band);
+  letter-spacing: var(--type-sos-band-tracking);
+  color: var(--print-sos);
+  white-space: nowrap;
+}
+
+.sos-slip-meta {
+  margin-top: 8px;
+}

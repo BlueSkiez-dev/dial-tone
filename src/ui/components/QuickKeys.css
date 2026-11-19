@@ -1,0 +1,52 @@
+/* Quick keys. Figma 270:389, 304 x 40. */
+.quick-keys {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 304px;
+  height: 40px;
+}
+
+.quick-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-10);
+  cursor: pointer;
+  color: var(--ink);
+  font: var(--type-mini-key);
+  letter-spacing: var(--type-mini-key-tracking);
+  text-transform: uppercase;
+  background: linear-gradient(
+    to bottom,
+    var(--cap-hi),
+    var(--cap) 50%,
+    var(--cap-lo)
+  );
+  box-shadow: var(--shadow-keycap-lift);
+}
+
+.quick-key img {
+  width: 14px;
+  height: 14px;
+}
+
+.quick-key:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.quick-key:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.quick-key:disabled {
+  cursor: default;
+  opacity: 0.4;
+}

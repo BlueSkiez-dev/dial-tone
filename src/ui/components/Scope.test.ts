@@ -1,0 +1,151 @@
+import { readFileSync } from "node:fs";
+import fc from "fast-check";
+import { h } from "preact";
+import { renderToString } from "preact-render-to-string";
+import { describe, expect, it } from "vitest";
+import type { SpectrumSource } from "../../audio/index";
+import { scopeWindow } from "../model/scope-map";
+import { Scope } from "./Scope";
+import {
+  axisTicks,
+  binForRow,
+  buildPalette,
+  parseHex,
+  SCOPE_HEIGHT,
+  scopeMode,
+  warmUpHalfHeight,
+} from "./scope-draw";
+
+const render = (p: Partial<Parameters<typeof Scope>[0]> = {}) =>
+  renderToString(
+    h(Scope, {
+      source: null,
+      window: scopeWindow("room"),
+      power: "on",
+      reducedMotion: false,
+      ...p,
+    }),
+  );
+
+describe("scopeMode", () => {
+  it("power off wins: static even during warm-up conditions", () => {
+    expect(
+      scopeMode({ power: "off", hasSource: true, reducedMotion: false }),
+    ).toBe("static");
+  });
+  it("warms up during the self-test, and skips it under reduced motion", () => {
+    expect(
+      scopeMode({ power: "selftest", hasSource: false, reducedMotion: false }),
+    ).toBe("warmup");
+    expect(
+      scopeMode({ power: "selftest", hasSource: true, reducedMotion: true }),
+    ).toBe("live");
+  });
+  it("draws live with an analyser and static without one", () => {
+    expect(
+      scopeMode({ power: "on", hasSource: true, reducedMotion: false }),
+    ).toBe("live");
+    expect(
+      scopeMode({ power: "on", hasSource: false, reducedMotion: true }),
+    ).toBe("static");
+  });
+});
+
+describe("scope-draw helpers", () => {
+  it("parses hex and rejects other text", () => {
+    expect(parseHex(" #0a0b0c ")).toEqual([10, 11, 12]);
+    expect(parseHex("#fff")).toEqual([255, 255, 255]);
+    expect(parseHex("red")).toBeNull();
+  });
+  it("palette runs from dark to bright", () => {
+    const p = buildPalette([0, 0, 0], [100, 200, 50]);
+    expect([...p.subarray(0, 4)]).toEqual([0, 0, 0, 255]);
+    expect([...p.subarray(255 * 4, 255 * 4 + 4)]).toEqual([100, 200, 50, 255]);
+  });
+  it("top row shows the highest bin and bottom row the lowest", () => {
+    expect(binForRow(0, 184, { lo: 10, hi: 90 })).toBe(90);
+    expect(binForRow(183, 184, { lo: 10, hi: 90 })).toBe(10);
+  });
+  it("ticks span the window", () => {
+    expect(axisTicks(12000, 20000)).toEqual([
+      12000, 14000, 16000, 18000, 20000,
+    ]);
+  });
+  it("warm-up starts as a line and ends full height", () => {
+    expect(warmUpHalfHeight(0, SCOPE_HEIGHT)).toBe(0);
+    expect(warmUpHalfHeight(1, SCOPE_HEIGHT)).toBe(SCOPE_HEIGHT / 2);
+  });
+  it("binForRow stays inside the range for any row", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: -5, max: 400 }),
+        fc.integer({ min: 2, max: 400 }),
+        fc.integer({ min: 0, max: 500 }),
+        fc.integer({ min: 0, max: 500 }),
+        (row, height, a, b) => {
+          const range = { lo: Math.min(a, b), hi: Math.max(a, b) };
+          const bin = binForRow(row, height, range);
+          return bin >= range.lo && bin <= range.hi;
+        },
+      ),
+    );
+  });
+});
+
+describe("Scope markup", () => {
+  const source: SpectrumSource = {
+    fftSize: 2048,
+    frequencyBinCount: 1024,
+    sampleRate: 48000,
+    getByteFrequencyData() {
+      throw new Error("render must not read the analyser");
+    },
+  };
+
+  it("renders a canvas and axis labels for Room", () => {
+    const html = render({ source });
+    expect(html).toContain("<canvas");
+    expect(html).toContain("8k");
+    expect(html).toContain('data-mode="live"');
+  });
+  it("marks the active band with two lines", () => {
+    const html = render({ window: scopeWindow("call") });
+    expect(html.match(/scope-band-line/g)?.length).toBe(2);
+  });
+  it("shows static and no band overlay while the power is off", () => {
+    const html = render({ power: "off", source });
+    expect(html).toContain('data-mode="static"');
+    expect(html).not.toContain("scope-band-line");
+  });
+  it("suppresses the warm-up when off and uses it in the self-test", () => {
+    expect(render({ power: "selftest" })).toContain('data-mode="warmup"');
+    expect(render({ power: "off" })).not.toContain('data-mode="warmup"');
+  });
+  it("shows static for a null analyser", () => {
+    expect(render({ source: null })).toContain('data-mode="static"');
+  });
+  it("uses the Quiet window labels", () => {
+    expect(render({ window: scopeWindow("quiet") })).toContain("20k");
+  });
+});
+
+describe("Scope source files", () => {
+  const colour = /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/;
+  it("contain no colour literal", () => {
+    for (const f of ["Scope.tsx", "scope-draw.ts", "../styles/scope.css"]) {
+      const text = readFileSync(new URL(f, import.meta.url), "utf8");
+      // Doc comments mention "#rrggbb"; strip comments first.
+      const code = text
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*$/gm, "");
+      expect(code.replace(/"#rrggbb"/g, ""), f).not.toMatch(colour);
+    }
+  });
+  it("never references the red Tokens", () => {
+    const css = readFileSync(
+      new URL("../styles/scope.css", import.meta.url),
+      "utf8",
+    );
+    expect(css).not.toMatch(/--sos|--print-sos|--ink-on-sos/);
+  });
+});

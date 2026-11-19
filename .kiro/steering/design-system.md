@@ -166,7 +166,7 @@ Component sets on the Components page, with variants. Build each as a Preact com
 | LED | State: On, Off × Color: Green, Amber | Domed lens. Green: MR ready, AA listening, RD received, SD sending. Amber: CD carrier, OH call mode. Label lights with the lens. |
 | Status window | State: Off, Ready, Sending, Received | Smoked glass, six LEDs, result-code readout (OK, RING, CARRIER, CONNECT, NO CARRIER, ATDT, ATZ, ERROR) plus a plain-language hint. |
 | Channel switch | Position: Room, Call, Quiet | Slide switch. Thumb springs between positions. Arrow keys move it. Room = audible fastest, Call = dual-tone fastest (1.1-2.6 kHz), Quiet = ultrasound. |
-| Message well | Meter: Normal, Over | Recessed field, 24-segment byte meter (segments 6 px tall, radius 1, unlit `rgba(0,0,0,.09)`) and real encoder airtime. Counts UTF-8 bytes. Lit segments are `--meter-ok`, switching to `--meter-warn` from 80%. Over: all 24 segments `--amber` with a 4 px amber glow, the byte count in bold `--ink`, the label "Too long", Transmit disabled. Never red. |
+| Message well | Meter: Normal, Over | Recessed field, 24-segment byte meter (segments 6 px tall, radius 1, unlit `rgba(0,0,0,.09)`) and real encoder airtime. Counts UTF-8 bytes. Lit segments = `ceil(bytes * 24 / limit)`. Colours are positional: segments 1 to 19 `--meter-ok`, segments 20 to 24 `--meter-warn`. Over the limit: all 24 segments `--amber` with a 4 px amber glow, the byte count in bold `--ink`, the label "Too long", Transmit disabled. Never red. |
 | Transmit key | State: Default, Sending, Disabled | Sub-label shows ATDT and airtime. Sending: label stays lit, light strip fills for the airtime. Disabled when off, empty, too long or busy. |
 | SOS button | State: Default, Holding, Disabled | Hold to send, in a recessed collar. Holding: cap pressed, red ring fills over 2 s. Early release cancels. |
 | Listen latch | State: Listening, Off, No mic, Disabled | Latching button with indicator light. No mic means microphone denied. Disabled means powered off. |
@@ -194,7 +194,7 @@ Sixteen states on the States page. "n/s" means the Figma note does not say.
 | 08 | SOS received (Call mode) | OH | n/s | Slip has a red `*** SOS ***` band. |
 | 09 | Call mode | OH (amber) | n/s | Switch on Call. Band 1.1-2.6 kHz marked on the scope. |
 | 10 | Quiet mode | n/s | n/s | Scope range 12-20 kHz, band 15-19.5 kHz. Amber notice about older phones. |
-| 11 | Message too long | n/s | n/s | Meter amber (all 24 segments, 4 px glow), byte count in bold `--ink`, label "Too long", Transmit disabled. Note says over 134 bytes. |
+| 11 | Message too long | n/s | n/s | Meter amber (all 24 segments, 4 px glow), byte count in bold `--ink`, label "Too long", Transmit disabled. Note says over 128 bytes. |
 | 12 | Microphone off | AA dark | n/s | Listen disabled, label "No mic". Sending still works. |
 | 13 | Not listening | AA dark | `NO CARRIER` | Listen latch released. |
 | 14 | Tape expanded | n/s | n/s | All slips shown. Button reads "Show less". |
@@ -202,6 +202,6 @@ Sixteen states on the States page. "n/s" means the Figma note does not say.
 | 16 | Beige case | n/s | n/s | Same layout, variables in Beige 96 mode. |
 
 ## Open issues
-- **Meter limit.** Figma says "over 134 bytes". The real limit comes from the frame spec and `tech.md` Byte budget (140-byte cap minus header and crypto overhead). Don't hardcode 134.
+- **Meter limit.** Figma State 11 now says 128. The limit comes from `plaintextCapacity({ encrypted: false, multi: false })`, not from a hardcoded number. The old stale figure must not appear anywhere in this file or in `src/ui`.
 - **Type, radii, shadows and spacing coverage.** Read from the State 03 faceplate, the Slip set, the Sheet set and the Message well only. Other components may add values.
 - Role names for shadows and some type styles are inferred from sample text and shape.

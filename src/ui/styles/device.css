@@ -1,0 +1,239 @@
+/* Device frame, circuit board and reserved slots. Tokens only. Sizes from Figma State 03 (273:2). */
+
+.page {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 390px;
+  min-height: 844px;
+  margin: 0 auto;
+  padding: 16px 10px 40px;
+}
+
+.device {
+  position: relative;
+  width: 370px;
+  max-width: 430px;
+  overflow: hidden;
+  border-radius: 50px;
+  background: var(--shell);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 60px 80px -50px rgba(28, 30, 34, 0.5),
+    0 24px 34px -22px rgba(28, 30, 34, 0.32),
+    0 3px 6px 0 rgba(28, 30, 34, 0.08);
+  /* Faceplate inset: 15 px sides, 17 px top and bottom. */
+  padding: 17px 15px;
+}
+
+.device-board {
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  opacity: 0.95;
+  filter: blur(0.5px);
+}
+
+.circuit-board {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.board-fill {
+  fill: var(--plate-lo);
+}
+.board-trace {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+.board-pin {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.board-chip {
+  fill: var(--glass);
+  stroke: var(--glass-hi);
+}
+.board-pad {
+  fill: var(--cap-lo);
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+/* Frosted shell: blur of the board behind it, plus the Figma highlight layers. */
+.device-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  background:
+    url("/art/faceplate-grain.png") top left / 50px 50px,
+    radial-gradient(
+      ellipse 260px 560px at 104px 0,
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      129deg,
+      rgba(255, 255, 255, 0.5) 8%,
+      rgba(255, 255, 255, 0.12) 46%,
+      rgba(255, 255, 255, 0.3) 92%
+    );
+  box-shadow:
+    inset 0 2px 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 22px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -4px 6px 0 rgba(0, 0, 0, 0.06);
+}
+
+.faceplate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 340px;
+  overflow: hidden;
+  padding: 26px 18px 28px;
+  border-radius: var(--radius-35);
+  background: radial-gradient(
+    ellipse 476px 727px at 170px -97px,
+    var(--plate-hi) 0,
+    var(--plate) 55%,
+    var(--plate-lo) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 1px 1px 0 rgba(0, 0, 0, 0.2),
+    0 8px 16px -8px rgba(0, 0, 0, 0.32);
+}
+.faceplate-grain {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-35);
+  background: url("/art/faceplate-grain.png") top left / 50px 50px;
+  pointer-events: none;
+}
+.faceplate > :not(.faceplate-grain):not(.signal-line):not(.signal-vias) {
+  position: relative;
+}
+
+/* Raised signal line on the right edge (Figma insets, as percentages of the faceplate). */
+.signal-line {
+  position: absolute;
+  top: 11.79%;
+  left: 94.71%;
+  width: 2.64%;
+  height: 78.6%;
+  pointer-events: none;
+}
+.signal-vias {
+  position: absolute;
+  top: 28.5%;
+  left: 96.35%;
+  width: 2%;
+  height: 52.98%;
+  pointer-events: none;
+}
+
+.faceplate-header {
+  display: grid;
+  grid-template-columns: 22px 214px 40px;
+  grid-template-rows: 71px;
+  gap: 14px;
+  align-items: center;
+}
+.vent {
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+}
+.vent-slot {
+  display: block;
+  width: 22px;
+  height: 3.5px;
+  border-radius: var(--radius-2);
+  background: var(--print-meta);
+  box-shadow: var(--shadow-raised-1);
+}
+.wordmark h1 {
+  margin: 0;
+  font: var(--type-device-title);
+  letter-spacing: var(--type-device-title-tracking);
+  text-transform: uppercase;
+  color: var(--emboss);
+  white-space: nowrap;
+}
+.wordmark p {
+  margin: 0;
+  padding-top: 6px;
+  font: var(--type-tagline);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.power-slot {
+  display: flex;
+  justify-content: center;
+}
+
+/* Reserved slots. Heights from Figma State 03 (see docs/figma-source-map.md). */
+.slot {
+  display: block;
+  flex: none;
+}
+.slot-group-key {
+  width: 304px;
+  height: 76px;
+}
+.slot-quick-keys {
+  width: 304px;
+  height: 40px;
+}
+.slot-sos {
+  width: 78px;
+  height: 95px;
+}
+
+/* Silkscreen captions above the channel switch and the message well (Figma 273:2). */
+.silk-label {
+  margin: 0 0 11px;
+  padding: 0 4px;
+  font: var(--type-silk-caption);
+  letter-spacing: var(--type-silk-caption-tracking);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.part-channel-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-block {
+  display: flex;
+  flex-direction: column;
+  width: 304px;
+}
+.actions-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 101px;
+  padding-top: 6px;
+}
+
+/* Transmit sits centred on the 95 px SOS slot (Figma 273:2). */
+.part-transmit {
+  align-self: center;
+}
+
+.part-tape {
+  margin-top: 24px;
+}
+
+.sheet-host:empty {
+  display: none;
+}

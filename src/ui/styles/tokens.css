@@ -1,0 +1,240 @@
+/*
+ * Design tokens. Names match the Figma variables (design-system.md).
+ * Ghost values are the default. Beige 96 overrides the mode-specific group.
+ * This is the only file in src/ui allowed to hold colour literals (plus #040504, the LED bezel ring).
+ */
+
+:root {
+  /* Mode-specific: Ghost */
+  --plate: #c4c5c7;
+  --plate-hi: #d6d7d8;
+  --plate-lo: #aeafb2;
+  --cap: #e7e8ea;
+  --cap-hi: #fdfdfd;
+  --cap-lo: #d0d1d4;
+  --ink: #1f2124;
+  --ink-2: #44474c;
+  --emboss: #a3a5a9;
+  --shell: #e2e3e5;
+
+  /* Page background */
+  --bg-hi: #fbfbfa;
+  --bg: #ededeb;
+  --bg-lo: #e0e0dd;
+
+  /* Signals */
+  --green: #5cff7a;
+  --amber: #ffb21a;
+  --signal: #19c46f;
+  --meter-ok: #1f9d55;
+  --meter-warn: #df9410;
+
+  /* SOS (red is for SOS only) */
+  --sos: #d9301f;
+  --sos-hi: #ff7562;
+  --sos-lo: #9e1e0e;
+  --sos-edge: #74160a;
+  --ink-on-sos: #ffffff;
+
+  /* Glass */
+  --glass: #0d0f0e;
+  --glass-hi: #1e2120;
+  --screen: #060807;
+  --phosphor: #7dffb2;
+  --ink-on-glass: #a3a9a3;
+  --ink-on-glass-strong: #dfe4de;
+  --ink-legend: #c3c8c2;
+  --scope-axis: #55735f;
+  --scope-band: #6b8d77;
+
+  /* Rocker, LEDs, latch */
+  --rocker: #18191b;
+  --rocker-i: #8c9095;
+  --rocker-o: #6d7176;
+  --led-label: #8e938e;
+  --led-label-on: #eef2ec;
+  --latch-off: #74787d;
+  --screw-slot: #565a5f;
+
+  /* Message well */
+  --well: #fafaf8;
+  --well-top: #efefed;
+
+  /* Keycap (dark) */
+  --key: #2a2c30;
+  --key-top: #3b3e42;
+  --key-bottom: #1e2023;
+  --key-edge: #0a0b0c;
+  --ink-on-key: #eef0ee;
+  --ink-on-key-dim: #9ea3a8;
+
+  /* Slip (paper) */
+  --paper: #fbfaf6;
+  --print: #1d1e21;
+  --print-meta: #55585c;
+  --print-hop: #127a43;
+  --print-sos: #c42b1c;
+
+  /* Sheet */
+  --scrim: #14161a; /* used at 45% opacity */
+
+  /* Documented aliases for rgba values (not Figma variables) */
+  --scrim-45: rgba(20, 22, 26, 0.45);
+  --meter-unlit: rgba(0, 0, 0, 0.09);
+  --amber-55: rgba(255, 178, 26, 0.55);
+  --panel-hairline: rgba(255, 255, 255, 0.07);
+
+  /* Radii (px) */
+  --radius-1: 1px;
+  --radius-1-837: 1.837px;
+  --radius-2: 2px;
+  --radius-2-5: 2.5px;
+  --radius-3: 3px;
+  --radius-3-5: 3.5px;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-6-5: 6.5px;
+  --radius-7: 7px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-11: 11px;
+  --radius-13: 13px;
+  --radius-14: 14px;
+  --radius-15: 15px;
+  --radius-16: 16px;
+  --radius-17: 17px;
+  --radius-20: 20px;
+  --radius-24: 24px; /* app icon */
+  --radius-26: 26px;
+  --radius-35: 35px;
+  --radius-39: 39px;
+
+  /* Slip torn bottom edge */
+  --slip-tooth-width: 10px;
+  --slip-tooth-depth: 5px;
+
+  /* Shadows: raised highlight */
+  --shadow-raised-1: 0 1px 0 rgba(255, 255, 255, 0.65);
+  --shadow-raised-2: 0 0.6px 0 rgba(255, 255, 255, 0.7);
+  --shadow-raised-3: 0 1px 0 rgba(255, 255, 255, 0.75);
+
+  /* Shadows: recessed */
+  --shadow-recess-1: inset 0 1px 1.5px rgba(0, 0, 0, 0.7);
+  --shadow-recess-2: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+  --shadow-recess-3: inset 0 2px 7px rgba(0, 0, 0, 0.85);
+  --shadow-recess-4: inset 0 2px 5px rgba(0, 0, 0, 0.38);
+  --shadow-recess-5: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+  --shadow-recess-6: inset 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-recess-7: inset 0 -1px 1px rgba(0, 0, 0, 0.35);
+
+  /* Shadows: top edge light */
+  --shadow-edge-light: inset 0 1px 0 #fff;
+  --shadow-edge-light-dim: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  /* Shadows: bezel, LED, keycaps, SOS, meter, slip, sheet */
+  --shadow-bezel: 0 0 0 1.5px #040504, 0 1px 0 2px rgba(255, 255, 255, 0.07);
+  --shadow-led-green:
+    0 0 0 1.5px #040504, 0 0 10px 1px var(--green),
+    0 0 24px 0 rgba(92, 255, 122, 0.45);
+  --shadow-led-green-small: 0 0 6px var(--green);
+  --shadow-keycap-light:
+    0 0 0 1.5px rgba(0, 0, 0, 0.16), 0 0 0 3px rgba(255, 255, 255, 0.5),
+    0 1px 1px rgba(0, 0, 0, 0.25);
+  --shadow-keycap-lift:
+    0 0 0 1px rgba(0, 0, 0, 0.13), 0 2px 0 rgba(0, 0, 0, 0.2),
+    0 4px 7px -3px rgba(0, 0, 0, 0.3);
+  --shadow-keycap-lift-sheet:
+    0 0 0 1px rgba(0, 0, 0, 0.13), 0 3px 0 rgba(0, 0, 0, 0.2),
+    0 6px 10px -4px rgba(0, 0, 0, 0.3);
+  --shadow-keycap-dark:
+    0 0 0 1px var(--key-edge), 0 3px 0 var(--key-edge),
+    0 8px 14px -6px rgba(0, 0, 0, 0.55);
+  --shadow-sos-cap: 0 3px 0 var(--sos-edge), 0 7px 10px rgba(0, 0, 0, 0.5);
+  --shadow-meter-over: 0 0 4px var(--amber-55);
+  --shadow-well-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2); /* Figma 213:286 */
+  --shadow-slip: 0 1px 1px rgba(0, 0, 0, 0.2), 0 5px 7px rgba(0, 0, 0, 0.08);
+  --shadow-sheet:
+    0 0 0 1px rgba(0, 0, 0, 0.08), 0 -12px 40px rgba(0, 0, 0, 0.28);
+
+  /* Type families */
+  --font-silk: "Barlow Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Type styles: shorthand is `weight size/line family`; tracking is separate. */
+  --type-device-title: 700 32px / 28.8px var(--font-silk);
+  --type-device-title-tracking: 3.2px;
+  --type-transmit-label: 700 20px / 20px var(--font-silk);
+  --type-transmit-label-tracking: 4.4px;
+  --type-channel-label: 700 17px / 18.7px var(--font-silk);
+  --type-channel-label-tracking: 2.38px;
+  --type-sos-label: 700 16px / 16px var(--font-silk);
+  --type-sos-label-tracking: 2.24px;
+  --type-sheet-title: 700 18px / 18px var(--font-silk);
+  --type-sheet-title-tracking: 2.88px;
+  --type-sheet-kicker: 700 14px / 14px var(--font-silk);
+  --type-sheet-kicker-tracking: 2.24px;
+  --type-mini-key: 700 12px / 12px var(--font-silk);
+  --type-mini-key-tracking: 1.92px;
+  --type-sheet-legend: 700 12px / normal var(--font-silk);
+  --type-sheet-legend-tracking: 1.92px;
+  --type-slip-button: 700 12.5px / 12.5px var(--font-silk);
+  --type-slip-button-tracking: 2px;
+  --type-rocker-i: 700 11px / 11px var(--font-silk);
+  --type-rocker-i-tracking: 0;
+  --type-led-label: 600 11px / 11px var(--font-silk);
+  --type-led-label-tracking: 1.98px;
+  --type-silk-caption: 600 11px / 11px var(--font-silk);
+  --type-silk-caption-tracking: 2.2px;
+  --type-scope-band-caption: 600 11px / normal var(--font-silk);
+  --type-scope-band-caption-tracking: 1.76px;
+
+  --type-well-text: 400 17px / 23.8px var(--font-body);
+  --type-mode-description: 400 13px / 18.85px var(--font-body);
+  --type-empty-tape: 400 13px / 19.5px var(--font-body);
+  --type-tagline: 500 12px / 15.6px var(--font-body);
+  --type-switch-caption: 400 11px / 14.3px var(--font-body);
+  --type-slip-note: 400 12px / 17.4px var(--font-body);
+  --type-sheet-body: 400 15px / 22.5px var(--font-body);
+  --type-sheet-button: 600 15px / 22.5px var(--font-body);
+  --type-sheet-link: 600 13px / normal var(--font-body);
+
+  --type-readout-code: 600 12px / 16.2px var(--font-mono);
+  --type-readout-code-tracking: 1.44px;
+  --type-readout-hint: 500 11.5px / 15.525px var(--font-mono);
+  --type-key-status: 400 11.5px / 15.525px var(--font-mono);
+  --type-transmit-sub: 500 11px / normal var(--font-mono);
+  --type-transmit-sub-tracking: 0.66px;
+  --type-airtime: 500 12px / normal var(--font-mono);
+  --type-scope-axis: 400 10px / normal var(--font-mono);
+  --type-key-title: 600 12.5px / 15px var(--font-mono);
+  --type-key-title-tracking: 1.25px;
+  --type-slip-meta: 600 10.5px / 13.65px var(--font-mono);
+  --type-slip-meta-tracking: 1.05px;
+  --type-slip-body: 500 15px / 21.75px var(--font-mono);
+  --type-slip-location: 400 12.5px / normal var(--font-mono);
+  --type-sos-band: 700 13px / 13px var(--font-mono);
+  --type-sos-band-tracking: 3.9px;
+  --type-sos-band-small: 700 12px / 12px var(--font-mono);
+  --type-sos-band-small-tracking: 2.4px;
+  --type-fine-print: 400 9px / normal var(--font-mono);
+  --type-fine-print-large: 400 9.5px / normal var(--font-mono);
+  --type-group-name: 600 18px / normal var(--font-mono);
+  --type-group-name-tracking: 1.44px;
+  --type-check-word: 600 13px / 13px var(--font-mono);
+  --type-check-word-tracking: 1.3px;
+}
+
+/* Beige 96: only the mode-specific group changes. */
+[data-theme="beige"] {
+  --plate: #e1d8c3;
+  --plate-hi: #eee7d7;
+  --plate-lo: #cbbfa5;
+  --cap: #ede6d5;
+  --cap-hi: #fcfaf3;
+  --cap-lo: #d9cfb8;
+  --ink: #1d1b16;
+  --ink-2: #554f41;
+  --emboss: #c7bb9f;
+  --shell: #e2dac8;
+}
