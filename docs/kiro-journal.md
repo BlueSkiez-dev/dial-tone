@@ -114,3 +114,31 @@ Full run green: typecheck, lint (7 warnings), test 589, props 162, slow 60, e2e 
 
 ## 2026-11-19 - ui-shell 7.1 (design decisions pass)
 Applied 8 Figma decisions: AA lit whenever listening (req 8.3 updated), too-long and mic-off hints, Figma empty-tape sentence, SOS-held gallery readout, STANDBY tag, Show less caret, CSS striped system paper with first-power slip, onboarding art and page dots. 593 tests, 162 props, e2e 38/38 clean. Finding: Figma has no stripe layer, so stripe is our addition; ink on system paper is about 4.0:1, below AA 4.5.
+
+## 2026-11-19 - ui-shell 9.1
+Collapsed empty Reserved_Slots to 0x0 (no display:none, margins replace flex gap) and made Transmit fill its row (Device.tsx, device.css, transmit-key.css). Added e2e/slots.spec.ts and a Device unit test. Typecheck, vitest (240 tests) and Playwright dev project pass. Finding: gap on the faceplate flex added 20 px even for empty slots, so spacing moved to margins. reachability self-test timing assertion flaked once (605 ms vs 600), passed on rerun.
+
+
+## 2026-11-19 - ui-shell 9.2
+Added Chassis.tsx/css (corner screws, POWER label, side rail, bottom grille, channel grille ticks) and shared 13 px Sheet screws. Typecheck, 602 vitest tests and 44 e2e pass. Findings: 270:136 is a kicker container, real screws are 270:3 and 270:6. Grille ticks, rail and bottom grille are not Figma nodes (raster board 182:5), values came from the prototype.
+
+
+## 2026-11-19 - ui-shell 9.3
+Scope band lines now amber (--scope-band #6a4c0e, read from the State 09 Spectrogram PNG; caption gets --scope-band-caption). Warm-up is a pure warmUpFrame drawing one widening line; random stripe fill removed. tsc, 251 ui unit tests, biome and chassis e2e pass. Finding: Figma bakes band lines into a PNG, so the amber value was sampled, not a variable.
+
+
+## 2026-11-19 - ui-shell 9.4
+Removed the system paper stripe and --paper-system-stripe token. Added --print-system #121314 for system slips and contrast.test.ts. tsc and 256 ui unit tests pass; Playwright not run. Finding: old ink #1d1e21 on #7c7d7f measured 4.05:1; new ink gives 4.52:1 (Figma's own ink fails 4.5).
+
+
+## 2026-11-19 - ui-shell 9.5
+Design QA of the main screen (off, on, draft) at 390x844 against Figma 271:2, 182:2 and 273:2; results in docs/ui-design-qa.md. No UI fixes needed. typecheck, 610 unit tests, 45 e2e pass. Findings: prototype values listed with receiving tokens; open items are grille ticks, circuit board extent, scope gutter, scope while off, well count placement. System ink measures 4.51:1.
+
+
+## 2026-11-19 - ui-shell 8.1 (re-run)
+Re-ran the final checkpoint after task 9. typecheck, lint (exit 0, 7 warnings not from task 9), 610 unit, 163 property, 60 slow (250 s) and 45 e2e tests all pass. No code changes. Reachability timing flake did not recur.
+
+
+## 2026-11-19 - ui-shell 9.6
+Applied visual decisions: title two-line deboss via tokens, grille ticks kept, scope band lines drawn while off, byte count moved into the MESSAGE caption row per Figma. typecheck, lint (7 old warnings), 612 unit and 47 e2e tests pass. Finding: Figma has no message-well divider, so the earlier QA claim was wrong and was corrected.
+

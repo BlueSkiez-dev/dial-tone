@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { binRange, formatKHz, scopeWindow } from "./scope-map";
+import { binRange, formatKHz, scopeWindow, warmUpFrame } from "./scope-map";
 
 describe("formatKHz", () => {
   it("rounds to one decimal", () => {
@@ -35,5 +35,21 @@ describe("binRange", () => {
   it("clamps a window above Nyquist", () => {
     const r = binRange(8000, 256, 12000, 20000);
     expect(r).toEqual({ lo: 127, hi: 127 });
+  });
+});
+
+describe("warmUpFrame", () => {
+  it("starts as one centred row and ends at the full height", () => {
+    const a = warmUpFrame(0, 184);
+    expect(a.top).toBe(a.bottom);
+    expect(a.top).toBe(91);
+    expect(a.centerRow).toBe(91);
+    const b = warmUpFrame(1, 184);
+    expect([b.top, b.bottom]).toEqual([0, 183]);
+    expect(b.halfHeight).toBe(92);
+  });
+  it("copes with a one-row Scope and bad input", () => {
+    expect(warmUpFrame(0.5, 1)).toMatchObject({ top: 0, bottom: 0 });
+    expect(warmUpFrame(Number.NaN, 10)).toMatchObject({ top: 4, bottom: 4 });
   });
 });

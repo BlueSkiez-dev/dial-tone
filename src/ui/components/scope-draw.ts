@@ -67,13 +67,21 @@ export function warmUpProgress(elapsedMs: number): number {
 }
 
 /**
- * Half height, in rows, of the lit area during warm-up: a single bright line at 0 that opens
- * out to the full screen at 1.
+ * Palette index for a warm-up row: brightest at the centre line, dimmer towards the edges of the
+ * lit region. `top` and `bottom` come from `warmUpFrame`. Rows outside them are not lit.
  */
-export function warmUpHalfHeight(progress: number, height: number): number {
-  const p = Math.min(1, Math.max(0, progress));
-  const eased = 1 - (1 - p) * (1 - p);
-  return Math.round((eased * height) / 2);
+export function warmUpRowIndex(
+  row: number,
+  frame: { centerRow: number; top: number; bottom: number },
+): number {
+  if (row < frame.top || row > frame.bottom) return 0;
+  const reach = Math.max(
+    1,
+    frame.centerRow - frame.top,
+    frame.bottom - frame.centerRow,
+  );
+  const t = Math.abs(row - frame.centerRow) / reach;
+  return Math.round(255 - t * 170);
 }
 
 export type ScopeMode = "static" | "warmup" | "live";

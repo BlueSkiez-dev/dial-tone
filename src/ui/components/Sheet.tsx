@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { Screw } from "./Chassis";
 import "./Sheet.css";
 
 export interface SheetButton {
@@ -130,8 +131,8 @@ export function Sheet(props: SheetProps) {
         tabIndex={-1}
         onKeyDown={onKeyDown}
       >
-        <span class="sheet-screw sheet-screw-left" aria-hidden="true" />
-        <span class="sheet-screw sheet-screw-right" aria-hidden="true" />
+        <Screw class="sheet-screw sheet-screw-left" rotate={12} />
+        <Screw class="sheet-screw sheet-screw-right" rotate={41} />
         <span class="sheet-grip" aria-hidden="true" />
         <div
           class="sheet-content"

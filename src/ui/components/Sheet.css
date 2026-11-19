@@ -57,33 +57,18 @@
   background: var(--emboss);
 }
 
+/* Sheet screws: the 13 px Chassis screw (Figma 270:3 and 270:6), centred 18.5 px / 16.7 px from the corners. */
 .sheet-screw {
   position: absolute;
-  top: 12px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: linear-gradient(to bottom, var(--cap-hi), var(--cap-lo));
-  box-shadow: var(--shadow-recess-6);
-}
-
-.sheet-screw::after {
-  content: "";
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  top: 4.5px;
-  height: 1px;
-  background: var(--screw-slot);
-  transform: rotate(35deg);
+  top: 10.2px;
 }
 
 .sheet-screw-left {
-  left: 14px;
+  left: 12px;
 }
 
 .sheet-screw-right {
-  right: 14px;
+  right: 12px;
 }
 
 .sheet-kicker {

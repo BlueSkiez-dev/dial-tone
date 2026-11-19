@@ -40,6 +40,21 @@ describe("ByteMeter", () => {
     expect(over).toMatch(/<b class="byte-meter-count">129<\/b>/);
   });
 
+  it("puts the count in the caption row and Too long in the meter row (Figma 182:135, 213:317)", () => {
+    expect(css).toMatch(
+      /\.byte-meter-count-row\s*{[^}]*position: absolute;[^}]*right: 4px;[^}]*bottom: calc\(100% \+ 5\.5px\)/,
+    );
+    const over = renderToString(h(ByteMeter, { view: meterView(129, 128) }));
+    expect(over).toContain(
+      '<p class="byte-meter-label" aria-hidden="true">Too long</p>',
+    );
+    expect(over).not.toContain("byte-meter-airtime");
+    const ok = renderToString(
+      h(ByteMeter, { view: meterView(41, 128), airtime: "~2.2 s on air" }),
+    );
+    expect(ok).toContain("byte-meter-airtime");
+    expect(ok).not.toContain("Too long");
+  });
   it("uses no red token in markup or CSS", () => {
     const html = [
       colors(129, 128).join(),

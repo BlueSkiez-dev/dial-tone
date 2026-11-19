@@ -45,7 +45,8 @@
   --ink-on-glass-strong: #dfe4de;
   --ink-legend: #c3c8c2;
   --scope-axis: #55735f;
-  --scope-band: #6b8d77;
+  --scope-band: #6a4c0e;
+  --scope-band-caption: #6b8d77;
 
   /* Rocker, LEDs, latch */
   --rocker: #18191b;
@@ -78,10 +79,11 @@
    * System paper (first power-on, Update ready, notices). Figma 261:9 and its
    * siblings fill this paper with the grain tile only, so Figma renders the
    * empty base as mid grey (sampled #7c7d7f). The Figma file has no stripe
-   * layer; the stripe overlay below is drawn in CSS to match the "striped paper"
-   * wording of the Slip description (213:481).
+   * layer, so neither does the app. --print-system is the system slip ink: --print
+   * (#1d1e21) gave 4.05:1 on this grey, #121314 gives 4.52:1 (task 9.4).
    */
   --paper-system: #7c7d7f;
+  --print-system: #121314;
 
   /* Sheet */
   --scrim: #14161a; /* used at 45% opacity */
@@ -91,9 +93,28 @@
   --meter-unlit: rgba(0, 0, 0, 0.09);
   --amber-55: rgba(255, 178, 26, 0.55);
   --panel-hairline: rgba(255, 255, 255, 0.07);
-  --paper-system-stripe: rgba(0, 0, 0, 0.07);
   /* Sheet page dots (Figma 270:39): unlit dot fill. */
   --dot-off: rgba(0, 0, 0, 0.18);
+  /* Chassis details (task 9.2). Documented aliases, not Figma variables.
+     Screw face: Figma 182:296 radial fill, centre (4.94, 3.9) px, radius 12.156 px, stops 0, 35, 67.5, 100%. */
+  --screw-face: radial-gradient(
+    circle 12.156px at 4.94px 3.9px,
+    #ffffff 0%,
+    #dcdde0 35%,
+    #bcbdc1 67.5%,
+    #9b9da2 100%
+  );
+  /* Circuit board ink for the side rail, dimple and bottom grille. Prototype_Reference drawPCB: rgba(46,48,52,a). */
+  --board-ink-rail: rgba(46, 48, 52, 0.32);
+  --board-ink-pin: rgba(46, 48, 52, 0.2);
+  /* Channel key grille ticks. Prototype_Reference .thumb::before: dark and light line of each tick. */
+  --grille-dark: rgba(0, 0, 0, 0.22);
+  --grille-light: rgba(255, 255, 255, 0.9);
+  /* Faceplate title deboss (requirement 21.6). Prototype_Reference .mark (line 109): text-shadow 0 1px 0 rgba(255,255,255,.85), 0 -1px 0 rgba(0,0,0,.3). */
+  --title-deboss-light: rgba(255, 255, 255, 0.85);
+  --title-deboss-dark: rgba(0, 0, 0, 0.3);
+  --shadow-title-deboss:
+    0 1px 0 var(--title-deboss-light), 0 -1px 0 var(--title-deboss-dark);
   /* Sheet glass panel (Figma 270:16): outer ring and the gloss over the top. */
   --shadow-glass-ring:
     0 0 0 1px rgba(0, 0, 0, 0.6), 0 1px 0 1.5px rgba(255, 255, 255, 0.6);

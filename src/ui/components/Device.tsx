@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { copy } from "../copy";
+import { BottomGrille, CornerScrews, PowerLabel, SideRail } from "./Chassis";
 import { CircuitBoard } from "./CircuitBoard";
 
 export interface DeviceProps {
@@ -24,10 +25,15 @@ export interface DeviceProps {
 
 const BASE = import.meta.env.BASE_URL;
 
+/** A slot with no content collapses to 0 x 0 (slot-empty). Content restores the Figma size. */
+function slotClass(name: string, content: ComponentChildren): string {
+  return content ? `slot ${name}` : `slot ${name} slot-empty`;
+}
+
 /**
  * The modem body: frosted shell over the circuit board, with the faceplate inside.
- * The three reserved slots (group key bar, quick keys, SOS) are empty containers with
- * the Figma heights, so the later specs can fill them without moving anything.
+ * The three reserved slots (group key bar, quick keys, SOS) are empty containers that
+ * collapse to 0 x 0 while empty and return to their Figma size when content is mounted.
  */
 export function Device(props: DeviceProps) {
   const signal = props.signal ?? "idle";
@@ -35,10 +41,13 @@ export function Device(props: DeviceProps) {
     <div class="device">
       <div class="device-board">
         <CircuitBoard />
+        <SideRail />
+        <BottomGrille />
       </div>
       <div class="device-shell" aria-hidden="true" />
       <div class="faceplate">
         <div class="faceplate-grain" aria-hidden="true" />
+        <CornerScrews />
         <img
           class="signal-line"
           data-signal={signal}
@@ -62,7 +71,10 @@ export function Device(props: DeviceProps) {
             <h1>{copy.deviceTitle}</h1>
             <p>{copy.tagline}</p>
           </div>
-          <div class="power-slot">{props.power}</div>
+          <div class="power-slot">
+            {props.power}
+            <PowerLabel />
+          </div>
         </header>
         <section class="part part-status">{props.statusWindow}</section>
         <section class="part part-scope">{props.scope}</section>
@@ -71,7 +83,7 @@ export function Device(props: DeviceProps) {
           <section class="part part-channel">{props.channel}</section>
         </div>
         <div
-          class="slot slot-group-key"
+          class={slotClass("slot-group-key", props.groupKey)}
           data-slot="group-key"
           role="presentation"
           aria-label={copy.slots.groupKey}
@@ -82,17 +94,19 @@ export function Device(props: DeviceProps) {
           <p class="silk-label">{copy.labels.message}</p>
           <div class="part-well">{props.messageWell}</div>
           <div
-            class="slot slot-quick-keys"
+            class={slotClass("slot-quick-keys", props.quickKeys)}
             data-slot="quick-keys"
             role="presentation"
             aria-label={copy.slots.quickKeys}
           >
             {props.quickKeys}
           </div>
-          <div class="actions-row">
+          <div
+            class={props.sos ? "actions-row" : "actions-row actions-row-solo"}
+          >
             <div class="part-transmit">{props.transmit}</div>
             <div
-              class="slot slot-sos"
+              class={slotClass("slot-sos", props.sos)}
               data-slot="sos"
               role="presentation"
               aria-label={copy.slots.sos}

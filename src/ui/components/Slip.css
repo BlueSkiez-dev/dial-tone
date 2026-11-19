@@ -38,15 +38,12 @@
     bottom / 10px 5px repeat-x;
 }
 
-/* System paper (Figma 261:9, 246:231): grey, with the same grain tile. The stripes are drawn here. */
+/* System paper (Figma 261:9, 246:231): --paper-system plus the same grain tile, no stripe layer.
+   The ink is the darker --print-system so text keeps 4.5:1 on this grey (task 9.4). */
 .slip[data-kind="system"] .slip-paper,
 .slip[data-kind="update-ready"] .slip-paper {
+  --print: var(--print-system);
   background:
-    repeating-linear-gradient(
-      135deg,
-      transparent 0 4px,
-      var(--paper-system-stripe) 4px 6px
-    ),
     url("/art/paper-grain.png") top left / 180px 180px,
     var(--paper-system);
 }

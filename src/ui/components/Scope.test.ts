@@ -4,7 +4,7 @@ import { h } from "preact";
 import { renderToString } from "preact-render-to-string";
 import { describe, expect, it } from "vitest";
 import type { SpectrumSource } from "../../audio/index";
-import { scopeWindow } from "../model/scope-map";
+import { scopeWindow, warmUpFrame } from "../model/scope-map";
 import { Scope } from "./Scope";
 import {
   axisTicks,
@@ -13,7 +13,7 @@ import {
   parseHex,
   SCOPE_HEIGHT,
   scopeMode,
-  warmUpHalfHeight,
+  warmUpRowIndex,
 } from "./scope-draw";
 
 const render = (p: Partial<Parameters<typeof Scope>[0]> = {}) =>
@@ -71,9 +71,12 @@ describe("scope-draw helpers", () => {
       12000, 14000, 16000, 18000, 20000,
     ]);
   });
-  it("warm-up starts as a line and ends full height", () => {
-    expect(warmUpHalfHeight(0, SCOPE_HEIGHT)).toBe(0);
-    expect(warmUpHalfHeight(1, SCOPE_HEIGHT)).toBe(SCOPE_HEIGHT / 2);
+  it("warm-up rows are brightest at the centre line and dark outside the region", () => {
+    const f = warmUpFrame(0.5, SCOPE_HEIGHT);
+    expect(warmUpRowIndex(f.centerRow, f)).toBe(255);
+    expect(warmUpRowIndex(f.top - 1, f)).toBe(0);
+    expect(warmUpRowIndex(f.bottom + 1, f)).toBe(0);
+    expect(warmUpRowIndex(f.top, f)).toBeGreaterThan(0);
   });
   it("binForRow stays inside the range for any row", () => {
     fc.assert(
@@ -112,10 +115,25 @@ describe("Scope markup", () => {
     const html = render({ window: scopeWindow("call") });
     expect(html.match(/scope-band-line/g)?.length).toBe(2);
   });
-  it("shows static and no band overlay while the power is off", () => {
-    const html = render({ power: "off", source });
-    expect(html).toContain('data-mode="static"');
-    expect(html).not.toContain("scope-band-line");
+  it("shows static and still draws the active band lines while the power is off (21.20)", () => {
+    for (const channel of ["room", "call", "quiet"] as const) {
+      const html = render({
+        power: "off",
+        source,
+        window: scopeWindow(channel),
+      });
+      expect(html).toContain('data-mode="static"');
+      expect(html.match(/scope-band-line/g)?.length, channel).toBe(2);
+    }
+  });
+  it("draws the band lines in the --scope-band Token", () => {
+    const css = readFileSync(
+      new URL("../styles/scope.css", import.meta.url),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.scope-band-line\s*{[^}]*border-top: 1px solid var\(--scope-band\)/,
+    );
   });
   it("suppresses the warm-up when off and uses it in the self-test", () => {
     expect(render({ power: "selftest" })).toContain('data-mode="warmup"');

@@ -1,5 +1,6 @@
 import { PROFILES, type ProfileId } from "../../audio/index";
 import { formatKHz } from "../model/scope-map";
+import { GrilleTicks } from "./Chassis";
 import { channelCopy, channelSwitchSendingName } from "./channel-copy";
 
 const ORDER: readonly ProfileId[] = ["room", "call", "quiet"];
@@ -72,7 +73,9 @@ export function ChannelSwitch({
       data-disabled={disabled ? "true" : undefined}
       onKeyDown={onKeyDown}
     >
-      <span class="channel-thumb" aria-hidden="true" />
+      <span class="channel-thumb" data-key={value} aria-hidden="true">
+        <GrilleTicks />
+      </span>
       {ORDER.map((id) => {
         const p = channelCopy.positions[id];
         return (

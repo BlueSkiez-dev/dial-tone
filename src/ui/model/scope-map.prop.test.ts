@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { describe, it } from "vitest";
 import { PROFILES, type ProfileId } from "../../audio/index";
-import { binRange, scopeWindow } from "./scope-map";
+import { binRange, scopeWindow, warmUpFrame } from "./scope-map";
 
 const ids = Object.keys(PROFILES) as ProfileId[];
 
@@ -38,5 +38,37 @@ describe("Property 9: Scope mapping", () => {
         throw new Error(`band outside window for ${id}`);
       }
     }
+  });
+});
+
+describe("Property 14: Warm-up frame", () => {
+  const rows = (f: { top: number; bottom: number }) => f.bottom - f.top + 1;
+
+  /** **Validates: Requirements 21.13** */
+  it("is one region inside 0..height-1, one row at 0, full at 1, never shrinking", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 400 }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        (height, a, b) => {
+          const [p, q] = a <= b ? [a, b] : [b, a];
+          const f = warmUpFrame(p, height);
+          const g = warmUpFrame(q, height);
+          for (const r of [f, g]) {
+            if (!(0 <= r.top && r.top <= r.bottom && r.bottom <= height - 1))
+              return false;
+            if (!(r.top <= r.centerRow && r.centerRow <= r.bottom))
+              return false;
+            if (r.halfHeight !== rows(r) / 2) return false;
+          }
+          return (
+            rows(g) >= rows(f) &&
+            rows(warmUpFrame(0, height)) === 1 &&
+            rows(warmUpFrame(1, height)) === height
+          );
+        },
+      ),
+    );
   });
 });

@@ -304,6 +304,61 @@ Ground rules for every task:
     - Do not run or push the workflow.
     - _Requirements: 18.1, 18.2, 18.3, 2.4_
 
+- [x] 9. Visual fidelity to Figma_Main (requirement 21)
+  - Added after the first pass. These tasks sit above task 8 in the file so the final checkpoint stays last, but they keep number 9 so no existing task is renumbered. Task 8.1 stays ticked and is not edited. Its report is stale once task 9 runs, and the user decides whether to re-run it.
+  - Read Figma_Main (node `0:1`, file `VDyiOLNBAavxsBHP15j1Sj`) through the Figma MCP for every measurement. The Prototype_Reference (`c:\Users\TEA\Desktop\Hackathons\Kiroween\dial-tone\prototype\index.html`) may be read for CSS values only. Never copy its code, and record each value taken from it. Do not invent measurements.
+  - Do not edit `requirements.md` or `design.md`. Do not commit.
+
+  - [x] 9.1 Collapse the empty Reserved_Slots and let Transmit fill the row
+    - In `Device.tsx` and `device.css`, make the group key bar, quick keys and SOS slots render with computed width 0 px, height 0 px and no margin, padding or gap while they are empty and not mounted. The neighbouring elements must touch with a 0 px gap in their place. Do not use `display: none` on a container that a later spec needs to mount into. Use a state or modifier class that sets the size to zero, and one that restores the Source_Map size when content is mounted.
+    - While the SOS slot is collapsed, the Transmit key fills 100% of its row width (tolerance 1 px). Remove any fixed Transmit width that assumed the SOS slot.
+    - When a slot is mounted (the gallery states `sos-held` and `sos-received` mount all three), each slot returns to the width and height of its Figma frame recorded in `docs/figma-source-map.md`, and Transmit returns to its Figma frame width, each within 1 px. If the Source_Map lacks any of these sizes, read them from Figma_Main and add them to the Source_Map first.
+    - Add a Playwright spec `e2e/slots.spec.ts` with computed-size checks through `getBoundingClientRect`: on the live app the three slots measure 0 x 0 and Transmit width equals its row width within 1 px; on `?state=sos-held` and `?state=sos-received` each slot and Transmit match the Source_Map sizes within 1 px. Update any existing e2e or gallery assertion that relied on the old slot heights, without loosening its intent.
+    - Keep `scan.test.ts` and `gallery.test.ts` passing.
+    - _Requirements: 21.1, 21.2, 21.3, 15.1, 15.2, 15.3_
+
+  - [x] 9.2 Add the chassis details from Figma_Main
+    - Using the Figma MCP (`get_design_context` and `get_metadata` on node `0:1`), find the node id, position and size of each Chassis_Detail and add them to `docs/figma-source-map.md` under a new "Chassis details (Figma_Main)" heading: the four corner screws, the POWER label, the faceplate title deboss, the channel key grille ticks (count, spacing, position), the side rail with its dimple and slot, the bottom grille (slot count, spacing, position), and the Sheet screws.
+    - Build them as code (CSS, inline SVG or a small component), one file or one clearly named block per detail, with every colour read from a Token. No hex literal except `#040504`, no new Token that Figma does not have except documented aliases, and no Figma asset URL. If a detail needs an image asset, download it into `public/art` and add it to the precache globs if needed.
+    - Implement: (a) four chassis corner screws, one per corner at the Figma position and size (1 px tolerance); (b) the text "POWER" under the rocker in the Figma position and type style; (c) the faceplate title with the Prototype_Reference's two-line debossed text-shadow (read the CSS values from the prototype only, map every colour to Tokens, requirement 21.6); (d) grille ticks drawn on the selected channel key only, with the Figma tick count, spacing and position, and none on the two unselected keys; (e) the side rail with its dimple and slot (1 px tolerance); (f) the bottom grille with the Figma slot count, spacing and position; (g) Sheet screws at a diameter of 13 px, rotated and slotted, on every Sheet (replace the current 10 px screws in `Sheet.css`).
+    - Add `src/ui/components/Chassis.test.ts` (`preact-render-to-string`) checking: four corner screws render; the POWER label renders under the rocker; ticks render for exactly the selected key and change with the selection for Room, Call and Quiet; the bottom grille renders the Source_Map slot count; the Sheet screw has diameter 13 px. Add Playwright checks to `e2e/slots.spec.ts` or a new `e2e/chassis.spec.ts` for positions and sizes of the screws, side rail and bottom grille within 1 px of the Source_Map.
+    - Keep `scan.test.ts` passing (no colour literals, no red outside SOS). Respect reduced motion (these parts are static).
+    - _Requirements: 21.4, 21.5, 21.6, 21.7, 21.8, 21.9, 21.10, 21.11, 3.2, 3.4, 3.8, 19.1_
+
+  - [x] 9.3 Fix the Scope band colour and the self-test warm-up
+    - Set the `--scope-band` Token value to the amber that Figma_Main uses for the band lines (read it from the Figma Scope node and use an existing amber Token value if it matches, otherwise record the value and its source in the task result). The Scope draws the active channel's band lines through `--scope-band`.
+    - Make the warm-up a pure function in `src/ui/model/scope-map.ts` (for example `warmUpFrame(progress, height)` returning the bright line's centre row and half-height). Progress 0 gives a line one pixel or one row high, widening monotonically to the full Scope height at progress 1. The canvas code in `Scope.tsx` only paints what that function returns. Remove any code path that fills solid green stripes during the warm-up.
+    - Add tests in `scope-map.test.ts` and `scope-map.prop.test.ts`: for random progress in 0..1 and heights 1..400, the line stays inside `0..height-1`, its height is non-decreasing in progress, it is at most one row at progress 0 and equals the full height at progress 1, and the result never describes more than one region (so no stripes). Add a Playwright check in `e2e/chassis.spec.ts` or `e2e/slots.spec.ts` that samples the Scope canvas at three moments of the self-test and finds no two separate bright bands (a single contiguous bright region per frame).
+    - _Requirements: 21.12, 21.13, 9.4, 9.5, 19.1_
+
+  - [x] 9.4 Remove the System_Slip stripe and meet 4.5:1 ink contrast
+    - Remove the CSS stripe layer from the System_Slip paper in `Slip.css` (and any stripe Token or alias it added). The paper is the `--paper-system` base colour plus the paper grain texture only.
+    - Darken the System_Slip ink (the ink Token or Token alias the system slip text and meta line use) until the Contrast_Ratio against `--paper-system` is at least 4.5:1, in Ghost values and in Beige 96 values. Choose the nearest passing value and note the old and new values. Do not hard-code a colour in the component.
+    - Create `src/ui/styles/contrast.test.ts` (Node, `environment: node`): parse `tokens.css` for the Ghost and Beige values of `--paper-system` and the System_Slip ink Token, compute the WCAG 2.x relative luminance and Contrast_Ratio, and fail when either ratio is below 4.5. Handle only the colour formats that those Tokens use, and fail with a clear message when a Token is missing or in an unsupported format. Add a second check that the markup for a `system` and an `update-ready` slip (`preact-render-to-string`) contains no stripe class.
+    - Update gallery or e2e assertions that mention the stripe. Keep `scan.test.ts` passing.
+    - _Requirements: 21.14, 21.15, 3.2, 7.12_
+
+  - [x] 9.5 Design QA of the main screen against Figma_Main
+    - With the Figma MCP `get_screenshot` on Figma_Main (`0:1`, or the matching main-screen frames recorded in the Source_Map), capture three states: off, on, and on with a draft. Capture the app with Playwright from the dev server at 390 x 844 px in the same three states (power off; powered on after the self-test; powered on with the draft typed). Save the screenshots under `test-results` or `docs/qa-shots`, and do not commit them.
+    - Compare each pair. In `docs/ui-design-qa.md` add a section "Main screen against Figma_Main" with one row per state: the compared Figma node id, each difference found, and either the fix applied or the reason it was left. Fix every difference that falls under requirement 21 in `src/ui`.
+    - In the same section, state that the Prototype_Reference was used only to read CSS values, and list each value taken from it with the Token or rule that received it.
+    - List every Chassis_Detail that is still missing or still differs from Figma_Main as an open item, with its Figma node id and a description of the difference.
+    - Update Decision 7 in `docs/ui-design-qa.md` (and the System slip rows that cite it: New 04 `246:2` and New 17 `259:2`): the stripe added by Decision 7 is removed, the system paper is `--paper-system` plus grain, and the ink contrast now meets 4.5:1. Record the measured ratios. Also update the ui-design-qa note about the 10 px Sheet screws, which are now 13 px.
+    - Run `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` and `npm.cmd run test:e2e`, and fix failures in `src/ui`. Do not change `src/protocol`.
+    - Report any string you wrote yourself.
+    - _Requirements: 21.16, 21.17, 21.18, 21.19, 20.6_
+
+  - [x] 9.6 Apply the visual decisions on title, grille ticks, Scope band and message well
+    - Title (21.6): the faceplate title uses the Prototype_Reference's two-line debossed text-shadow, with every colour from Tokens (add documented Token aliases if needed, no new colour literal). Update the Chassis test that pins "no title shadow" so it now asserts the two-line shadow is present and uses Tokens.
+    - Grille ticks (21.7): keep the ticks on the selected channel key only. Keep their test and make sure it still passes.
+    - Scope band while off (21.20): the Scope draws the active channel's band lines in `--scope-band` while the power is off, as Figma_Main does. Faint static stays. Update the Scope tests and the off-state assertions that expected no band lines.
+    - Message well (21.21): place the byte count and draw the divider line at the positions and sizes of their Figma_Main nodes. Read the node ids and boxes through the Figma MCP, record them in `docs/figma-source-map.md`, and match them within 1 px. Add a Playwright check in `e2e/chassis.spec.ts` comparing `getBoundingClientRect` of the byte count and the divider with the Source_Map.
+    - Circuit board crop and Scope left gutter (21.23): leave unchanged. Do not report them as open items or failures.
+    - Add or update tests: Chassis unit test (title shadow, ticks), Scope unit test (band lines drawn when off), and Playwright checks (band lines visible on the Scope in the off state by sampling the canvas for `--scope-band` pixels, byte count and divider positions).
+    - Update `docs/ui-design-qa.md` (21.22, 21.23): record that the Prototype_Reference was the source of the title deboss and the grille ticks as approved exceptions to Figma_Main, and list the circuit board crop and the darker left gutter of the Scope as known differences intentionally left unchanged. Also revise the 9.5 section so the title, ticks, off-state band lines and message well rows reflect these decisions.
+    - Run `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` and `npm.cmd run test:e2e`, and fix failures in `src/ui`. Do not change `src/protocol`. Keep `scan.test.ts` passing.
+    - _Requirements: 21.6, 21.7, 21.11, 21.20, 21.21, 21.22, 21.23, 3.2_
+
 - [x] 8. Final checkpoint
   - [x] 8.1 Run everything and report
     - Run `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test`, `npm.cmd run test:props`, `npm.cmd run test:slow` and `npm.cmd run test:e2e`. Fix every failure in `src/ui` and in the audio glue. Do not change `src/protocol`.
@@ -320,6 +375,7 @@ Ground rules for every task:
 - Property tests: P1 (2.1), P2 (2.2), P3 (2.3), P4 and P5 (2.5), P6 and P7 (2.4), P8 (2.7), P9 (2.6), P10 (5.4), P11 (6.2), P12 (3.4), P13 (2.8).
 - Audio-transport boxes ticked by this spec: 11.1 (task 3.2), 11.2 (3.3), 12.1 (6.1), 12.2 (6.3), 12.3 (6.4), 13.1 (6.5), 14.1 (8.1). Box 13.2 is left for the user.
 - `design.md` and `requirements.md` are fixed while tasks run, except that task 3.1 appends amendments to the audio-transport documents.
+- Task 9 (visual fidelity, requirement 21) was added later. It is numbered 9 to avoid renumbering, and listed before task 8 so the final checkpoint stays last. Its tests are required like the rest.
 - Never commit. The user commits once when the spec is done.
 - Use `npm.cmd` and `npx.cmd` only.
 
@@ -341,7 +397,11 @@ Ground rules for every task:
     { "id": 10, "tasks": ["6.1"] },
     { "id": 11, "tasks": ["6.2", "6.3", "6.4", "6.5"] },
     { "id": 12, "tasks": ["7.1", "7.2", "7.3"] },
-    { "id": 13, "tasks": ["8.1"] }
+    { "id": 13, "tasks": ["9.1", "9.3", "9.4"] },
+    { "id": 14, "tasks": ["9.2"] },
+    { "id": 15, "tasks": ["9.5"] },
+    { "id": 16, "tasks": ["9.6"] },
+    { "id": 17, "tasks": ["8.1"] }
   ]
 }
 ```

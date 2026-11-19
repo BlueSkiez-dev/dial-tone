@@ -15,6 +15,18 @@ describe("Device frame", () => {
     }
   });
 
+  it("marks empty slots collapsed and drops the modifier when content is mounted", () => {
+    expect(html.match(/slot-empty/g)?.length).toBe(3);
+    expect(html).toContain("actions-row-solo");
+    const full = renderToString(
+      Device({ groupKey: "a", quickKeys: "b", sos: "c" }),
+    );
+    expect(full).not.toContain("slot-empty");
+    expect(full).not.toContain("actions-row-solo");
+    expect(css).toMatch(/\.slot\.slot-empty\s*{[^}]*width: 0;[^}]*height: 0/);
+    expect(css).not.toMatch(/\.slot[^{]*{[^}]*display: none/);
+  });
+
   it("gives the slots the Figma heights", () => {
     expect(css).toMatch(/\.slot-group-key\s*{[^}]*height: 76px/);
     expect(css).toMatch(/\.slot-quick-keys\s*{[^}]*height: 40px/);

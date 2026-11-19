@@ -31,6 +31,13 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 - **Persistence_Flag**: The constant `PERSIST_ENABLED` in `src/ui/model/persist.ts`.
 - **Amendments**: The four additions to `src/audio` listed in requirement 17.
 - **Pages_URL**: `https://blueskiez-dev.github.io/dial-tone/`.
+- **Figma_Main**: The Figma frame with node id `0:1` in file `VDyiOLNBAavxsBHP15j1Sj`, read through the Figma MCP, which is the source of truth for requirement 21.
+- **Prototype_Reference**: `c:\Users\TEA\Desktop\Hackathons\Kiroween\dial-tone\prototype\index.html`, a working CSS reference for the same design, used to read values only and never copied as code.
+- **Reserved_Slot**: One of the three containers of requirement 15 (group key bar, quick keys, SOS) that hold no live content in this spec.
+- **Chassis_Detail**: One of the decorative parts of requirement 21.2: chassis corner screws, POWER label, title deboss, channel key grille ticks, side rail with dimple and slot, bottom grille, and sheet screws.
+- **System_Slip**: A Slip of kind `system` or `update-ready`, printed on the grey system paper.
+- **Contrast_Ratio**: The WCAG 2.x relative-luminance contrast ratio between two colours.
+- **Main_Screen_Shots**: The Figma_Main screenshots and the Playwright screenshots at 390 x 844 of the Device_Screen in the states off, on and on with a draft.
 
 ## Requirements
 
@@ -256,12 +263,12 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 
 ### Requirement 15: Reserved slots
 
-**User Story:** As a maintainer, I want the layout to keep room for later features, so that adding SOS, quick keys and the group key bar moves nothing.
+**User Story:** As a maintainer, I want the empty slots for SOS, quick keys and the group key bar to collapse without gaps, so that each feature slots in at its Figma size when it is built.
 
 #### Acceptance Criteria
 
-1. THE Device_Screen SHALL render empty containers for the group key bar, the quick keys and the SOS button with the heights of their Figma frames.
-2. THE heights SHALL be recorded in the Source_Map.
+1. WHILE the feature of a Reserved_Slot (group key bar, quick keys or SOS button) is not mounted by the live app, THE Device_Screen SHALL collapse that Reserved_Slot as specified in requirement 21.1.
+2. WHEN the feature of a Reserved_Slot is mounted by the live app, THE Device_Screen SHALL give that Reserved_Slot the height of its Figma frame recorded in the Source_Map, as specified in requirement 21.3.
 3. THE `SosButton`, `QuickKeys` and `GroupKeyBar` components SHALL exist for the Gallery and SHALL NOT be mounted by the live app.
 4. THE live app SHALL NOT print Relayed, SOS, Locked, Location or I'm safe slips, and a Heard slip SHALL omit the "Pass it on" button until the relay spec exists.
 
@@ -327,3 +334,33 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 4. THE Playwright tests SHALL run on Chromium with the fake microphone, the gallery and the FakeTransport.
 5. A source-scan test SHALL enforce requirements 2.8, 3.2, 3.3, 3.4 and 20.1 to 20.2.
 6. A Design QA task SHALL compare every gallery state with its Figma screenshot, and SHALL re-check that State 03 shows 8 lit segments and State 11 shows all 24 segments amber with the glow.
+
+### Requirement 21: Visual fidelity
+
+**User Story:** As the art director, I want the built main screen to show every detail of Figma_Main and nothing that Figma does not have, so that the app looks like the approved "Ghost in the Line" device.
+
+#### Acceptance Criteria
+
+1. WHILE the group key bar, the quick keys and the SOS button are not mounted by the live app, THE Device_Screen SHALL collapse each of the three Reserved_Slots to a computed height of 0 px and a computed width of 0 px, and SHALL leave a gap of 0 px between the neighbouring elements in their place.
+2. WHILE the SOS slot is collapsed, THE Transmit key SHALL fill 100% of the width of its row, with a tolerance of 1 px.
+3. WHEN a later spec mounts the group key bar, the quick keys or the SOS button, THE Device_Screen SHALL restore the matching slot to the width and height of its Figma frame recorded in the Source_Map, with a tolerance of 1 px, and THE Transmit key SHALL return to the width of its Figma frame in the Source_Map, with a tolerance of 1 px.
+4. THE Device_Screen SHALL draw the four chassis corner screws of Figma_Main, one in each corner, at the position and size of their Figma nodes in the Source_Map, with a tolerance of 1 px.
+5. THE Device_Screen SHALL show the text "POWER" under the rocker switch, in the position and type style of its Figma node in the Source_Map.
+6. THE Device_Screen SHALL draw the faceplate title with the two-line debossed text shadow of the Prototype_Reference, so that the title reads clearly, using Tokens for every colour. This is a deliberate exception to "Figma wins", and the Design QA task SHALL NOT report the difference from Figma_Main as a failure.
+7. WHEN a channel key is selected, THE channel switch SHALL draw the grille ticks on that key, with the tick count, spacing and position taken from the Prototype_Reference, and SHALL draw no grille ticks on the two unselected keys. Figma_Main has no grille ticks, and this is an approved addition from the Prototype_Reference that the Design QA task SHALL NOT report as a failure.
+8. THE Device_Screen SHALL draw the side rail with its dimple and its slot, at the position and size of their Figma nodes in the Source_Map, with a tolerance of 1 px.
+9. THE Device_Screen SHALL draw the bottom grille of Figma_Main, with the slot count, spacing and position of its Figma node in the Source_Map.
+10. THE Sheet SHALL draw its screws at a diameter of 13 px, rotated and slotted as in nodes `270:3` (left) and `270:6` (right) of Onboarding 1 `270:41`, and SHALL draw the same screws on every other Sheet node of Figma_Main: Onboarding 2 `270:43` and `270:46`, Onboarding 3 `270:81` and `270:84`, Microphone `270:129` and `270:132`, Install `270:304` and `270:307`.
+11. THE `src/ui` Chassis_Detail files SHALL read every colour from Tokens, and SHALL contain no hex colour literal other than `#040504`, so that requirement 3.2 still holds.
+12. THE Scope SHALL draw the band lines of the active channel in amber, using the `--scope-band` Token whose value is the amber of Figma_Main.
+13. WHEN the self-test warm-up runs, THE Scope SHALL draw one bright horizontal line whose height widens from the line to the full Scope height over the warm-up, and SHALL NOT draw solid green stripes at any frame of the warm-up.
+14. THE System_Slip paper SHALL consist of the `--paper-system` base colour and the paper grain only, and SHALL contain no stripe layer, because Figma_Main has none.
+15. THE System_Slip ink SHALL reach a Contrast_Ratio of at least 4.5:1 against the System_Slip paper, AND a test SHALL compute the ratio from the Token values and fail when the ratio is below 4.5:1.
+16. WHEN the Main_Screen_Shots are taken, THE Design QA task SHALL capture the Figma_Main screenshot of each of the three states through the Figma MCP `get_screenshot`, and SHALL capture the Playwright screenshot of each of the three states from `npm run dev` at 390 x 844 px.
+17. WHEN the Main_Screen_Shots have been compared, THE Design QA task SHALL record in `docs/ui-design-qa.md`, for each of the three states, the compared Figma node id, each difference found, and either the fix or the reason it was left.
+18. THE Design QA task SHALL record in `docs/ui-design-qa.md` that the Prototype_Reference was used only to read CSS values, and SHALL list each value taken from it with the Token or rule that received it.
+19. IF a Chassis_Detail of requirement 21 is still missing or differs from Figma_Main after the comparison, THEN THE Design QA task SHALL list it in `docs/ui-design-qa.md` as an open item with its Figma node id and a description of the difference.
+20. WHILE the power is off, THE Scope SHALL draw the band lines of the active channel in the `--scope-band` Token, as Figma_Main does for the off state.
+21. THE message well SHALL place the byte count and draw the divider line at the positions and sizes of their Figma_Main nodes recorded in the Source_Map, with a tolerance of 1 px.
+22. THE Design QA task SHALL record in `docs/ui-design-qa.md` that the Prototype_Reference was the source of the faceplate title deboss (criterion 6) and the channel key grille ticks (criterion 7), as approved exceptions to Figma_Main.
+23. THE Design QA task SHALL list the circuit board crop and the darker left gutter of the Scope in `docs/ui-design-qa.md` as known differences that are intentionally left unchanged for now, and SHALL NOT treat them as open items under criterion 19 or as failures.

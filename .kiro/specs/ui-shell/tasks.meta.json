@@ -733,6 +733,21 @@
         "executionId": "f0947767-079a-492f-9a04-ab6751c28c1e",
         "chatSessionId": "sess_06a84c00-27c8-44d4-9595-82783c39981a",
         "timestamp": 1795104369347
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120856158
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120861463
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795121296633
       }
     ],
     "1. Scaffold, tokens, fonts and assets": [
@@ -789,6 +804,85 @@
         "executionId": "f0947767-079a-492f-9a04-ab6751c28c1e",
         "chatSessionId": "sess_06a84c00-27c8-44d4-9595-82783c39981a",
         "timestamp": 1795104369876
+      }
+    ],
+    "9.1 Collapse the empty Reserved_Slots and let Transmit fill the row": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795117882287
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795118516834
+      }
+    ],
+    "9.2 Add the chassis details from Figma_Main": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795118517445
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795119606911
+      }
+    ],
+    "9.3 Fix the Scope band colour and the self-test warm-up": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795119641029
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120075848
+      }
+    ],
+    "9.4 Remove the System_Slip stripe and meet 4.5:1 ink contrast": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120085413
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120336486
+      }
+    ],
+    "9.5 Design QA of the main screen against Figma_Main": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120345932
+      },
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120844972
+      }
+    ],
+    "9. Visual fidelity to Figma_Main (requirement 21)": [
+      {
+        "executionId": "cb3a42a8-6472-42d9-b4b1-3082a0c1d64a",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795120845187
+      }
+    ],
+    "9.6 Apply the visual decisions on title, grille ticks, Scope band and message well": [
+      {
+        "executionId": "713faa7f-0ab1-47d9-89d7-24590b91ee73",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795122118236
+      },
+      {
+        "executionId": "713faa7f-0ab1-47d9-89d7-24590b91ee73",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795122988814
       }
     ]
   }

@@ -75,6 +75,8 @@ export const copy = {
     /** Figma 213:5, 213:6 */
     on: "I",
     off: "O",
+    /** Figma Main 182:41: the silkscreen caption under the rocker, shown uppercase. */
+    silk: "Power",
   },
   status: {
     /** Written for this task. */

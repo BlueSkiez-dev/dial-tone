@@ -31,13 +31,13 @@ export default defineConfig({
     {
       // vite dev: FakeTransport, gallery and reachability tests.
       name: "dev",
-      testMatch: /(gallery|reachability|hook)\.spec\.ts/,
+      testMatch: /(gallery|reachability|hook|slots)\.spec\.ts/,
       use: { ...chromiumUse, baseURL: `http://localhost:${DEV_PORT}/` },
     },
     {
       // vite build + preview: real audio and offline. Base is /dial-tone/.
       name: "preview",
-      testIgnore: /(gallery|reachability|hook)\.spec\.ts/,
+      testIgnore: /(gallery|reachability|hook|slots)\.spec\.ts/,
       use: {
         ...chromiumUse,
         baseURL: `http://localhost:${PREVIEW_PORT}/dial-tone/`,

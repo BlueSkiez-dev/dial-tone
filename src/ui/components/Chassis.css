@@ -1,0 +1,135 @@
+/* Chassis details of Figma_Main (docs/figma-source-map.md, "Chassis details (Figma_Main)"). Tokens only. Static. */
+
+/* Screw (Figma 182:296 and Sheet 270:3): 13 px, rotated, slotted. */
+.chassis-screw {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--screw-face);
+  box-shadow: var(--shadow-keycap-light), var(--shadow-recess-7);
+  transform: rotate(var(--screw-rot, 0deg));
+  pointer-events: none;
+}
+.chassis-screw::before,
+.chassis-screw::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 5.5px;
+  width: 7px;
+  height: 2px;
+  border-radius: var(--radius-1);
+  background: var(--screw-slot);
+  box-shadow: var(--shadow-raised-2);
+}
+.chassis-screw::after {
+  transform: rotate(90deg);
+}
+
+/* CornerScrews: 8 px from each corner of the faceplate (centre 14.5 px from each edge). */
+.chassis-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.chassis-corner {
+  position: absolute;
+}
+.chassis-corner-tl {
+  top: 8px;
+  left: 8px;
+}
+.chassis-corner-tr {
+  top: 8px;
+  right: 8px;
+}
+.chassis-corner-bl {
+  bottom: 8px;
+  left: 8px;
+}
+.chassis-corner-br {
+  right: 8px;
+  bottom: 8px;
+}
+
+/* PowerLabel (Figma 182:41): Barlow Condensed SemiBold 11 px, tracking 2.2 px, uppercase, ink-2. */
+.power-label {
+  margin: 0;
+  font: var(--type-silk-caption);
+  letter-spacing: var(--type-silk-caption-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+/* SideRail: the crystal slot and mounting hole of the board, in the right margin of the chassis. Strokes are 1.3 px, centred on the path. */
+.chassis-side-rail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.chassis-rail-dimple {
+  position: absolute;
+  box-sizing: border-box;
+  left: 357.25px;
+  top: calc(30% - 4.25px);
+  width: 8.5px;
+  height: 8.5px;
+  border: 1.3px solid var(--board-ink-rail);
+  border-radius: 50%;
+}
+.chassis-rail-slot {
+  position: absolute;
+  box-sizing: border-box;
+  left: 357.35px;
+  top: calc(34% - 0.65px);
+  width: 8.3px;
+  height: 79.3px;
+  border: 1.3px solid var(--board-ink-rail);
+  border-radius: 4.15px;
+}
+
+/* BottomGrille: 18 slots of 5 x 8 px, 9 px apart, centred on the chassis, 4 px above its bottom edge. */
+.chassis-bottom-grille {
+  position: absolute;
+  left: 105px;
+  bottom: 4px;
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  pointer-events: none;
+}
+.chassis-grille-slot {
+  display: block;
+  width: 5px;
+  height: 8px;
+  background: var(--board-ink-pin);
+}
+
+/* GrilleTicks: 26 x 5 px, 7 px below the top of the key, centred. Each tick is a dark and a light line. */
+.grille-ticks {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 26px;
+  height: 5px;
+  margin-left: -13px;
+  border-radius: var(--radius-1);
+  overflow: hidden;
+  pointer-events: none;
+}
+.grille-tick {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--grille-dark) 0 1px,
+    var(--grille-light) 1px 2px
+  );
+}

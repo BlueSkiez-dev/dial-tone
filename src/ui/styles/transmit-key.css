@@ -2,7 +2,7 @@
   position: relative;
   box-sizing: border-box;
   display: block;
-  width: 210px;
+  width: 100%; /* fills .part-transmit: 210 px beside the SOS slot, the full row without it */
   height: 72px;
   min-height: 72px;
   padding: 0;
@@ -82,8 +82,8 @@
 .transmit-key-strip {
   position: absolute;
   left: 16px;
+  right: 16px;
   top: 61px;
-  width: 178px;
   height: 3px;
   border-radius: var(--radius-2);
   overflow: hidden;

@@ -56,7 +56,7 @@
   left: 0;
   right: 0;
   height: 0;
-  border-top: 1px dashed var(--scope-band);
+  border-top: 1px solid var(--scope-band);
 }
 .scope-band-caption {
   position: absolute;
@@ -65,7 +65,7 @@
   font: var(--type-scope-band-caption);
   letter-spacing: var(--type-scope-band-caption-tracking);
   text-transform: uppercase;
-  color: var(--scope-band);
+  color: var(--scope-band-caption);
 }
 
 /* Figma State 01 (271:98): "STANDBY" tag, top right of the glass. */
@@ -76,6 +76,6 @@
   font: var(--type-scope-band-caption);
   letter-spacing: var(--type-scope-band-caption-tracking);
   text-transform: uppercase;
-  color: var(--scope-band);
+  color: var(--scope-band-caption);
   pointer-events: none;
 }

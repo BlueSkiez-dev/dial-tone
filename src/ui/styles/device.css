@@ -95,7 +95,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
   width: 340px;
   overflow: hidden;
   padding: 26px 18px 28px;
@@ -118,7 +117,10 @@
   background: url("/art/faceplate-grain.png") top left / 50px 50px;
   pointer-events: none;
 }
-.faceplate > :not(.faceplate-grain):not(.signal-line):not(.signal-vias) {
+.faceplate
+  > :not(.faceplate-grain):not(.chassis-layer):not(.signal-line):not(
+    .signal-vias
+  ) {
   position: relative;
 }
 
@@ -138,6 +140,16 @@
   width: 2%;
   height: 52.98%;
   pointer-events: none;
+}
+
+/* 20 px between parts, as a top margin on each part (not flex gap), so a collapsed Reserved_Slot adds no extra gap. */
+.faceplate
+  > :where(
+    :not(.faceplate-header):not(.faceplate-grain):not(.chassis-layer):not(
+      .signal-line
+    ):not(.signal-vias)
+  ) {
+  margin-top: 20px;
 }
 
 .faceplate-header {
@@ -166,6 +178,7 @@
   letter-spacing: var(--type-device-title-tracking);
   text-transform: uppercase;
   color: var(--emboss);
+  text-shadow: var(--shadow-title-deboss);
   white-space: nowrap;
 }
 .wordmark p {
@@ -175,9 +188,12 @@
   color: var(--ink-2);
   white-space: nowrap;
 }
+/* Rocker 54 px, 6 px gap, label 11 px: 71 px, the header row height (Figma 182:32). */
 .power-slot {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Reserved slots. Heights from Figma State 03 (see docs/figma-source-map.md). */
@@ -197,6 +213,16 @@
   width: 78px;
   height: 95px;
 }
+/* Empty and not mounted: zero size, no margin, padding or gap, so the neighbours touch. The element stays in the DOM for a later spec to mount into. Mounting content drops the modifier and the Source_Map size above applies again. */
+.slot.slot-empty {
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  overflow: hidden;
+}
 
 /* Silkscreen captions above the channel switch and the message well (Figma 273:2). */
 .silk-label {
@@ -206,6 +232,14 @@
   letter-spacing: var(--type-silk-caption-tracking);
   text-transform: uppercase;
   color: var(--ink-2);
+}
+/* Message caption row (Figma 182:131): 22 px high, text centred, so the byte count shares its line. */
+.message-block > .silk-label {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 22px;
+  margin: 0;
 }
 .part-channel-block {
   display: flex;
@@ -225,13 +259,22 @@
   padding-top: 6px;
 }
 
-/* Transmit sits centred on the 95 px SOS slot (Figma 273:2). */
+/* Transmit sits centred on the 95 px SOS slot (Figma 273:2), 210 px wide. */
 .part-transmit {
   align-self: center;
+  width: 210px;
+}
+/* SOS slot collapsed: the row hugs Transmit and Transmit fills it. */
+.actions-row-solo {
+  height: auto;
+  padding-top: 0;
+}
+.actions-row-solo .part-transmit {
+  width: 100%;
 }
 
 .part-tape {
-  margin-top: 24px;
+  margin-top: 44px; /* 20 px part gap + 24 px */
 }
 
 .sheet-host:empty {

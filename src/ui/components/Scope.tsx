@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { SpectrumSource } from "../../audio/index";
 import { copy } from "../copy";
-import { binRange, formatKHz, type ScopeWindow } from "../model/scope-map";
+import {
+  binRange,
+  formatKHz,
+  type ScopeWindow,
+  warmUpFrame,
+} from "../model/scope-map";
 import {
   axisTicks,
   binForRow,
@@ -13,8 +18,8 @@ import {
   SCOPE_WIDTH,
   STATIC_MAX_INDEX,
   scopeMode,
-  warmUpHalfHeight,
   warmUpProgress,
+  warmUpRowIndex,
 } from "./scope-draw";
 import "../styles/scope.css";
 
@@ -74,16 +79,9 @@ export function Scope(props: ScopeProps) {
 
     const drawWarmUp = (now: number) => {
       warmStart ??= now;
-      const half = warmUpHalfHeight(warmUpProgress(now - warmStart), h);
-      const mid = Math.floor(h / 2);
+      const region = warmUpFrame(warmUpProgress(now - warmStart), h);
       for (let y = 0; y < h; y++) {
-        const d = Math.abs(y - mid);
-        const idx =
-          d <= half
-            ? d === 0 || half === 0
-              ? 255
-              : 90 + Math.floor(Math.random() * 40)
-            : 0;
+        const idx = warmUpRowIndex(y, region);
         for (let x = 0; x < w; x++) putIndex(frame.data, y * w + x, idx);
       }
       ctx.putImageData(frame, 0, 0);
@@ -169,7 +167,7 @@ export function Scope(props: ScopeProps) {
         {props.power === "off" ? (
           <span class="scope-standby">{copy.scope.standby}</span>
         ) : null}
-        {bandHz && mode !== "warmup" && props.power !== "off" ? (
+        {bandHz && mode !== "warmup" ? (
           <div class="scope-band" aria-hidden="true">
             <i
               class="scope-band-line"

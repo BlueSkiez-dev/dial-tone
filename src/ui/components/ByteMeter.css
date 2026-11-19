@@ -35,10 +35,18 @@
   box-shadow: var(--shadow-meter-over);
 }
 
-.byte-meter-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+/* Byte count (Figma 182:135): in the MESSAGE caption row above the well, right edge 4 px in from the well edge, 11 px high, vertically centred in the 22 px caption row (5.5 px above the well). Barlow Condensed SemiBold 11, tracking 2.2, uppercase. */
+.byte-meter-count-row {
+  position: absolute;
+  right: 4px;
+  bottom: calc(100% + 5.5px);
+  margin: 0;
+  font: var(--type-silk-caption);
+  line-height: 11px;
+  letter-spacing: var(--type-silk-caption-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-2);
 }
 
 .byte-meter-label,
@@ -47,6 +55,11 @@
   font: var(--type-airtime);
   color: var(--ink-2);
   white-space: nowrap;
+}
+
+/* Airtime box (Figma 213:284): 94 px wide, so the segments end 12 px before it. */
+.byte-meter-airtime {
+  min-width: 94px;
 }
 
 .byte-meter-count {

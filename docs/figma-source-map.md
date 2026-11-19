@@ -115,3 +115,55 @@ Saved once from asset URLs (State 03 `get_design_context`, `download_assets` on 
 The PNG app icons are made from a 4x Figma export of `270:433` (shadow and background cropped away, rounded mask radius 24/92 applied), because Figma exports no PNG at those sizes.
 
 Not downloaded: the spectrogram PNG (`f98ac`) is a design placeholder; the app draws the real spectrogram. The circuit board is drawn in code.
+
+## Chassis details (Figma_Main)
+
+Figma_Main is the page `0:1` ("Main"), frame "Dial Tone" `182:2` (390 x 1671). Chassis `182:4` is 370 x 1615.02 at (10, 16). Faceplate `182:8` is 340 x 1581.02 at (15, 17) inside it. The page is a flat import: only the parts below are separate nodes. Positions are relative to the parent named in each row. Read with `get_metadata` and `get_design_context`, and checked against a `get_screenshot` of `182:2`.
+
+| Detail | Node id | Parent | Position and size | Built as |
+|---|---|---|---|---|
+| Corner screw, top left | `182:296` | Faceplate | box (6.79, 6.79) 15.419 x 15.419, screw 13 px, rotate 12 | `CornerScrews`, `Screw` |
+| Corner screw, top right | `182:299` | Faceplate | box (316.33, 5.33) 18.34 x 18.34, rotate 41 | same |
+| Corner screw, bottom left | `182:302` | Faceplate | box (5.98, 1557.99) 17.046 x 17.046, rotate 67 | same |
+| Corner screw, bottom right | `182:305` | Faceplate | box (316.92, 1557.93) 17.164 x 17.164, rotate 24 | same |
+| Screw slot bars | `182:297`/`182:298` (and the same pairs in each screw) | Screw | 7 x 2, left 3, top 5.5; second bar turned 90 degrees (2 x 7 at left 5.5, top 3); fill `--screw-slot`, shadow `0 .6px 0 rgba(255,255,255,.7)` | `.chassis-screw::before/::after` |
+| POWER label | `182:40` (box), `182:41` (text "Power") | Power container `182:32` | 38.32 x 11, centred under the rocker, 6 px below it; Barlow Condensed SemiBold 11/11, tracking 2.2, uppercase, `--ink-2` | `PowerLabel`, `.power-slot` gap 6 |
+| Faceplate title | `182:25`, `182:26` | Header `182:16` | "Dial Tone", Barlow Condensed Bold 32/28.8, tracking 3.2, uppercase, fill `#a3a5a9` (`--emboss`). Figma has the fill only. The two-line deboss shadow is the approved Prototype_Reference exception (requirement 21.6) | `.wordmark h1` with `--shadow-title-deboss` |
+| Side rail: mounting hole (dimple) | in the raster `182:5` (no node) | Chassis | centre (361.5, 30% of height), radius 3.6, stroke 1.3 px | `SideRail`, `.chassis-rail-dimple` |
+| Side rail: slot | in the raster `182:5` (no node) | Chassis | path rect (358, 34% of height), 7 x 78, radius 3.5, stroke 1.3 px (outer box 8.3 x 79.3) | `.chassis-rail-slot` |
+| Bottom grille | in the raster `182:5` (no node) | Chassis | 18 slots, each 5 x 8, 9 px apart (gap 4), first slot at x = 105, y = height - 12 (4 px above the bottom edge) | `BottomGrille` |
+| Channel key grille ticks | none in Figma_Main | Channel key | 7 ticks, 4 px apart, strip 26 x 5, 7 px below the top of the key, centred (value taken from the Prototype_Reference, see below) | `GrilleTicks`, inside `.channel-thumb` |
+| Sheet screw, left | `270:3` (Onboarding 1 `270:41`) | Sheet | box (10.79, 8.99) 15.419, rotate 12; built 12 px from the left, 10.2 px from the top | `Screw` in `Sheet.tsx` |
+| Sheet screw, right | `270:6` (Onboarding 1 `270:41`) | Sheet | box (362.33, 7.53) 18.34, rotate 41; built 12 px from the right, 10.2 px from the top | same |
+
+Screw ids in the other Sheets (all named "Screw", 13 px, rotate 12 and 41): Onboarding 2 `270:43`, `270:46`. Onboarding 3 `270:81`, `270:84`. Microphone `270:129`, `270:132`. Install `270:304`, `270:307`. Node `270:136` is not a screw. In the Microphone sheet `270:155` it is the content Container (x 22, y 33, 346 x 303) that holds the kicker. The metadata for Onboarding 2, 3, Microphone and Install lists the screw boxes at x 13.49 and 370.86, while the code of `270:41` has 10.79 and 362.33. The build follows the code of `270:41`, which matches the Prototype_Reference (`.sheet .screw` 12 px from each side).
+
+Screw face (Figma `182:296` and `270:3`): radial gradient centred at (4.94, 3.9) px with radius 12.156 px, stops `#fff` 0%, `#dcdde0` 35%, `#bcbdc1` 67.5%, `#9b9da2` 100%. Shadows: `0 0 0 1.5px rgba(0,0,0,.16), 0 0 0 3px rgba(255,255,255,.5), 0 1px 1px rgba(0,0,0,.25)` and inset `0 -1px 1px rgba(0,0,0,.35)`. These are `--screw-face`, `--shadow-keycap-light` and `--shadow-recess-7`.
+
+Values taken from the Prototype_Reference (`../dial-tone/prototype/index.html`), because Figma_Main holds them only as pixels of the raster `182:5`:
+
+| Value | Prototype line | Received by |
+|---|---|---|
+| Side rail slot `rr(W-12, H*0.34, 7, 78, 3.5)`, hole `arc(W-8.5, H*0.3, 3.6)`, stroke 1.3 px, `rgba(46,48,52,.32)` | `drawPCB`, lines 517 to 520 | `.chassis-rail-slot`, `.chassis-rail-dimple`, `--board-ink-rail` |
+| Header pins: 18, x = W/2 - 80 + 9i, y = H - 12, 5 x 8, `rgba(46,48,52,.2)` | `drawPCB`, line 513 | `.chassis-bottom-grille`, `--board-ink-pin` |
+| Grille ticks: strip 26 x 5 at top 7, repeating 90deg gradient `rgba(0,0,0,.22) 0 1px, rgba(255,255,255,.9) 1px 2px, transparent 2px 4px` | `.thumb::before`, line 154 | `GrilleTicks`, `--grille-dark`, `--grille-light` |
+
+The side rail and bottom grille positions were checked on the Figma screenshot of `182:2` (slot 77 px high, hole centre and pins at the same offsets). The grille ticks are not visible on the Room key in that screenshot, and the code of `182:107` has no tick layer, so they are not in Figma_Main. See the open item in the task result.
+
+## Message well count and divider (Figma_Main, task 9.6)
+
+Read with `get_metadata` of `213:286` and `get_design_context` of `182:8`, checked on a `get_screenshot` of the Section `182:130` (304 x 275 at 316 px). Positions are relative to the parent in the row.
+
+| Detail | Node id | Parent | Position and size | Built as |
+|---|---|---|---|---|
+| Message caption row | `182:131` | Section `182:130` | 304 x 22, padding 0 4, items centred | `.message-block > .silk-label` (22 px high, centred) |
+| Byte count "41 / 128 B" | `182:134` (box), `182:135` (text) | caption row | right edge 4 px in from the row edge, y 5.5 to 16.5 (11 px), Barlow Condensed SemiBold 11, tracking 2.2, uppercase, `--ink-2` | `.byte-meter-count-row` (`right: 4px`, `bottom: calc(100% + 5.5px)` of the well) |
+| Well text field | `182:138` | well `182:136` | 304 x 91.39, padding 14 14 6 | `.message-well-field` |
+| Byte meter row | `182:140` (`213:258`) | well | y 91.39, 304 x 32, padding 4 14 12, gap 12 | `.byte-meter` |
+| Segments | `182:141` (`213:259`) | meter row | (14, 9), 170 x 6 in Normal, 206 x 6 in Over | `.byte-meter-segments` |
+| Airtime | `182:166` (`213:284`) | meter row | (196, 4), 94 x 16, Plex Mono Medium 12. In Over, "Too long" (`213:316`) at (232, 4), 58 x 16 | `.byte-meter-airtime`, `.byte-meter-label` |
+| Divider line | none | | Figma_Main has no divider node in the well. The only 1 px lines are the status window rule `182:76` and the Details rule `182:267`, both elsewhere | none drawn |
+
+The Playwright check in `e2e/chassis.spec.ts` ("message well") compares these boxes with a 1 px tolerance. The count is compared against the Message block top, which is the caption row top.
+
+Title deboss (requirement 21.6, approved exception): Figma `182:26` has the fill only. The shadow comes from the Prototype_Reference line 109, see `docs/ui-design-qa.md`.

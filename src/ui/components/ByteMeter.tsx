@@ -8,7 +8,7 @@ export interface ByteMeterProps {
   airtime?: string;
 }
 
-/** 24 segments plus the "41 / 128 B" label, or "Too long" with the bold count when over. */
+/** 24 segments and the airtime (or "Too long" when over) in the meter row. The "41 / 128 B" count sits in the MESSAGE caption row above the well (Figma 182:135). */
 export function ByteMeter({ view, airtime }: ByteMeterProps) {
   return (
     <div
@@ -22,18 +22,22 @@ export function ByteMeter({ view, airtime }: ByteMeterProps) {
           <span key={i} class="byte-meter-segment" data-color={color} />
         ))}
       </div>
-      <div class="byte-meter-text">
+      <p class="byte-meter-count-row" aria-hidden="true">
+        {view.over ? (
+          <>
+            <b class="byte-meter-count">{view.bytes}</b> / {view.limit} B
+          </>
+        ) : (
+          meterLabel(view.bytes, view.limit)
+        )}
+      </p>
+      {view.over ? (
         <p class="byte-meter-label" aria-hidden="true">
-          {view.over ? (
-            <>
-              <b class="byte-meter-count">{view.bytes}</b> {wellCopy.tooLong}
-            </>
-          ) : (
-            meterLabel(view.bytes, view.limit)
-          )}
+          {wellCopy.tooLong}
         </p>
-        {airtime !== undefined && <p class="byte-meter-airtime">{airtime}</p>}
-      </div>
+      ) : (
+        airtime !== undefined && <p class="byte-meter-airtime">{airtime}</p>
+      )}
     </div>
   );
 }

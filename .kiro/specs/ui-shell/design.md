@@ -2,7 +2,7 @@
 
 ## Overview
 
-The ui-shell is the installable app shell and the main device screen of Dial Tone. It scaffolds the project (Vite, TypeScript, Preact, `vite-plugin-pwa`), builds the device from the Figma file `VDyiOLNBAavxsBHP15j1Sj`, and wires it to `src/protocol` and `src/audio`. It covers plain, unencrypted text messages only. SOS, quick keys, the group key bar and everything cryptographic or relay-related come later, but the layout keeps room for them.
+The ui-shell is the installable app shell and the main device screen of Dial Tone. It scaffolds the project (Vite, TypeScript, Preact, `vite-plugin-pwa`), builds the device from the Figma file `VDyiOLNBAavxsBHP15j1Sj`, and wires it to `src/protocol` and `src/audio`. It covers plain, unencrypted text messages only. SOS, quick keys, the group key bar and everything cryptographic or relay-related come later. Until a feature is mounted its slot collapses to zero size, and when the feature lands the slot takes the height of its Figma frame (see "Visual fidelity").
 
 The device screen has these parts, each one Preact component in `src/ui/`: rocker power switch, status window (six LEDs and a result-code readout), scope (a live spectrogram on a canvas), channel switch (Room, Call, Quiet), message well with a 24-segment byte meter and real airtime, Transmit key, Listen latch, and the Tape of thermal slips with "See more". Around the device sit the sheets: onboarding, microphone denied or reset, and install. A state gallery at `?state=<name>` makes every state on the Figma States page reachable.
 
@@ -409,7 +409,11 @@ export function scopeWindow(channel: ProfileId): ScopeWindow;
 /** FFT bin range for a window. Always inside 0..binCount-1 and lo <= hi. */
 export function binRange(sampleRate: number, fftSize: number, loHz: number, hiHz: number): { lo: number; hi: number };
 export function formatKHz(hz: number): string;
+/** Self-test warm-up geometry. One bright line that widens from one row to the full height. */
+export function warmUpFrame(progress: number, height: number): { readonly centerRow: number; readonly halfHeight: number; readonly top: number; readonly bottom: number };
 ```
+
+`warmUpFrame` clamps `progress` to 0..1 and `height` to at least 1. It describes exactly one contiguous region, `top..bottom`, inside `0..height-1`. At progress 0 the region is one row, at progress 1 it is the full height, and its height never shrinks as progress grows. `Scope.tsx` only paints the region it returns.
 
 `bandHz` comes from `PROFILES[channel].carrierBandHz`, so the overlay follows the measured band. The windows are: Room 0 to 8 kHz (axis label "8k" in State 03), Call as drawn in State 09, Quiet 12 to 20 kHz (State 10). The Call range is read from Figma State 09 when the component is built. Figma's Quiet caption says 15 to 19.5 kHz while the measured band is 15,000 to 19,400 Hz. The overlay uses the measured band and the caption uses `formatKHz` of it (open question 5).
 
@@ -524,21 +528,22 @@ One file per Figma component in `src/ui/components/`, each with props that are p
 | `Rocker` | `on`, `pulseAmber`, `onTap` | The tap that starts audio. `pulseAmber` is the post-onboarding hint. Space and Enter work. |
 | `Led` | `color`, `on`, `label` | Label lights with the lens. |
 | `StatusWindow` | `StatusView`, `onLedTap` | Tapping the LEDs toggles the legend (State 15). |
-| `Scope` | `source`, `window`, `power`, `reducedMotion` | Canvas. See "Scope drawing". |
-| `ChannelSwitch` | `value`, `disabled`, `onChange` | `role="radiogroup"`, arrow keys move it, thumb springs (not under reduced motion). While sending (`disabled` prop true) it uses `aria-disabled="true"` with the dimmed style, stays focusable (no `disabled` attribute, no `tabindex="-1"`), ignores pointer and keyboard changes, and its accessible name reads "Channel switch, Room, unavailable while sending" (current channel in place of Room). |
+| `Scope` | `source`, `window`, `power`, `reducedMotion` | Canvas. See "Scope drawing". Draws the band lines while off. Its darker left gutter differs from Figma_Main and is intentionally left unchanged for now (requirement 21.23). |
+| `ChannelSwitch` | `value`, `disabled`, `onChange` | Grille ticks on the selected key only (see "Visual fidelity"). `role="radiogroup"`, arrow keys move it, thumb springs (not under reduced motion). While sending (`disabled` prop true) it uses `aria-disabled="true"` with the dimmed style, stays focusable (no `disabled` attribute, no `tabindex="-1"`), ignores pointer and keyboard changes, and its accessible name reads "Channel switch, Room, unavailable while sending" (current channel in place of Room). |
 | `MessageWell` | `DraftView`, `airtimeMs`, `disabled`, `onInput` | Textarea plus `ByteMeter`. |
 | `ByteMeter` | `MeterView` | 24 `<i>` segments with `data-color`. Count label "41 / 128 B", "Too long" when over. |
 | `TransmitKey` | `state`, `airtimeMs`, `progress`, `onTap` | Strip fills for the airtime while sending. |
 | `ListenLatch` | `state`, `onTap` | Four states. |
-| `Tape`, `Slip` | `visibleSlips`, `expanded`, `onToggle` | Slip implements all ten Figma types. Torn bottom edge by CSS mask (10 px teeth, 5 px deep). |
-| `Sheet` | `type`, `onPrimary`, `onSecondary` | Grip, two screws, kicker, title, body, two buttons. Focus trap, Escape closes, scrim at 45% with 3 px blur. |
+| `Tape`, `Slip` | `visibleSlips`, `expanded`, `onToggle` | Slip implements all ten Figma types. Torn bottom edge by CSS mask (10 px teeth, 5 px deep). System paper is `--paper-system` plus grain, with no stripe layer. |
+| `Chassis` | none (parts: `CornerScrews`, `PowerLabel`, `SideRail`, `BottomGrille`, `GrilleTicks`, `Screw`) | Decorative parts of Figma_Main. Static, Tokens only. See "Visual fidelity". |
+| `Sheet` | `type`, `onPrimary`, `onSecondary` | Grip, two screws (13 px, rotated, slotted, from the `Chassis` screw part), kicker, title, body, two buttons. Focus trap, Escape closes, scrim at 45% with 3 px blur. |
 | `Notice` | `type`, `onKey` | Install plate with an amber LED. |
 | `AppIcon` | none | 92 px, radius 24. Also exported as PNG for the manifest. |
 | `SosButton`, `QuickKeys`, `GroupKeyBar` | gallery props | Built to the Figma variants. In the live app their slots stay empty. |
-| `CircuitBoard` | none | SVG drawn in code under the frosted shell. |
+| `CircuitBoard` | none | SVG drawn in code under the frosted shell. Its crop differs from Figma_Main and is intentionally left unchanged for now (requirement 21.23). |
 | `Device`, `App` | | Layout (370 device, 340 faceplate) and the Sheet host. |
 
-**Reserved slots.** The live `Device` renders three empty containers with the Figma heights and no content: the group key bar slot under the status window, the quick keys slot under the message well, and the SOS slot beside Listen. They reserve space so adding the real components later moves nothing. The heights come from the Figma frames and are recorded in `docs/figma-source-map.md`. The gallery fills the slots only for `sos-held` and `sos-received`.
+**Reserved slots.** The live `Device` renders three containers with no content: the group key bar slot under the status window, the quick keys slot under the message well, and the SOS slot beside Listen. While empty they collapse to a computed 0 x 0 px with no margin, padding or gap, so the neighbours touch (requirement 21.1). They are not hidden with `display: none`, so a later spec can mount into them. Mounting content sets a modifier class that restores the slot to the width and height of its Figma frame from `docs/figma-source-map.md` (21.3). The gallery mounts all three only for `sos-held` and `sos-received`. Details are in "Visual fidelity".
 
 **Pass it on.** State 06's Heard slip shows "Pass it on → hop N". Relay is a later spec, so the live app renders the Heard slip without that button, and the gallery fixture for `received` turns it on (`extras.passOn`). The model carries `hop` already.
 
@@ -546,8 +551,16 @@ One file per Figma component in `src/ui/components/`, each with props that are p
 
 ```
 ALGORITHM drawScopeFrame(ctx, source, window, state)
-  IF state.power = off THEN drawStatic(ctx, faint) RETURN   // power-off wins: the warm-up is suppressed
-  IF state.power = selftest THEN drawWarmUp(ctx, progress) RETURN
+  IF state.power = off THEN
+    drawStatic(ctx, faint)
+    drawBandLines(ctx, window.bandHz, --scope-band)         // band lines stay visible while off, as in Figma_Main
+    RETURN                                                  // power-off wins: the warm-up is suppressed
+  END IF
+  IF state.power = selftest THEN
+    f ← warmUpFrame(progress, height)       // pure, in scope-map.ts
+    fill only rows f.top..f.bottom with one bright line colour, no other region, no stripes
+    RETURN
+  END IF
   range ← binRange(source.sampleRate, source.fftSize, window.loHz, window.hiHz)
   source.getByteFrequencyData(buf)
   shift the existing image left by 1 column
@@ -560,7 +573,59 @@ ALGORITHM drawScopeFrame(ctx, source, window, state)
 END
 ```
 
-The loop uses `requestAnimationFrame`, pauses when the document is hidden, and reads CSS colours once at mount through `getComputedStyle`, so there is no literal colour in the code. Under reduced motion the warm-up is skipped and the spectrogram still draws (it is data, not decoration).
+The band lines use `--scope-band`, whose value is the amber of Figma_Main. They are drawn in every power state in which the Scope shows static or live data, including `off` (requirement 21.20), and are not drawn during the self-test warm-up line. The loop uses `requestAnimationFrame`, pauses when the document is hidden, and reads CSS colours once at mount through `getComputedStyle`, so there is no literal colour in the code. Under reduced motion the warm-up is skipped and the spectrogram still draws (it is data, not decoration).
+
+### Visual fidelity (requirement 21)
+
+Figma_Main (node `0:1`) is the source of truth. Every measurement is read through the Figma MCP and recorded in `docs/figma-source-map.md` under "Chassis details (Figma_Main)". The Prototype_Reference (`../dial-tone/prototype/index.html`, relative to the repository root) is read for CSS values only, never copied as code. Where it disagrees with Figma, Figma wins, except for two approved exceptions: the faceplate title deboss and the channel key grille ticks (requirements 21.6, 21.7 and 21.22). Two known differences are left unchanged on purpose: the circuit board crop and the darker left gutter of the Scope (requirement 21.23).
+
+**Collapsed slots and full-width Transmit (21.1 to 21.3, 15).** Each Reserved_Slot has two states, set by whether its feature is mounted:
+
+| State | Slot size | Transmit |
+|---|---|---|
+| Empty (live app today) | computed 0 x 0 px, margin, padding and gap 0, neighbours touch | The SOS slot is collapsed, so the Transmit key fills 100% of its row (1 px tolerance). No fixed Transmit width remains. |
+| Mounted (gallery `sos-held`, `sos-received`, later specs) | Figma frame width and height from the Source_Map (1 px tolerance) | Returns to its Figma frame width (1 px tolerance) |
+
+The row uses flex, with Transmit as `flex: 1 1 auto` and the SOS slot sized only by its modifier class. The collapse is a size rule, not `display: none`. The Source_Map gains the slot and Transmit widths if they are missing. Checked by `e2e/slots.spec.ts` through `getBoundingClientRect`.
+
+**Chassis details (21.4 to 21.11).** Each part is code (CSS, inline SVG or a small component) in `src/ui/components/Chassis.tsx` and `chassis.css`, one clearly named block per part. Positions and sizes come from the Source_Map. All colours are Tokens, with `#040504` the only literal. They are static, so reduced motion needs no handling. A part that needs an image goes to `public/art` and into the precache globs.
+
+| Part | Behaviour |
+|---|---|
+| Corner screws | Four, one per corner of the chassis, at the Figma position and size (1 px) |
+| POWER label | The text "POWER" under the rocker, in the Figma position and type style |
+| Title deboss | Approved exception to Figma_Main (requirement 21.6). The faceplate title uses the two-line debossed `text-shadow` of the Prototype_Reference, one light line below and one dark line above, with every colour mapped to a Token. Figma_Main has no such shadow, and Design QA does not report the difference. |
+| Grille ticks | Approved addition from the Prototype_Reference (requirement 21.7). Figma_Main has no grille ticks. Count, spacing and position are read from the Prototype_Reference. Drawn on the selected channel key only, none on the other two keys. They follow the selection for Room, Call and Quiet. Design QA does not report them. |
+| Message well count and divider | Byte count placement and the divider line at the positions and sizes of their Figma_Main nodes in the Source_Map, 1 px tolerance (requirement 21.21). |
+| Side rail | Rail with dimple and slot at the Figma position and size (1 px) |
+| Bottom grille | Slot count, spacing and position from Figma |
+| Sheet screws | 13 px diameter, rotated and slotted, on every Sheet. Replace the earlier 10 px screws. |
+
+The Sheet screw nodes are `270:3` (left) and `270:6` (right) in Onboarding 1 `270:41`. The other Sheets carry the same screws: Onboarding 2 `270:43` and `270:46`, Onboarding 3 `270:81` and `270:84`, Microphone `270:129` and `270:132`, Install `270:304` and `270:307`. Node `270:136` is a kicker container, not a screw. Requirement 21.10 cites these nodes, and the Source_Map records them.
+
+**Scope band and warm-up (21.12, 21.13).** `--scope-band` takes the amber of the Figma Scope node (an existing amber Token value when it matches). The warm-up is `warmUpFrame` (see `scope-map.ts`), one widening line and no stripes. `Scope.tsx` holds no warm-up arithmetic.
+
+**System slip paper and ink (21.14, 21.15).** The system paper layers are `--paper-system` and the paper grain texture only. The earlier stripe layer, and any stripe Token or alias it added, is removed. The ink Token (or alias) used by system and update-ready slip text and meta is darkened to the nearest value with Contrast_Ratio of at least 4.5:1 against `--paper-system`, in both Ghost and Beige 96. `src/ui/styles/contrast.test.ts` runs in Node, parses `tokens.css` for both themes, computes the WCAG 2.x ratio (relative luminance `0.2126 R + 0.7152 G + 0.0722 B` after sRGB linearisation, ratio `(L1 + 0.05) / (L2 + 0.05)`), fails below 4.5, and fails with a clear message for a missing Token or an unsupported colour format. A second check renders a `system` and an `update-ready` slip with `preact-render-to-string` and finds no stripe class.
+
+**Design QA flow (21.16 to 21.19).**
+
+```mermaid
+sequenceDiagram
+    participant Q as QA task
+    participant F as Figma MCP
+    participant P as Playwright (npm run dev, 390x844)
+    participant D as docs/ui-design-qa.md
+    Q->>F: get_screenshot of Figma_Main, states off, on, on with draft
+    Q->>P: screenshot of the app in the same three states
+    Q->>Q: compare each pair
+    Q->>D: row per state: Figma node id, differences, fix or reason left
+    Q->>D: prototype used for CSS values only, with each value and its Token or rule
+    Q->>D: open items for missing or differing Chassis_Details with node ids
+    Q->>D: title deboss and grille ticks recorded as approved exceptions from the prototype (21.22)
+    Q->>D: circuit board crop and Scope left gutter recorded as known differences, not open items (21.23)
+```
+
+Screenshots go under `test-results` or `docs/qa-shots` and are not committed. Differences under requirement 21 are fixed in `src/ui`. The document also updates Decision 7 (stripe removed, ratios recorded) and the 10 px screw note (now 13 px).
 
 ### Pure-module and glue file list
 
@@ -571,8 +636,8 @@ src/ui/
 │             scope-map.ts persist.ts update-guard.ts gallery.ts   (+ *.test.ts, *.prop.test.ts)
 ├── components/  Rocker.tsx Led.tsx StatusWindow.tsx Scope.tsx ChannelSwitch.tsx MessageWell.tsx
 │                ByteMeter.tsx TransmitKey.tsx ListenLatch.tsx Tape.tsx Slip.tsx Sheet.tsx Notice.tsx
-│                AppIcon.tsx SosButton.tsx QuickKeys.tsx GroupKeyBar.tsx CircuitBoard.tsx Device.tsx App.tsx
-├── styles/   tokens.css fonts.css base.css (one .css per component)
+│                AppIcon.tsx SosButton.tsx QuickKeys.tsx GroupKeyBar.tsx CircuitBoard.tsx Chassis.tsx Device.tsx App.tsx
+├── styles/   tokens.css fonts.css base.css contrast.test.ts (one .css per component)
 └── fonts/    woff2 files and OFL license files
 public/art/   assets downloaded from Figma
 docs/figma-source-map.md
@@ -830,6 +895,18 @@ For every wire length, the fake transport and the real transport with the fake m
 For every `UiState` and `now`, `canRestartNow` is false when a transmission is in flight, a connect hold is running or a carrier is active, and true otherwise. The app never calls the service worker update function without a user tap and a true guard.
 **Validates: Requirements 2.7**
 
+### Property 14: Warm-up frame
+For every `progress` in 0..1 and `height` in 1..400, `warmUpFrame` returns one region inside `0..height-1`, its height is at most one row at progress 0, equals `height` at progress 1, and never decreases as progress grows.
+**Validates: Requirements 21.13**
+
+### Property 15: System slip contrast
+The Contrast_Ratio between the system slip ink and `--paper-system` is at least 4.5 in Ghost and in Beige 96, and the system slip markup has no stripe class.
+**Validates: Requirements 21.14, 21.15**
+
+### Property 16: Slots and chassis geometry (DOM level)
+In the live app each Reserved_Slot measures 0 x 0 px and Transmit equals its row width within 1 px. In `sos-held` and `sos-received` each slot and Transmit match the Source_Map within 1 px. Chassis parts match their Source_Map positions and sizes within 1 px, the selected channel key alone has grille ticks, and the Sheet screw is 13 px.
+**Validates: Requirements 21.1, 21.2, 21.3, 21.4, 21.7, 21.8, 21.10, 21.21, 15.1, 15.2**
+
 ## Testing Strategy
 
 ### Unit and property tests (Node, Vitest, fast-check)
@@ -848,7 +925,7 @@ All of `src/ui/model` and `src/ui/fake-transport.ts`. `*.test.ts` for fixed case
 
 ### Design QA against Figma
 
-A task compares each gallery state with its Figma screenshot (`get_screenshot`) and records differences. State 03 must show 8 lit segments and State 11 all 24 amber with the glow.
+A task compares each gallery state with its Figma screenshot (`get_screenshot`) and records differences. A second pass compares the main screen with Figma_Main in three states (see "Visual fidelity"). `e2e/slots.spec.ts` and `e2e/chassis.spec.ts` check geometry, `Chassis.test.ts` checks the markup, and `contrast.test.ts` checks the system slip ink. State 03 must show 8 lit segments and State 11 all 24 amber with the glow.
 
 ## Performance Considerations
 
