@@ -42,7 +42,7 @@ describe("ByteMeter", () => {
 
   it("puts the count in the caption row and Too long in the meter row (Figma 182:135, 213:317)", () => {
     expect(css).toMatch(
-      /\.byte-meter-count-row\s*{[^}]*position: absolute;[^}]*right: 4px;[^}]*bottom: calc\(100% \+ 5\.5px\)/,
+      /\.byte-meter-count-row\s*{[^}]*position: absolute;[^}]*right: 4px;[^}]*bottom: calc\(100% \+ 13\.5px\)/,
     );
     const over = renderToString(h(ByteMeter, { view: meterView(129, 128) }));
     expect(over).toContain(

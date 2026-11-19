@@ -884,6 +884,30 @@
         "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
         "timestamp": 1795122988814
       }
+    ],
+    "9.7 Restore the Figma spacing around Transmit after the slot collapse": [
+      {
+        "executionId": "a67504e2-a636-4e25-b925-4c575b4e1cd2",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795123711519
+      },
+      {
+        "executionId": "a67504e2-a636-4e25-b925-4c575b4e1cd2",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795124507005
+      }
+    ],
+    "9.8 Fix the caption-to-well gap, make Playwright start its own servers, and remove e2e timing flakes": [
+      {
+        "executionId": "53d86cef-33f8-4290-ad2c-0430cef7c128",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795126664174
+      },
+      {
+        "executionId": "53d86cef-33f8-4290-ad2c-0430cef7c128",
+        "chatSessionId": "sess_c8fc2315-10b8-4459-bfa5-43baca615aeb",
+        "timestamp": 1795129204441
+      }
     ]
   }
 }

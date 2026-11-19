@@ -1,6 +1,6 @@
 import type { TransportEvent } from "../audio";
 import type { Controller } from "./controller";
-import type { UiState } from "./model/reducer";
+import { carrierRearmed, type UiState } from "./model/reducer";
 import type { UiTransport } from "./transport-seam";
 
 export type TransportEventLike = TransportEvent;
@@ -8,6 +8,8 @@ export type TransportEventLike = TransportEvent;
 /** What Playwright can read through `window.__dialtone`. */
 export interface DialtoneHook {
   getState(): UiState;
+  /** True once the 2.5 s carrier quiet period has passed, so the next burst shows CARRIER. */
+  carrierRearmed(): boolean;
   /** Every transport event seen since the hook was installed, oldest first. */
   readonly events: TransportEventLike[];
 }
@@ -24,7 +26,7 @@ export function isE2eEnabled(search: string): boolean {
 export function installE2eHook(
   target: object,
   search: string,
-  controller: Pick<Controller, "getState">,
+  controller: Pick<Controller, "getState" | "now">,
   transport: Pick<UiTransport, "subscribe">,
 ): boolean {
   if (!isE2eEnabled(search)) return false;
@@ -32,7 +34,12 @@ export function installE2eHook(
   transport.subscribe((event) => {
     events.push(event);
   });
-  const hook: DialtoneHook = { getState: () => controller.getState(), events };
+  const hook: DialtoneHook = {
+    getState: () => controller.getState(),
+    carrierRearmed: () =>
+      carrierRearmed(controller.getState().carrier, controller.now()),
+    events,
+  };
   Object.defineProperty(target, "__dialtone", {
     value: hook,
     configurable: true,

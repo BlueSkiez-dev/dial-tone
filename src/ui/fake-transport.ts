@@ -36,6 +36,8 @@ export interface FakeControls {
   failStart(code: FakeStartCode | null): void;
   /** The next sends stay in flight for this many ms (0 clears). */
   holdSend(ms: number): void;
+  /** While on, sends stay in flight with no timer. Turning it off ends the held send. */
+  holdSendsUntilReleased(on: boolean): void;
 }
 
 const FFT_SIZE = 2048;
@@ -58,6 +60,8 @@ export function createFakeTransport(
   let carrierActive = false;
   let failCode: FakeStartCode | null = null;
   let holdMs = 0;
+  let holdManual = false;
+  let releaseHeld: (() => void) | null = null;
   let atFrame = 0;
   let tick = 0;
 
@@ -144,7 +148,13 @@ export function createFakeTransport(
         : "DT_FASTEST";
       const ms = airtimeFor(wire.length);
       emit({ kind: "tx", phase: "start", protocol, airtimeMs: ms });
-      await wait(holdMs);
+      if (holdManual) {
+        await new Promise<void>((resolve) => {
+          releaseHeld = resolve;
+        });
+      } else {
+        await wait(holdMs);
+      }
       sending = false;
       emit({ kind: "tx", phase: "end", protocol, airtimeMs: ms });
       const start = atFrame;
@@ -230,6 +240,14 @@ export function createFakeTransport(
 
     holdSend(ms) {
       holdMs = Math.max(0, ms);
+    },
+    holdSendsUntilReleased(on) {
+      holdManual = on;
+      if (!on && releaseHeld) {
+        const release = releaseHeld;
+        releaseHeld = null;
+        release();
+      }
     },
   };
   return transport;

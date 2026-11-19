@@ -84,6 +84,17 @@ export function DevPanel({ fake }: { fake: FakeControls }) {
         />
       </label>
       <label class="dev-panel-row">
+        Hold sends until released
+        <input
+          type="checkbox"
+          onChange={(e) =>
+            fake.holdSendsUntilReleased(
+              (e.currentTarget as HTMLInputElement).checked,
+            )
+          }
+        />
+      </label>
+      <label class="dev-panel-row">
         Fail next start
         <select
           value={fail}

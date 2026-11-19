@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { installE2eHook, isE2eEnabled } from "./e2e-hook";
 
-const controller = { getState: () => ({ marker: 1 }) as never };
+const controller = { getState: () => ({ marker: 1 }) as never, now: () => 0 };
 
 function fakeTransport() {
   const listeners: Array<(e: never) => void> = [];

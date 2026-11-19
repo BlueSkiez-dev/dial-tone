@@ -40,8 +40,13 @@ async function powerOn(page: Page): Promise<void> {
   await expect(page.locator(".status-code")).toHaveText("OK");
 }
 
-async function setHold(page: Page, ms: number): Promise<void> {
-  await page.getByLabel("Hold sends (ms)").fill(String(ms));
+/** Keeps the next sends in flight, with no timer, until 
+eleaseSends. */
+async function holdSends(page: Page): Promise<void> {
+  await page.getByLabel("Hold sends until released").check();
+}
+async function releaseSends(page: Page): Promise<void> {
+  await page.getByLabel("Hold sends until released").uncheck();
 }
 
 const switchEl = (page: Page) => page.getByRole("radiogroup");
@@ -63,36 +68,36 @@ test("States 01 to 15 are reachable through the real controls", async ({
   await skipOnboarding(page);
   await expectLike(page, "off");
 
-  // 02 Self-test: read within 600 ms of the tap.
-  const t0 = Date.now();
+  // 02 Self-test: has its own test below, run on a paused clock.
   await page.getByRole("switch", { name: "Power" }).click();
-  const selftest = await snapshot(page);
-  expect(Date.now() - t0).toBeLessThan(600);
-  const wantSelftest = await galleryOf(page, "selftest");
-  expect({ code: selftest.code, leds: selftest.leds }).toEqual({
-    code: wantSelftest.code,
-    leds: wantSelftest.leds,
-  });
-
   // 03 Ready.
   await expect(page.locator(".status-code")).toHaveText("OK");
   await expectLike(page, "ready");
 
   // 04 Sending: type and transmit, with the send held open.
-  await setHold(page, 2500);
+  await holdSends(page);
   await page
     .getByLabel("Message", { exact: true })
     .fill("Shelter B needs water. Send help by 5 pm.");
   await page.locator(".transmit-key").click();
   await expect(page.locator(".status-code")).toContainText("ATDT");
   await expectLike(page, "sending");
-  await setHold(page, 0);
+  await releaseSends(page);
   await expect(page.locator(".status-code")).toHaveText("OK", {
     timeout: 5000,
   });
 
   // 05 Hearing a signal: inject a carrier after 2.5 s of quiet.
-  await page.waitForTimeout(2500);
+  // Wait for the 2.5 s carrier quiet period to be over (observable through the test hook).
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        (
+          window as unknown as { __dialtone: { carrierRearmed(): boolean } }
+        ).__dialtone.carrierRearmed(),
+      ),
+    )
+    .toBe(true);
   await page.getByRole("button", { name: "Carrier on" }).click();
   await expect(page.locator(".status-code")).toHaveText("CARRIER");
   await expectLike(page, "hearing");
@@ -164,6 +169,14 @@ test("States 01 to 15 are reachable through the real controls", async ({
   await page.locator(".dev-panel summary").click();
   await page.locator(".dev-panel select").first().selectOption("denied");
   await expect(page.locator("[data-sheet='microphone']")).toBeVisible();
+  // The sheet takes focus in an effect after its first paint; Escape only reaches it then.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.activeElement?.closest("[data-sheet]") !== null,
+      ),
+    )
+    .toBe(true);
   await page.keyboard.press("Escape");
   await expect(page.locator("[data-sheet]")).toHaveCount(0);
   await expect(page.locator(".status-code")).toHaveText("OK");
@@ -171,6 +184,23 @@ test("States 01 to 15 are reachable through the real controls", async ({
   await expect(page.locator(".listen-latch-text")).toHaveText("No mic");
 });
 
+test("State 02: the self-test shows ATZ and all six LEDs until its timer fires", async ({
+  page,
+}) => {
+  await openLive(page);
+  await skipOnboarding(page);
+  // Pause the page clock so the self-test timer cannot fire before the screen is read.
+  await page.clock.install();
+  await page.getByRole("switch", { name: "Power" }).click();
+  const selftest = await snapshot(page);
+  const wantSelftest = await galleryOf(page, "selftest");
+  expect({ code: selftest.code, leds: selftest.leds }).toEqual({
+    code: wantSelftest.code,
+    leds: wantSelftest.leds,
+  });
+  await page.clock.runFor(1000);
+  await expect(page.locator(".status-code")).toHaveText("OK");
+});
 test("State 16: ?state=beige changes Token values and moves nothing", async ({
   page,
 }) => {
@@ -228,7 +258,7 @@ test.describe("channel switch while a send is held", () => {
     await expect(group).not.toHaveAttribute("aria-disabled", "true");
     expect(await group.getAttribute("disabled")).toBeNull();
 
-    await setHold(page, 3000);
+    await holdSends(page);
     await page.getByLabel("Message", { exact: true }).fill("hold this");
     await page.locator(".transmit-key").click();
     await expect(page.locator(".status-code")).toContainText("ATDT");
@@ -264,7 +294,8 @@ test.describe("channel switch while a send is held", () => {
     await page.getByRole("radio", { name: /Call/ }).click({ force: true });
     expect(await channelOf(page)).toBe("room");
     await expect(group).toHaveAttribute("data-value", "room");
-
+    // After the send ends the switch works again.
+    await releaseSends(page);
     // After the send ends the switch works again.
     await expect(page.locator(".status-code")).toHaveText("OK", {
       timeout: 6000,

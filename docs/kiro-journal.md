@@ -142,3 +142,11 @@ Re-ran the final checkpoint after task 9. typecheck, lint (exit 0, 7 warnings no
 ## 2026-11-19 - ui-shell 9.6
 Applied visual decisions: title two-line deboss via tokens, grille ticks kept, scope band lines drawn while off, byte count moved into the MESSAGE caption row per Figma. typecheck, lint (7 old warnings), 612 unit and 47 e2e tests pass. Finding: Figma has no message-well divider, so the earlier QA claim was wrong and was corrected.
 
+
+## 2026-11-19 - ui-shell 9.7
+Fixed Transmit touching the message well after slot collapse: well-to-Transmit gap 0 to 8 px, Transmit-to-Tape 44 to 20 px (derived from State 03 273:2). Spacing now sits on the visible neighbours. e2e gap checks added. typecheck, 613 unit, 47 e2e pass; first e2e run had two timing flakes (reachability, fake-mic) that passed alone.
+
+
+## 2026-11-20 - ui-shell 9.8
+Caption-to-well gap 0 to 8 px (Figma 273:150/273:155). Playwright webServer uses npm.cmd on Windows. Removed e2e timers (page.clock, carrierRearmed hook, hold-sends control), workers set to 1. Two full runs pass: typecheck, 613 unit, 48 e2e. Finding: fake-mic failed because parallel Chromium decoders overran the worker (up to 356 dropped chunks).
+

@@ -218,6 +218,15 @@ function withMic(s: UiState, mic: MicState, now: number): UiState {
   return next;
 }
 
+/** True when a new carrier burst would show CARRIER: no earlier burst ended, or it ended QUIET_REARM_MS ago. */
+export function carrierRearmed(
+  carrier: UiState["carrier"],
+  now: number,
+): boolean {
+  return (
+    carrier.lastOffAt === null || now - carrier.lastOffAt >= QUIET_REARM_MS
+  );
+}
 function carrierEvent(s: UiState, active: boolean, now: number): UiState {
   if (s.power !== "on") return s;
   if (!active) {
@@ -234,8 +243,7 @@ function carrierEvent(s: UiState, active: boolean, now: number): UiState {
     }
     return s;
   }
-  const quiet =
-    s.carrier.lastOffAt === null || now - s.carrier.lastOffAt >= QUIET_REARM_MS;
+  const quiet = carrierRearmed(s.carrier, now);
   return {
     ...s,
     carrier: {

@@ -35,11 +35,11 @@
   box-shadow: var(--shadow-meter-over);
 }
 
-/* Byte count (Figma 182:135): in the MESSAGE caption row above the well, right edge 4 px in from the well edge, 11 px high, vertically centred in the 22 px caption row (5.5 px above the well). Barlow Condensed SemiBold 11, tracking 2.2, uppercase. */
+/* Byte count (Figma 182:135): in the MESSAGE caption row above the well, right edge 4 px in from the well edge, 11 px high, vertically centred in the 22 px caption row (5.5 px above the caption row bottom, 8 px caption-to-well gap, so 13.5 px above the well). Barlow Condensed SemiBold 11, tracking 2.2, uppercase. */
 .byte-meter-count-row {
   position: absolute;
   right: 4px;
-  bottom: calc(100% + 5.5px);
+  bottom: calc(100% + 13.5px);
   margin: 0;
   font: var(--type-silk-caption);
   line-height: 11px;

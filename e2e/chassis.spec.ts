@@ -156,6 +156,8 @@ test("chassis: Sheet screws are 13 px", async ({ page }) => {
 test("scope: the self-test warm-up is one contiguous bright region, never stripes", async ({
   page,
 }) => {
+  // Fake clock: the warm-up advances only when the test runs it forward, so the three samples are exact.
+  await page.clock.install();
   await openGallery(page, "selftest");
   const runsAt = async () =>
     page.evaluate(() => {
@@ -176,9 +178,9 @@ test("scope: the self-test warm-up is one contiguous bright region, never stripe
       return { runs, lit: bright.filter(Boolean).length };
     });
   const samples = [await runsAt()];
-  await page.waitForTimeout(150);
+  await page.clock.runFor(150);
   samples.push(await runsAt());
-  await page.waitForTimeout(600);
+  await page.clock.runFor(600);
   samples.push(await runsAt());
   for (const s of samples) expect(s.runs).toBeLessThanOrEqual(1);
   expect(samples[2]?.lit ?? 0).toBeGreaterThanOrEqual(samples[0]?.lit ?? 0);

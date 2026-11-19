@@ -543,7 +543,7 @@ One file per Figma component in `src/ui/components/`, each with props that are p
 | `CircuitBoard` | none | SVG drawn in code under the frosted shell. Its crop differs from Figma_Main and is intentionally left unchanged for now (requirement 21.23). |
 | `Device`, `App` | | Layout (370 device, 340 faceplate) and the Sheet host. |
 
-**Reserved slots.** The live `Device` renders three containers with no content: the group key bar slot under the status window, the quick keys slot under the message well, and the SOS slot beside Listen. While empty they collapse to a computed 0 x 0 px with no margin, padding or gap, so the neighbours touch (requirement 21.1). They are not hidden with `display: none`, so a later spec can mount into them. Mounting content sets a modifier class that restores the slot to the width and height of its Figma frame from `docs/figma-source-map.md` (21.3). The gallery mounts all three only for `sos-held` and `sos-received`. Details are in "Visual fidelity".
+**Reserved slots.** The live `Device` renders three containers with no content: the group key bar slot under the status window, the quick keys slot under the message well, and the SOS slot beside Listen. While empty they collapse to a computed 0 x 0 px with no margin, padding or layout gap, so each contributes 0 px of size and spacing, and the visible neighbours keep their Figma spacing (requirement 21.1). They are not hidden with `display: none`, so a later spec can mount into them. Mounting content sets a modifier class that restores the slot to the width and height of its Figma frame from `docs/figma-source-map.md` (21.3). The gallery mounts all three only for `sos-held` and `sos-received`. Details are in "Visual fidelity".
 
 **Pass it on.** State 06's Heard slip shows "Pass it on → hop N". Relay is a later spec, so the live app renders the Heard slip without that button, and the gallery fixture for `received` turns it on (`extras.passOn`). The model carries `hop` already.
 
@@ -583,10 +583,12 @@ Figma_Main (node `0:1`) is the source of truth. Every measurement is read throug
 
 | State | Slot size | Transmit |
 |---|---|---|
-| Empty (live app today) | computed 0 x 0 px, margin, padding and gap 0, neighbours touch | The SOS slot is collapsed, so the Transmit key fills 100% of its row (1 px tolerance). No fixed Transmit width remains. |
+| Empty (live app today) | computed 0 x 0 px, margin, padding and gap 0, so it adds 0 px of size and spacing | The SOS slot is collapsed, so the Transmit key fills 100% of its row (1 px tolerance). No fixed Transmit width remains. |
 | Mounted (gallery `sos-held`, `sos-received`, later specs) | Figma frame width and height from the Source_Map (1 px tolerance) | Returns to its Figma frame width (1 px tolerance) |
 
-The row uses flex, with Transmit as `flex: 1 1 auto` and the SOS slot sized only by its modifier class. The collapse is a size rule, not `display: none`. The Source_Map gains the slot and Transmit widths if they are missing. Checked by `e2e/slots.spec.ts` through `getBoundingClientRect`.
+The row uses flex, with Transmit as `flex: 1 1 auto` and the SOS slot sized only by its modifier class. The collapse is a size rule, not `display: none`.
+
+**Neighbour spacing (21.1, 21.24).** The vertical spacing between visible elements is carried by the visible elements themselves (a margin on the element below, valued from the Source_Map), never by a flex or grid `gap` on a container that holds a Reserved_Slot, because such a gap would add spacing around a collapsed slot. A collapsed slot therefore removes only itself, and the visible neighbours keep their Figma spacing. With the Reserved_Slots collapsed, the gap between the message well and the Transmit key is greater than 0 px and equals the Figma_Main gap (1 px tolerance), and the gap between the Transmit key and the Tape equals the Figma_Main gap (1 px tolerance). The well therefore does not end where Transmit starts. The Source_Map records both Figma gaps. The Source_Map gains the slot and Transmit widths if they are missing. Checked by `e2e/slots.spec.ts` through `getBoundingClientRect`.
 
 **Chassis details (21.4 to 21.11).** Each part is code (CSS, inline SVG or a small component) in `src/ui/components/Chassis.tsx` and `chassis.css`, one clearly named block per part. Positions and sizes come from the Source_Map. All colours are Tokens, with `#040504` the only literal. They are static, so reduced motion needs no handling. A part that needs an image goes to `public/art` and into the precache globs.
 
@@ -904,8 +906,8 @@ The Contrast_Ratio between the system slip ink and `--paper-system` is at least 
 **Validates: Requirements 21.14, 21.15**
 
 ### Property 16: Slots and chassis geometry (DOM level)
-In the live app each Reserved_Slot measures 0 x 0 px and Transmit equals its row width within 1 px. In `sos-held` and `sos-received` each slot and Transmit match the Source_Map within 1 px. Chassis parts match their Source_Map positions and sizes within 1 px, the selected channel key alone has grille ticks, and the Sheet screw is 13 px.
-**Validates: Requirements 21.1, 21.2, 21.3, 21.4, 21.7, 21.8, 21.10, 21.21, 15.1, 15.2**
+In the live app each Reserved_Slot measures 0 x 0 px and Transmit equals its row width within 1 px. The well-to-Transmit gap is greater than 0 px and equals the Source_Map gap within 1 px, and the Transmit-to-Tape gap equals the Source_Map gap within 1 px. In `sos-held` and `sos-received` each slot and Transmit match the Source_Map within 1 px. Chassis parts match their Source_Map positions and sizes within 1 px, the selected channel key alone has grille ticks, and the Sheet screw is 13 px.
+**Validates: Requirements 21.1, 21.2, 21.3, 21.4, 21.7, 21.8, 21.10, 21.21, 21.24, 15.1, 15.2**
 
 ## Testing Strategy
 

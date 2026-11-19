@@ -68,6 +68,37 @@ The faceplate keeps three slots whose content is deferred. The layout must reser
 
 The Message block `273:149` is a grid of 22 (label row) + 123.39 (well) + 40 (quick keys) + 101 (actions row) at top 721.68. Other fixed heights on the faceplate: Header 71 (Wordmark 50.39), Status window 113 at top 117, Scope 198 at top 250 (Screen 184), Channel 137.68 at top 468, Tape header 132.5 at top 1052.07, Listen latch 22 and button 26.
 
+## Main screen spacing (Figma_Main)
+
+Read with `get_metadata` and `get_design_context` on State 03 (`273:2`, Faceplate `273:8`). Figma_Main `0:1` (`182:2`) is a flat import with no separate nodes for these parts, so the State 03 frames are the measured source. Positions are relative to the Message grid `273:149` (top 721.68 in the faceplate).
+
+| Part | Node id | y | Height | Bottom |
+|---|---|---|---|---|
+| Message well | `273:155` | 30.00 | 123.39 | 153.39 |
+| Quick messages (slot) | `273:188` | 161.39 | 40 | 201.39 |
+| Actions row | `273:218` | 209.39 | 101 | 310.39 |
+| Transmit key | `273:199` (in Container `273:198`, y 6) | 226.89 | 72 | 298.89 |
+| Tape header | `273:219` | 1052.07 in the faceplate (Message ends at 1032.07) | 132.5 | |
+
+The Message grid has `gap: 8px` and rows 22 / 123.39 / 40 / 101. Transmit sits 11.5 px below the top of the 95 px Container, which starts 6 px below the top of the Actions row, so Transmit is centred on the SOS slot.
+
+Gaps with the slots present (measured): well to Transmit 226.89 - 153.39 = **73.5 px** (8 + 40 + 8 + 6 + 11.5). Transmit to Tape 11.5 + 20 = **31.5 px**.
+
+Gaps with the three Reserved_Slots collapsed (derived, Figma never shows this layout): the quick keys slot and its grid gap leave, and the 6 px Actions padding and 11.5 px centring offset exist only to centre Transmit on the SOS slot, so they leave too. What remains between visible neighbours is the Message grid gap and the faceplate part gap.
+- Well to Transmit (`273:155` to `273:199`): **8 px**, the Message grid gap (nearest gap between visible neighbours, also label to well and well to quick keys).
+- Transmit to Tape (`273:199` to `273:219`): **20 px**, the faceplate part gap between the Message block and the Tape header.
+
+Build: `.actions-row { margin-top: 8px }`, `.slot-quick-keys:not(.slot-empty) { margin-top: 8px }` and no `.part-tape` margin override (the 20 px faceplate rule applies). With the slots mounted the layout gives 73.5 px and 31.5 px, equal to the measured Figma gaps.
+
+Caption row to well (task 9.8, requirement 21.25), read with `get_metadata` on `273:149`:
+
+| Part | Node id | y | Height | Bottom |
+|---|---|---|---|---|
+| MESSAGE caption row ("Label row") | `273:150` | 0 | 22 | 22 |
+| Message well | `273:155` | 30.00 | 123.39 | 153.39 |
+
+Caption-to-well gap: 30 - 22 = **8 px**, the Message grid gap. Build: `.part-well { margin-top: 8px }` (the well carries it, no slot is involved). The byte count `273:153`/`182:134` stays at y 5.5 to 16.5 in the caption row, so it now sits 13.5 px above the well top (`.byte-meter-count-row { bottom: calc(100% + 13.5px) }`).
+
 ## New screens page (`219:2`)
 
 | Screen | Node id | Gallery name | Status |

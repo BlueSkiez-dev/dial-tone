@@ -341,7 +341,7 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 
 #### Acceptance Criteria
 
-1. WHILE the group key bar, the quick keys and the SOS button are not mounted by the live app, THE Device_Screen SHALL collapse each of the three Reserved_Slots to a computed height of 0 px and a computed width of 0 px, and SHALL leave a gap of 0 px between the neighbouring elements in their place.
+1. WHILE the group key bar, the quick keys and the SOS button are not mounted by the live app, THE Device_Screen SHALL collapse each of the three Reserved_Slots to a computed height of 0 px and a computed width of 0 px, so that each collapsed Reserved_Slot contributes 0 px of size and 0 px of spacing (margin, padding and layout gap), AND the visible neighbouring elements SHALL keep the Figma_Main spacing to each other, as specified in criterion 24.
 2. WHILE the SOS slot is collapsed, THE Transmit key SHALL fill 100% of the width of its row, with a tolerance of 1 px.
 3. WHEN a later spec mounts the group key bar, the quick keys or the SOS button, THE Device_Screen SHALL restore the matching slot to the width and height of its Figma frame recorded in the Source_Map, with a tolerance of 1 px, and THE Transmit key SHALL return to the width of its Figma frame in the Source_Map, with a tolerance of 1 px.
 4. THE Device_Screen SHALL draw the four chassis corner screws of Figma_Main, one in each corner, at the position and size of their Figma nodes in the Source_Map, with a tolerance of 1 px.
@@ -364,3 +364,6 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 21. THE message well SHALL place the byte count and draw the divider line at the positions and sizes of their Figma_Main nodes recorded in the Source_Map, with a tolerance of 1 px.
 22. THE Design QA task SHALL record in `docs/ui-design-qa.md` that the Prototype_Reference was the source of the faceplate title deboss (criterion 6) and the channel key grille ticks (criterion 7), as approved exceptions to Figma_Main.
 23. THE Design QA task SHALL list the circuit board crop and the darker left gutter of the Scope in `docs/ui-design-qa.md` as known differences that are intentionally left unchanged for now, and SHALL NOT treat them as open items under criterion 19 or as failures.
+24. WHILE the Reserved_Slots are collapsed, THE gap between the message well and the Transmit key SHALL equal the Figma_Main gap, with a tolerance of 1 px, and SHALL be greater than 0 px, AND the gap between the Transmit key and the Tape SHALL equal the Figma_Main gap, with a tolerance of 1 px.
+25. THE gap between the MESSAGE caption row and the message well SHALL equal the Figma_Main gap (well top at 30 px in State 03 node `273:155` versus 22 px in the app, i.e. 8 px), within 1 px.
+26. THE e2e tests SHALL wait for an observable app state (a DOM attribute, text or event) and SHALL NOT rely on fixed timers or timing thresholds to decide when a state has been reached.

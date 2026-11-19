@@ -27,6 +27,16 @@ describe("Device frame", () => {
     expect(css).not.toMatch(/\.slot[^{]*{[^}]*display: none/);
   });
 
+  it("puts the Figma spacing on the visible neighbours, not on collapsed slots", () => {
+    expect(css).toMatch(
+      /\.slot\.slot-empty\s*{[^}]*margin: 0;[^}]*padding: 0;[^}]*gap: 0/,
+    );
+    expect(css).toMatch(/\.actions-row\s*{[^}]*margin-top: 8px/);
+    expect(css).toMatch(
+      /\.slot-quick-keys:not\(\.slot-empty\)\s*{[^}]*margin-top: 8px/,
+    );
+    expect(css).not.toMatch(/\.part-tape\s*{[^}]*margin-top: 44px/);
+  });
   it("gives the slots the Figma heights", () => {
     expect(css).toMatch(/\.slot-group-key\s*{[^}]*height: 76px/);
     expect(css).toMatch(/\.slot-quick-keys\s*{[^}]*height: 40px/);
