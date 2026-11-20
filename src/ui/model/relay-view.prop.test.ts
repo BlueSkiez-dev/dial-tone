@@ -1,5 +1,8 @@
 import fc from "fast-check";
+import { h } from "preact";
+import { renderToString } from "preact-render-to-string";
 import { describe, expect, it } from "vitest";
+import { Slip as SlipView } from "../components/Slip";
 import { copy } from "../copy";
 import { initialState, reduce } from "./reducer";
 import { relayView, type SlipRelayView } from "./relay-view";
@@ -76,6 +79,15 @@ const otherArb: fc.Arbitrary<Slip> = fc.oneof(
   }),
 );
 
+/** Every reason line and the Passed on text, as rendered (HTML-escaped forms are identical). */
+const REASON_LINES = [
+  copy.relay.endNoHops,
+  copy.relay.endHopLimit,
+  copy.relay.endMulti,
+  copy.relay.endKeyOffer,
+  copy.relay.passedOn,
+];
+
 const ctxArb = fc.record({ held: fc.boolean(), canSendNow: fc.boolean() });
 
 /** Independent oracle: the first matching row of the design table. */
@@ -88,12 +100,12 @@ function expected(
     return { kind: "none" };
   const r = slip.relay;
   if (slip.passedOn === true) return { kind: "passed" };
-  if (!r) return { kind: "reason", key: "restart" };
+  if (!r) return { kind: "none" };
   if (r.multi) return { kind: "reason", key: "multi" };
   if (r.keyOffer) return { kind: "reason", key: "key-offer" };
   if (r.ttl === 0) return { kind: "reason", key: "no-hops" };
   if (r.hop === 15) return { kind: "reason", key: "hop-limit" };
-  if (!ctx.held) return { kind: "reason", key: "restart" };
+  if (!ctx.held) return { kind: "none" };
   return { kind: "action", hop: r.hop + 1, disabled: !ctx.canSendNow };
 }
 
@@ -102,7 +114,15 @@ describe("relayView decision table (Property 14)", () => {
     // **Validates: Requirements 3.9, 4.2, 4.4, 4.5, 4.6, 4.7, 4.8, 4.10, 4.12, 4.14, 4.15, 4.17**
     fc.assert(
       fc.property(fc.oneof(heardArb, unreadableArb), ctxArb, (slip, ctx) => {
-        expect(relayView(slip, ctx)).toEqual(expected(slip, ctx));
+        const v = relayView(slip, ctx);
+        expect(v).toEqual(expected(slip, ctx));
+        if (v.kind === "none") {
+          // The restart case: no action and no reason line (4.6).
+          const html = renderToString(h(SlipView, { slip, relay: v }));
+          expect(html).not.toContain("<button");
+          expect(html).not.toContain("slip-note");
+          for (const line of REASON_LINES) expect(html).not.toContain(line);
+        }
       }),
       params,
     );

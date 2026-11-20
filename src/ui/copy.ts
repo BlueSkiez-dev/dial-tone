@@ -84,7 +84,6 @@ export const copy = {
     passOnLabel: (hop: number) => `Pass it on, hop ${hop}`,
     endNoHops: "End of the line. This message has no hops left to pass on.",
     endHopLimit: "End of the line. This message has gone as far as it can.",
-    endRestart: "Can’t be passed on after the app restarts.",
     endMulti: "Long messages can’t be passed on yet.",
     endKeyOffer: "Group keys can’t be passed on. Join in the same room.",
     unreadable: {

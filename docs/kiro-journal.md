@@ -325,3 +325,12 @@ Added Property 20 to relay-controller.prop.test.ts: after an ok transmit, copies
 
 ## 2026-11-20 - relay 7.1 checkpoint (rerun)
 All six pass first time: typecheck; lint 0 errors, 7 existing warnings; test 725/725; test:props 203/203; test:slow 64/64 in 6 min 12 s, including both relay modem tests; test:e2e 55/55 in 3 min 33 s, including the relay test. No native crash this run.
+
+## 2026-11-20 - relay 4.6
+relayView returns none for both restart cases (no relay meta, no held wire); restart reason and copy.relay.endRestart removed. Reloaded slips show no button and no reason line; other reasons unchanged. Slip, relay-view, persist and scan tests pass (54), typecheck clean. e2e reload step now expects only Passed on.
+
+## 2026-11-20 - relay 4.7
+Slip.css: .slip-button::after is now centred with min-width and min-height 44px (same 4 px and 7 px growth as before), so the hit area no longer depends on label length. Button visuals unchanged. Slip size test now reads the minimums from CSS. Slip, TransmitKey and scan tests pass 55/55, typecheck clean.
+
+## 2026-11-20 - relay 7.2 checkpoint
+npm test 726/726 (92 files, 41.5 s); test:e2e 55/55 in 3.5 min, including the relay pass-on and reload test. No native crash. No code changes needed.

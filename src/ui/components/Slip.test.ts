@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { h } from "preact";
 import { renderToString } from "preact-render-to-string";
 import { describe, expect, it, vi } from "vitest";
+import { relayView } from "../model/relay-view";
 import type { GallerySlip, Slip as SlipModel } from "../model/tape";
 import { GhostText, ghostFrame } from "./GhostText";
 import { Slip } from "./Slip";
@@ -100,7 +101,6 @@ describe("Slip", () => {
     const lines = {
       "no-hops": "End of the line. This message has no hops left",
       "hop-limit": "End of the line. This message has gone as far",
-      restart: "Can’t be passed on after the app restarts.",
       multi: "Long messages can’t be passed on yet.",
       "key-offer": "Group keys can’t be passed on.",
     } as const;
@@ -164,6 +164,36 @@ describe("Slip", () => {
     expect(end).toContain("Can’t read this message.");
     expect(end).not.toContain("You can still pass it on");
     expect(end).toContain("Long messages can’t be passed on yet.");
+  });
+
+  it("shows no button and no reason line after a reload (4.6)", () => {
+    // A reloaded slip has no relay meta, no Held_Wire and no passedOn.
+    const reasons = [
+      "End of the line",
+      "can’t be passed on",
+      "after the app restarts",
+      "Passed on",
+    ];
+    const reloadedHeard: SlipModel = heard("h");
+    const reloadedNotice: SlipModel = {
+      kind: "system",
+      id: "u2",
+      at: 0,
+      noticeKey: "unreadable",
+    };
+    for (const slip of [reloadedHeard, reloadedNotice]) {
+      const view = relayView(slip, { held: false, canSendNow: true });
+      expect(view).toEqual({ kind: "none" });
+      const html = renderToString(h(Slip, { slip, relay: view }));
+      expect(html).not.toContain("<button");
+      expect(html).not.toContain("slip-note");
+      for (const r of reasons) expect(html).not.toContain(r);
+    }
+    const notice = renderToString(
+      h(Slip, { slip: reloadedNotice, relay: { kind: "none" } }),
+    );
+    expect(notice).toContain(">Can’t read this message.<");
+    expect(notice).not.toContain("You can still pass it on");
   });
 
   it("Update ready has Later and Restart now", () => {
@@ -260,20 +290,14 @@ describe("Pass it on button (relay 4.9, 4.11)", () => {
     const after = rule(".slip-button::after");
     expect(after).toMatch(/position:\s*absolute/);
     expect(base).toMatch(/position:\s*relative/);
-    const inset = after.match(/inset:\s*-([\d.]+)px\s+-([\d.]+)px/);
-    const vOut = Number(inset?.[1]);
-    const hOut = Number(inset?.[2]);
-    // Height: min-height plus the hit area grown above and below.
-    expect(px(base, "min-height") + 2 * vOut).toBeGreaterThanOrEqual(44);
-    // Width: padding and border alone, before the label, plus the grown sides.
-    const pad = base.match(/padding:\s*[\d.]+px\s+([\d.]+)px/);
-    const border = px(base, "border");
-    const boxNoText = 2 * (Number(pad?.[1]) + border + hOut);
-    expect(boxNoText).toBeGreaterThanOrEqual(33);
-    // No min-width: the rest of the width comes from the label, one nowrap
-    // line of at least 18 characters at 12.5 px, far over the 11 px still needed.
-    expect(base).toMatch(/white-space:\s*nowrap/);
-    expect(html).toMatch(/>Pass it on → hop 2</);
+    // The overlay carries its own minimum, so the label length never matters (relay 4.9).
+    expect(px(after, "min-width")).toBeGreaterThanOrEqual(44);
+    expect(px(after, "min-height")).toBeGreaterThanOrEqual(44);
+    // Centred on the button, not anchored to one edge.
+    expect(after).toMatch(/top:\s*50%/);
+    expect(after).toMatch(/left:\s*50%/);
+    expect(after).toMatch(/transform:\s*translate\(-50%,\s*-50%\)/);
+    expect(after).not.toMatch(/inset:/);
   });
 
   it("is a native button, so Enter and Space activate it through click", () => {
@@ -326,7 +350,6 @@ describe("Pass it on button (relay 4.9, 4.11)", () => {
             passedOn: evil("p"),
             endNoHops: evil("r1"),
             endHopLimit: evil("r2"),
-            endRestart: evil("r3"),
             endMulti: evil("r4"),
             endKeyOffer: evil("r5"),
             unreadable: {
@@ -345,7 +368,7 @@ describe("Pass it on button (relay 4.9, 4.11)", () => {
         at: 0,
         noticeKey: "unreadable",
       };
-      const keys = ["no-hops", "hop-limit", "restart", "multi", "key-offer"];
+      const keys = ["no-hops", "hop-limit", "multi", "key-offer"];
       const htmls = [
         renderToString(h(S, { slip: heard("x"), relay: { kind: "passed" } })),
         ...keys.map((key) =>

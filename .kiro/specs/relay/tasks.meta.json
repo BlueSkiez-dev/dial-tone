@@ -848,6 +848,11 @@
         "executionId": "ba956242-554e-4b3b-b141-80de20006083",
         "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
         "timestamp": 1795179935904
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795192892288
       }
     ],
     "6. Tests and e2e": [
@@ -879,6 +884,11 @@
         "executionId": "378cebd8-81d4-4c07-900c-f40f3392b7be",
         "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
         "timestamp": 1795189513625
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795193271324
       }
     ],
     "4.5 Give Pass it on the Transmit disabled styling": [
@@ -1017,6 +1027,57 @@
         "executionId": "378cebd8-81d4-4c07-900c-f40f3392b7be",
         "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
         "timestamp": 1795188686273
+      }
+    ],
+    "4.6 Show no reason line for slips that can't be passed on only because of a restart": [
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795191866312
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795191873954
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795192663001
+      }
+    ],
+    "4.7 Give every slip action button a 44×44 px minimum hit area": [
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795191866607
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795192690999
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795192891955
+      }
+    ],
+    "7.2 Run test and test:e2e and report": [
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795191866846
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795192911258
+      },
+      {
+        "executionId": "9ad6dc5e-589e-43cc-8b56-f6c16f818572",
+        "chatSessionId": "sess_c7f3076b-2e2a-44e5-8b9e-596d3295947f",
+        "timestamp": 1795193270736
       }
     ]
   }

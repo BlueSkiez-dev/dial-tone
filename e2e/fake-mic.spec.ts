@@ -143,14 +143,16 @@ test("fake microphone: a heard frame is passed on once and stays passed on after
   await expect(slips).toHaveCount(slipsBefore);
 
   // After a reload the Held_Wire is gone, but the stored flag still shows "Passed on"
-  // and not the restart reason (Requirements 3.10, 4.17).
+  // and no reason line (Requirements 3.10, 4.6, 4.17).
   await page.reload();
   const heardAfter = page.locator('article.slip[data-kind="heard"]');
   await expect(heardAfter).toHaveCount(1);
   const slipAfter = heardAfter.first();
   await expect(slipAfter).toContainText(BODY_TEXT);
-  await expect(slipAfter).toContainText("Passed on");
-  await expect(slipAfter).not.toContainText("after the app restarts");
+  const notes = slipAfter.locator(".slip-note");
+  await expect(notes).toHaveCount(1);
+  await expect(notes).toHaveText("Passed on");
+  await expect(slipAfter).not.toContainText(/End of the line|can’t be passed on/);
   await expect(
     slipAfter.getByRole("button", { name: /pass it on/i }),
   ).toHaveCount(0);

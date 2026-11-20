@@ -27,7 +27,7 @@ Scope:
 The `crypto` spec must keep `ttl` and `hop` outside the encrypted and authenticated part of a frame. They must never be in the AAD or in the ciphertext. Only the message ID and the type may be authenticated as AAD (per the byte-budget steering). Then a relay that holds no key can carry an encrypted message (such as an encrypted TEXT) it cannot read, and the receiver's authentication check still passes, because the relay changes only bytes that the check does not cover. Relays re-broadcast the original ciphertext and never re-encrypt. The group key itself travels only in a KEY_OFFER, which a relay never passes on. Requirement 2.9 pins this from the relay side.
 
 Assumptions (accepted at review):
-1. Pass-on keeps the wire bytes (Held_Wire) of a heard frame in memory for the current session only. `ui-shell` requirement 16.5 forbids storing binary data, so the Held_Wire is never stored. The boolean `passedOn` on the slip is not binary data and IS persisted with the slip. After a reload, a slip that was passed on shows "Passed on", and a slip that was not passed on shows no Pass it on action and says why.
+1. Pass-on keeps the wire bytes (Held_Wire) of a heard frame in memory for the current session only. `ui-shell` requirement 16.5 forbids storing binary data, so the Held_Wire is never stored. The boolean `passedOn` on the slip is not binary data and IS persisted with the slip. After a reload, a slip that was passed on shows "Passed on", and a slip that was not passed on shows no Pass it on action and no reason line.
 2. Pass-on is offered once per message per phone. After the tap the slip shows "Passed on" and offers no second tap.
 3. The channel used to pass a message on is the channel selected on the switch at tap time. The decoders do not report which channel a frame arrived on.
 4. A KEY_OFFER is never passed on (see "KEY_OFFER is never relayed").
@@ -119,10 +119,10 @@ Assumptions (accepted at review):
 3. WHEN a received frame is a single-frame message that is not a KEY_OFFER, whose body this phone cannot read and whose Hops_Left is at least 1 and Hop_Count is below 15, THE app SHALL print an Unreadable_Notice with the Pass_On_Action and the text "Can’t read this message. You can still pass it on."
 4. IF a Heard_Slip is for a frame with Hops_Left of 0, THEN THE Tape SHALL show no Pass_On_Action and SHALL show the End_Of_Line_Reason "End of the line. This message has no hops left to pass on."
 5. IF a Heard_Slip is for a frame with Hop_Count of 15 and Hops_Left of at least 1, THEN THE Tape SHALL show no Pass_On_Action and SHALL show the End_Of_Line_Reason "End of the line. This message has gone as far as it can."
-6. IF a Heard_Slip has no Held_Wire (loaded from storage after a reload) and its Passed_On_Flag is false, THEN THE Tape SHALL show no Pass_On_Action and SHALL show the End_Of_Line_Reason "Can’t be passed on after the app restarts."
+6. IF a Heard_Slip has no Held_Wire (loaded from storage after a reload) and its Passed_On_Flag is false, THEN THE Tape SHALL show no Pass_On_Action and SHALL show no End_Of_Line_Reason, and an Unreadable_Notice in that case SHALL show only the text "Can’t read this message.". The relay metadata is kept in memory only (criterion 12), so after a reload this holds whatever Hops_Left, Hop_Count, `total` and type the frame had.
 7. IF a Heard_Slip is for a multi-frame message, THEN THE Tape SHALL show no Pass_On_Action and SHALL show the End_Of_Line_Reason "Long messages can’t be passed on yet."
 8. WHILE the power is off, a transmission is in flight, or a fault is set, THE Pass_On_Action SHALL be disabled and SHALL keep its label.
-9. THE Pass_On_Action SHALL have a tap target of at least 44 by 44 px, an accessible name that includes the next hop, and keyboard operation, as `ui-shell` requirement 19.3 states.
+9. THE Pass_On_Action SHALL have an accessible name that includes the next hop and keyboard operation, and THE Pass_On_Action and every other slip action button (class `slip-button`) SHALL have a hit area of at least 44 px wide and at least 44 px tall, set by a minimum width and a minimum height on the hit area, so that the size does not depend on the length of the label, as `ui-shell` requirement 19.3 states.
 10. WHEN the user passes a message on, THE Heard_Slip SHALL show the text "Passed on" in place of the Pass_On_Action, and THE Tape SHALL NOT print a separate Relayed slip.
 11. THE Tape SHALL render the End_Of_Line_Reason and the Unreadable_Notice text as text and never as HTML.
 12. THE Heard_Slip SHALL keep Hops_Left in memory next to Hop_Count, so that criteria 4 to 5 can be decided without the Held_Wire.
@@ -130,7 +130,7 @@ Assumptions (accepted at review):
 14. IF a Heard_Slip or Unreadable_Notice is for a KEY_OFFER frame, THEN THE Tape SHALL show no Pass_On_Action, SHALL NOT show the text "You can still pass it on", and SHALL show the End_Of_Line_Reason "Group keys can’t be passed on. Join in the same room."
 15. WHEN an Unreadable_Notice has Hops_Left of 0, THE Tape SHALL show the no-hops-left End_Of_Line_Reason of criterion 4 and SHALL NOT show the text "You can still pass it on".
 16. FOR ALL Unreadable_Notices, THE Tape SHALL show the text "You can still pass it on" if and only if the notice also shows the Pass_On_Action, which holds only when the frame is a Relayable_Frame.
-17. WHEN a Heard_Slip with a Passed_On_Flag of true is loaded from storage after a reload, THE Tape SHALL show "Passed on" and no Pass_On_Action, and SHALL NOT show the restart reason of criterion 6. Any other slip (for example a System slip that is not an Unreadable_Notice, such as `mic-again`) SHALL show neither "Passed on" nor a Pass_On_Action nor an End_Of_Line_Reason, whatever its Passed_On_Flag is.
+17. WHEN a Heard_Slip with a Passed_On_Flag of true is loaded from storage after a reload, THE Tape SHALL show "Passed on" and no Pass_On_Action. Any other slip (for example a System slip that is not an Unreadable_Notice, such as `mic-again`) SHALL show neither "Passed on" nor a Pass_On_Action nor an End_Of_Line_Reason, whatever its Passed_On_Flag is.
 
 ### Requirement 5: Hop count on the slip
 
@@ -215,7 +215,7 @@ Assumptions (accepted at review):
 ## Open items for review
 
 Settled:
-1. Pass-on after a reload: the Held_Wire is never stored, so an un-passed slip offers no action after a reload and says why. The boolean Passed_On_Flag is persisted, so a slip that was passed on still shows "Passed on" (assumption 1, Requirements 3.10, 3.11 and 4.17). The Relay_State dedupe list stays memory-only.
+1. Pass-on after a reload: the Held_Wire is never stored, so an un-passed slip offers no action after a reload and shows no reason line (Requirement 4.6). The reason lines for no hops left, hop limit, multi-frame and KEY_OFFER stay, and appear only while the relay metadata is in memory. The boolean Passed_On_Flag is persisted, so a slip that was passed on still shows "Passed on" (assumption 1, Requirements 3.10, 3.11 and 4.17). The Relay_State dedupe list stays memory-only.
 2. `SEND_TTL` stays 3 (a design parameter). Raising it is a one-constant change if three hops is too few.
 3. TTL goes down by one and hop goes up by one in the same patch, as `frame-protocol` defines. The earlier "hop count lowered by one" wording is not used.
 4. One Pass it on tap per message per phone, with the channel chosen on the switch at tap time, and "Passed on" shown on the slip.

@@ -69,7 +69,6 @@ function Stamp(props: { label: string }) {
 const REASON_TEXT = {
   "no-hops": copy.relay.endNoHops,
   "hop-limit": copy.relay.endHopLimit,
-  restart: copy.relay.endRestart,
   multi: copy.relay.endMulti,
   "key-offer": copy.relay.endKeyOffer,
 } as const;

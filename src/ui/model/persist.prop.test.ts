@@ -125,9 +125,11 @@ describe("Property 18: passedOn survives a save and load, relay data does not", 
             expect("relay" in got).toBe(false);
             const relayable =
               got.kind === "heard" || got.noticeKey === "unreadable";
-            if (orig.passedOn === true && relayable) {
+            if (relayable) {
+              // Passed on survives; anything else reloads with no action and
+              // no reason line (4.6, 4.17).
               expect(relayView(got, { held, canSendNow: true }).kind).toBe(
-                "passed",
+                orig.passedOn === true ? "passed" : "none",
               );
             }
           });

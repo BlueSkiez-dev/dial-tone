@@ -147,11 +147,18 @@
   color: var(--slip-button-restart-ink);
 }
 
-/* Grow the hit area to at least 44 px without changing the look. */
+/* Grow the hit area to at least 44 by 44 px without changing the look (relay 4.9). Centred on the
+   button, with a minimum so a short label can't shrink it. */
 .slip-button::after {
   content: "";
   position: absolute;
-  inset: -7px -4px;
+  top: 50%;
+  left: 50%;
+  width: calc(100% + 8px);
+  height: calc(100% + 14px);
+  min-width: 44px;
+  min-height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 .slip-button:focus-visible {

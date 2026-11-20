@@ -21,7 +21,9 @@ Decisions in this design:
 | Relay_State | A `readonly string[]` of Message_Keys, newest last, `SEEN_MAX` = 256 | This is the shape `receive.ts` already uses for `seen`. The cap and the drop-oldest rule move into `src/protocol` so they are tested as a pure unit and `receive.ts` stops owning a second copy. Memory only. |
 | Held_Wire storage | A `Map<slipId, Uint8Array>` inside the Controller, never in a Slip | `persist.ts` writes slips with `JSON.stringify`. A `Uint8Array` in a Slip would reach storage, which `ui-shell` 16.5 forbids. A map outside the tape cannot leak. |
 | Slip id as map key | The slip id of a single-frame slip is already `frameKey` | `receive.ts` sets `id: key`. The Message_Key, the slip id and the Held_Wire key are one string. |
-| Relay metadata on a slip | Optional `relay?: { hop, ttl, multi, keyOffer }`, in memory only | Lets the Tape decide without the wire (4.12, 4.14). Stripped by `persist.ts` on write, so a reloaded un-passed slip shows "Can’t be passed on after the app restarts." (4.6). |
+| Relay metadata on a slip | Optional `relay?: { hop, ttl, multi, keyOffer }`, in memory only | Lets the Tape decide without the wire (4.12, 4.14). Stripped by `persist.ts` on write, so a reloaded un-passed slip shows no action and no reason line (4.6). |
+| Restart outcome | `relayView` returns `{ kind: "none" }` when the slip has no `relay` meta or no Held_Wire. The `restart` reason key and the `copy.relay.endRestart` string are removed. | Smallest change: `none` already renders nothing, so `Slip.tsx` needs no new branch, and the reason union loses one member instead of gaining a `hidden` kind. An unreadable notice with `none` prints `copy.relay.unreadable.text` ("Can’t read this message.") with no reason line. `endRestart` has no other user, so it is deleted (4.6). |
+| Slip button hit area | `.slip-button::after` carries `min-width: 44px` and `min-height: 44px` and is centred on the button | The current overlay uses `inset: -7px -4px`, so its width follows the label. A minimum on the overlay gives every slip action button a 44 by 44 px hit area whatever the label length, without changing the look (4.9). |
 | `passedOn` on a slip | Optional persisted boolean `passedOn?: true` on Heard and System slips | The only relay datum that is stored (3.10, 3.11). A reloaded slip with `passedOn: true` shows "Passed on" only if `relayView` treats it as relayable, that is a `heard` slip or a System slip with `noticeKey: "unreadable"` (4.17). Every other System slip (for example `mic-again`) shows nothing, because `relayView` returns `none` for it whatever `passedOn` is. It is not binary data, so `ui-shell` 16.5 holds. |
 | Pass-on channel | The channel selected at tap time | `UiTransport.send` already plays on `transport.profile`, which the Controller keeps equal to `state.channel`. |
 | "You can still pass it on" | Chosen from the `relayView` result, not from the frame | The text is shown if and only if the Pass_On_Action is shown (4.16). One source of truth makes a contradiction impossible. |
@@ -190,7 +192,7 @@ export function storedSlip(slip: Slip): Slip;
 - `validSlip` for `heard` and `system` adds `...(v.passedOn === true ? { passedOn: true } : {})`. Any other value of `passedOn` (a string, a number, `false`, `null`) is treated as absent. It never drops the slip, because `passedOn` is optional. The result never carries `relay`, so a stored `relay` field in old or tampered data is ignored.
 - `NOTICE_KEYS` adds `"unreadable"` and `"relay-failed"`.
 - The `StorageLike` calls stay as they are: tape, draft, channel and flags. No new key, no wire bytes, no Message_Key list (3.8). `Slip` already forbids a byte array by type, and the test below checks the written text.
-- A passed-on slip reloads as `passedOn: true` and no `relay`. For a `heard` slip or a System slip with `noticeKey: "unreadable"`, `relayView` returns `passed` before it looks at `relay` or `held`, so it shows "Passed on" (4.17). Any other System slip (for example `mic-again`) gets `none` and shows nothing, whatever `passedOn` is. A slip not passed on reloads with no `relay` and shows the restart reason (4.6).
+- A passed-on slip reloads as `passedOn: true` and no `relay`. For a `heard` slip or a System slip with `noticeKey: "unreadable"`, `relayView` returns `passed` before it looks at `relay` or `held`, so it shows "Passed on" (4.17). Any other System slip (for example `mic-again`) gets `none` and shows nothing, whatever `passedOn` is. A slip not passed on reloads with no `relay`, gets `none`, and shows no action and no reason line (4.6).
 
 ### `src/ui/model/reducer.ts` (change)
 
@@ -204,7 +206,7 @@ export type SlipRelayView =
   | { kind: "action"; hop: number; disabled: boolean }  // hop = N in "Pass it on → hop N"
   | {
       kind: "reason";
-      key: "no-hops" | "hop-limit" | "restart" | "multi" | "key-offer";
+      key: "no-hops" | "hop-limit" | "multi" | "key-offer";
     }
   | { kind: "passed" };
 
@@ -222,17 +224,17 @@ Decision order for a `heard` slip or an `unreadable` System slip (anything else 
 | # | Condition | Result | Requirement |
 |---|---|---|---|
 | 1 | `passedOn` is true | `passed` | 3.9, 4.10, 4.17 |
-| 2 | `relay` is absent | `reason restart` | 4.6 |
+| 2 | `relay` is absent | `none` | 4.6 |
 | 3 | `relay.multi` | `reason multi` | 4.7 |
 | 4 | `relay.keyOffer` | `reason key-offer` | 4.14 |
 | 5 | `relay.ttl` is 0 | `reason no-hops` | 4.4, 4.15 |
 | 6 | `relay.hop` is 15 | `reason hop-limit` | 4.5 |
-| 7 | `held` is false | `reason restart` | 4.6 |
+| 7 | `held` is false | `none` | 4.6 |
 | 8 | otherwise | `action`, `hop: relay.hop + 1`, `disabled: !canSendNow` | 4.2, 4.8 |
 
-Rows 3 to 6 follow the `checkRelay` order (MULTI_FRAME, NOT_RELAYED_TYPE, NO_HOPS_LEFT, HOP_LIMIT). Row 7 comes last so that a KEY_OFFER, which is never held, shows the KEY_OFFER reason and not the restart reason. Reason text lives in `copy.ts`.
+Rows 3 to 6 follow the `checkRelay` order (MULTI_FRAME, NOT_RELAYED_TYPE, NO_HOPS_LEFT, HOP_LIMIT). Row 7 comes after rows 3 to 6 so that a KEY_OFFER, which is never held, still shows the KEY_OFFER reason while its relay meta is in memory. Rows 2 and 7 are the restart case: the slip shows no action and no reason line. There is no `restart` reason key and no restart copy string. Reason text lives in `copy.ts`.
 
-`Slip.tsx` picks the text of an unreadable notice from this result: if `kind` is `action` it prints `copy.relay.unreadable.textRelayable` ("Can’t read this message. You can still pass it on."), and in every other case it prints `copy.relay.unreadable.text` ("Can’t read this message.") followed by the reason line. So "You can still pass it on" appears if and only if the action appears (4.16), and a notice with ttl 0 shows only the no-hops reason (4.15). A disabled action still counts as shown.
+`Slip.tsx` picks the text of an unreadable notice from this result: if `kind` is `action` it prints `copy.relay.unreadable.textRelayable` ("Can’t read this message. You can still pass it on."), and in every other case it prints `copy.relay.unreadable.text` ("Can’t read this message.") followed by the reason line. For `none` there is no reason line, so a reloaded unreadable notice shows only "Can’t read this message." (4.6). So "You can still pass it on" appears if and only if the action appears (4.16), and a notice with ttl 0 shows only the no-hops reason (4.15). A disabled action still counts as shown.
 
 ### `src/ui/controller.ts` (changes)
 
@@ -276,7 +278,8 @@ Internal state: `const held = new Map<string, Uint8Array>()`. It is not part of 
   - `passed`: the text "Passed on" in place of the button (4.10).
   - `none`: nothing.
   The Heard meta line replaces `Hop n` with the "via" text: `via 1 hop`, `via n hops`, nothing at 0 (5.1 to 5.3). The `unreadable` System slip uses `relay.hop` for the same line and shows the notice text chosen as described under `relay-view.ts`. Gallery slip kinds (`relayed`, `locked`, `sos`, `location`, `safe`) are untouched.
-- `slip-parts.tsx`: `PassOn` gains `disabled?: boolean` and an accessible name, `aria-label` "Pass it on, hop N" built from `copy` (4.9). The button keeps its label while disabled (4.8). `SlipButton` must give a tap target of at least 44 by 44 px and keyboard activation. The component test checks the size class and the key handler.
+- `slip-parts.tsx`: `PassOn` gains `disabled?: boolean` and an accessible name, `aria-label` "Pass it on, hop N" built from `copy` (4.9). The button keeps its label while disabled (4.8). `SlipButton` must give keyboard activation and a hit area of at least 44 by 44 px that does not depend on the label length (4.9). The component test checks the size class and the key handler.
+- `Slip.css`: the hit area of every `.slip-button` (Pass it on, Later, Restart now) is the `.slip-button::after` overlay. Today it is `inset: -7px -4px`, so its width follows the label. It becomes centred on the button with `min-width: 44px` and `min-height: 44px`, for example `top: 50%; left: 50%; width: calc(100% + 8px); height: calc(100% + 14px); min-width: 44px; min-height: 44px; transform: translate(-50%, -50%)`. The button itself stays `position: relative` and its look does not change. The size test in `Slip.test.ts` reads `min-width` and `min-height` of 44 px or more from the `::after` rule instead of adding the inset to the label size.
 
 ### `src/ui/copy.ts` (additions)
 
@@ -289,7 +292,6 @@ relay: {
   passOnLabel: (hop: number) => `Pass it on, hop ${hop}`,
   endNoHops: "End of the line. This message has no hops left to pass on.",
   endHopLimit: "End of the line. This message has gone as far as it can.",
-  endRestart: "Can’t be passed on after the app restarts.",
   endMulti: "Long messages can’t be passed on yet.",
   endKeyOffer: "Group keys can’t be passed on. Join in the same room.",
   unreadable: {
@@ -301,7 +303,7 @@ relay: {
 }
 ```
 
-The existing `slip.passOn(hop)` label stays. `slip.notices.unreadable` and `slip.notices.relay-failed` are added. The strings are first drafts that need the copy review listed under "Open items".
+There is no `endRestart`: the restart case shows no reason line (4.6), so the earlier "Can’t be passed on after the app restarts." string is removed from `copy.ts` and from every test that lists the relay strings. The existing `slip.passOn(hop)` label stays. `slip.notices.unreadable` and `slip.notices.relay-failed` are added. The strings are first drafts that need the copy review listed under "Open items".
 
 ### `src/ui/model/send.ts` (change)
 
@@ -420,7 +422,7 @@ For any single-frame frame of any type, any encrypted flag and any body, `receiv
 
 ### Property 14: The decision table of the Pass it on action
 
-For any Heard or unreadable slip with any `relay` meta (or none), any `held` flag, any `passedOn` flag and any `canSendNow` flag, `relayView` returns the first match of: `passed`, `restart` (no `relay`), `multi`, `key-offer`, `no-hops`, `hop-limit`, `restart` (not held), then `action` with `hop` = `relay.hop` + 1 and `disabled` = not `canSendNow`. A slip that is not Heard or unreadable returns `none`. For any unreadable slip, the rendered notice text contains "You can still pass it on" if and only if `relayView` returns `action`. A slip with `ttl` 0 never shows that text and shows the no-hops reason (unless it is passed on, multi-frame or KEY_OFFER).
+For any Heard or unreadable slip with any `relay` meta (or none), any `held` flag, any `passedOn` flag and any `canSendNow` flag, `relayView` returns the first match of: `passed`, `none` (no `relay`), `multi`, `key-offer`, `no-hops`, `hop-limit`, `none` (not held), then `action` with `hop` = `relay.hop` + 1 and `disabled` = not `canSendNow`. A slip that is not Heard or unreadable returns `none`. For any unreadable slip, the rendered notice text contains "You can still pass it on" if and only if `relayView` returns `action`. When `relayView` returns `none`, the rendered slip has no reason line and no action, and an unreadable notice shows only "Can’t read this message.". A slip with `ttl` 0 never shows that text and shows the no-hops reason (unless it is passed on, multi-frame or KEY_OFFER).
 
 **Validates: Requirements 3.9, 4.2, 4.4, 4.5, 4.6, 4.7, 4.8, 4.10, 4.12, 4.14, 4.15, 4.16, 4.17**
 
@@ -444,7 +446,7 @@ For any sequence of more than 50 heard relayable frames, the Controller holds a 
 
 ### Property 18: passedOn survives a save and load, relay data does not
 
-For any tape of Heard and System slips with any `relay` meta and any `passedOn` value, `serialize` followed by `parseSaved` returns, for each valid slip, `passedOn: true` if and only if it was `true`, and no `relay` field. A stored `passedOn` that is not the boolean `true` (a string, a number, `false`, `null`) loads as absent and does not drop the slip. A loaded `heard` slip or System slip with `noticeKey: "unreadable"` that has `passedOn: true` has `relayView` `passed`, whatever `held` is. A loaded System slip with any other `noticeKey` (for example `mic-again`) has `relayView` `none`, whatever `passedOn` and `held` are.
+For any tape of Heard and System slips with any `relay` meta and any `passedOn` value, `serialize` followed by `parseSaved` returns, for each valid slip, `passedOn: true` if and only if it was `true`, and no `relay` field. A stored `passedOn` that is not the boolean `true` (a string, a number, `false`, `null`) loads as absent and does not drop the slip. A loaded `heard` slip or System slip with `noticeKey: "unreadable"` that has `passedOn: true` has `relayView` `passed`, whatever `held` is. A loaded `heard` slip or `unreadable` System slip without `passedOn: true` has `relayView` `none` (no reason line), whatever `held` is. A loaded System slip with any other `noticeKey` (for example `mic-again`) has `relayView` `none`, whatever `passedOn` and `held` are.
 
 **Validates: Requirements 3.10, 3.11, 4.6, 4.17**
 
@@ -468,7 +470,7 @@ For any message text within the Well_Limit, any channel, and any send outcome, d
 | Frame refused by the rule | `relayWire` returns `MULTI_FRAME`, `NOT_RELAYED_TYPE`, `NO_HOPS_LEFT` or `HOP_LIMIT`. The slip shows the End_Of_Line_Reason and no action. | 1.2 to 1.5, 4.4, 4.5, 4.7, 4.14 |
 | KEY_OFFER heard | A System `unreadable` slip with the reason "Group keys can’t be passed on. Join in the same room." No wire is held and nothing can be sent. | 1.3, 4.14, 6.9 |
 | `passOn` reached for a refused frame (a stale tap) | Returns without sending and without a notice. | 6.9 |
-| Slip has no Held_Wire (after a reload, or dropped) | No action. Shows "Can’t be passed on after the app restarts." | 4.6 |
+| Slip has no Held_Wire (after a reload, or dropped) | `relayView` returns `none`. No action and no reason line. An unreadable notice shows only "Can’t read this message." | 4.6 |
 | Stored `passedOn` is not the boolean `true` | Loaded as not passed on. The slip is kept. | 3.10 |
 | `send` returns `BUSY` | Keep the action, the Relay_State and the slip. The Transmit key flashes as for a normal send. | 6.5 |
 | `send` returns another error | Keep the Relay_State, print a System notice with a plain reason, keep the action. The status window shows `ERROR` through the existing `tx-end` failure path. | 6.6 |
@@ -510,10 +512,10 @@ Generators for Properties 1 to 9 reuse the `frameArb` shape from `frame-patch.pr
 
 ### Example, component and smoke tests
 
-- Component tests (`Slip.test.ts`, `Tape` example): the action label "Pass it on → hop N", the disabled state keeps its label, the "Passed on" text, each End_Of_Line_Reason including the KEY_OFFER one, the unreadable text with and without "You can still pass it on", the accessible name, a 44 by 44 px size class, Enter and Space activation, and markup in text rendered as text (4.9, 4.11).
+- Component tests (`Slip.test.ts`, `Tape` example): the action label "Pass it on → hop N", the disabled state keeps its label, the "Passed on" text, each End_Of_Line_Reason including the KEY_OFFER one, the unreadable text with and without "You can still pass it on", the accessible name, the size class with `min-width` and `min-height` of at least 44 px on the `.slip-button::after` hit area (not derived from the label length), Enter and Space activation, a reloaded slip with no reason line, and markup in text rendered as text (4.9, 4.11).
 - Controller examples with the fake transport: success path (key recorded, slip marked, no new slip on the tape, sending cues), `BUSY`, another error, no `start()` call, send on each of Room, Call and Quiet, a KEY_OFFER frame heard and tapped with no send (7.1, 6.x).
 - Source scans, added to `src/ui/scan.test.ts`: no network facility in the relay files (8.2), no hard-coded relay strings in components (5.5), no "radio", "walkie" or "internet call" in relay copy (7.4).
-- e2e (Playwright, Chromium with the fake mic, extending `fake-mic.spec.ts`): play a fixture WAV that decodes to a TEXT frame, expect the Heard slip with "Pass it on → hop 1", tap it, expect "Passed on" and no extra slip, reload and expect "Passed on" again. The e2e cannot hear the pass-on, because the fake mic reads from a file. The speaker-to-mic hop between two real phones is checked by hand on devices, as `tech.md` says for audio.
+- e2e (Playwright, Chromium with the fake mic, extending `fake-mic.spec.ts`): play a fixture WAV that decodes to a TEXT frame, expect the Heard slip with "Pass it on → hop 1", tap it, expect "Passed on" and no extra slip, reload and expect "Passed on" again and no reason line. A slip that was not passed on reloads with no Pass it on button and no reason line. The e2e cannot hear the pass-on, because the fake mic reads from a file. The speaker-to-mic hop between two real phones is checked by hand on devices, as `tech.md` says for audio.
 
 ### Impact on existing tests
 
@@ -541,6 +543,8 @@ These were open in the first draft and are now fixed by the revised requirements
 4. **`passedOn` is persisted** as a boolean on the slip. The Held_Wire, the Message_Key list and the 256-key Relay_State stay in memory (3.8, 3.10, 3.11, 4.17).
 5. **Multi-frame relaying is out of scope.** `total` > 1 gets the multi reason (1.2, 4.7).
 6. **A sender ignores passed-on copies of its own message.** The fix is in the Controller: a successful `transmit()` records each sent frame's Message_Key with `markSeen` (3.12, 9.20). The own-echo byte matching in `src/audio/own-echo.ts` is unchanged.
+7. **No reason line after a restart.** A slip with no `relay` meta or no Held_Wire gets `relayView` `none`: no action and no reason line. The `restart` reason key and `copy.relay.endRestart` are removed (4.6).
+8. **Slip button hit area.** `.slip-button::after` has `min-width` and `min-height` of 44 px, so the hit area does not depend on the label length (4.9).
 
 ## Open items
 

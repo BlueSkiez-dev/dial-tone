@@ -170,6 +170,23 @@ On Windows, run npm through `npm.cmd` and `npx.cmd` (PowerShell blocks `npm.ps1`
     - Add a disabled Pass it on case to `src/ui/components/TransmitKey.test.ts`, which already covers the disabled Transmit keycap and reads `transmit-key.css`: the shared disabled rule applies to the Pass it on button and the label is still rendered
     - _Requirements: 4.8_
 
+  - [x] 4.6 Show no reason line for slips that can't be passed on only because of a restart
+    - `src/ui/model/relay-view.ts`: rows 2 (no `relay` meta) and 7 (not held) of the design decision table return `{ kind: "none" }`. Remove `"restart"` from the `reason` key union. Keep `no-hops`, `hop-limit`, `multi` and `key-offer` and the row order.
+    - `src/ui/components/Slip.tsx`: remove the `restart` entry from the reason-to-copy map. An unreadable System slip with `none` prints `copy.relay.unreadable.text` ("Can’t read this message.") and no reason line.
+    - `src/ui/copy.ts`: delete `copy.relay.endRestart` once no code or test uses it
+    - `src/ui/components/Slip.test.ts`: drop the `restart` reason case and the `endRestart` entry in the markup-as-text case. Add a case that a reloaded Heard slip and a reloaded unreadable notice (no `relay`, not held, not passed on) show no button and no reason line, and the notice shows only "Can’t read this message."
+    - `src/ui/model/relay-view.prop.test.ts` (Property 14): expect `none` where it expected `reason restart`, and assert that `none` renders no reason line
+    - `src/ui/model/persist.prop.test.ts` (Property 18): a loaded `heard` or `unreadable` slip without `passedOn: true` has `relayView` `none`
+    - `e2e/fake-mic.spec.ts`: the reload step no longer looks for "after the app restarts". After reload, the passed-on slip shows "Passed on" and no reason line. If the spec covers a slip that was not passed on, it shows no Pass it on button and no reason line.
+    - `src/ui/scan.test.ts`: remove `endRestart` from any list of relay copy strings, if present
+    - _Requirements: 4.4, 4.5, 4.6, 4.7, 4.14, 4.16, 4.17_
+
+  - [x] 4.7 Give every slip action button a 44×44 px minimum hit area
+    - `src/ui/components/Slip.css`: the `.slip-button::after` overlay is centred on the button and has `min-width: 44px` and `min-height: 44px`, so the hit area does not depend on the label length. It applies to every `.slip-button` (Pass it on, Later, Restart now). The look of the button does not change, and the button stays `position: relative`.
+    - `src/ui/components/Slip.test.ts` (the 6.15 size test): assert `min-width` and `min-height` of at least 44 px in the `.slip-button::after` rule, read from the CSS, instead of relying on the label size plus the inset
+    - Keep `src/ui/components/TransmitKey.test.ts` passing: the shared disabled rule in `transmit-key.css` still does not touch `.slip-button::after`
+    - _Requirements: 4.9_
+
 - [x] 5. Copy (`src/ui/copy.ts`)
   - [x] 5.1 Add the `relay` strings to `src/ui/copy.ts`
     - `via(n)`, `passedOn`, `passOnLabel(hop)`, `endNoHops`, `endHopLimit`, `endRestart`, `endMulti`, `endKeyOffer`, `unreadable` (`title`, `text`, `textRelayable`), `failed` (`title`, `text`)
@@ -292,12 +309,22 @@ On Windows, run npm through `npm.cmd` and `npx.cmd` (PowerShell blocks `npm.ps1`
     - Do not commit anything.
     - _Requirements: 8.2, 8.3, 9.1, 9.19_
 
+  - [x] 7.2 Run test and test:e2e and report
+    - Run `npm.cmd test` and `npm.cmd run test:e2e` only. On Windows use `npm.cmd`, not `npm`.
+    - Report a results table with one row per command: command, pass or fail, and counts (test files and tests passed, failed, skipped)
+    - If `test:e2e` crashes natively (no test output and exit code -1073740791, which is 0xC0000409), rerun it once and report whether the crash happened on both runs. A shell timeout is not a crash.
+    - Fix failures in the work of tasks 4.6 and 4.7 only
+    - Do not commit anything
+    - _Requirements: 4.6, 4.9, 4.16, 4.17_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP. The 20 property tests (1.3 to 1.13, 6.7 to 6.14 and 6.19) are required and carry no `*`.
 - Tasks 3.4, 6.19 and 6.20 come from the real-modem finding in 6.17: a phone heard a passed-on copy of its own message as new, because the own-echo check in `src/audio` matches exact bytes. The fix is in the Controller (3.4), and `src/audio` is unchanged.
 - Tasks 6.1 to 6.6 are not optional: they keep the existing suite green after the model and UI changes
 - Task 5.1 (copy) is scheduled before the UI components in the dependency graph
+- Tasks 4.6 and 4.7 both edit `src/ui/components/Slip.test.ts`, so they run in separate waves (4.6, then 4.7), both before 7.2. Task 4.6 replaces the old restart reason with no reason line and deletes `copy.relay.endRestart`. The completed tasks 2.3 and 5.1 still name `restart` and `endRestart` as they were built.
+- Task 7.1 stays completed. Task 7.2 runs only `npm.cmd test` and `npm.cmd run test:e2e` for the 4.6 and 4.7 work.
 - Each task references specific requirements for traceability
 - Property tests validate universal correctness properties, unit tests validate examples and edge cases
 
@@ -321,7 +348,10 @@ On Windows, run npm through `npm.cmd` and `npx.cmd` (PowerShell blocks `npm.ps1`
     { "id": 12, "tasks": ["1.13"] },
     { "id": 13, "tasks": ["3.4"] },
     { "id": 14, "tasks": ["6.19", "6.20"] },
-    { "id": 15, "tasks": ["7.1"] }
+    { "id": 15, "tasks": ["7.1"] },
+    { "id": 16, "tasks": ["4.6"] },
+    { "id": 17, "tasks": ["4.7"] },
+    { "id": 18, "tasks": ["7.2"] }
   ]
 }
 ```
