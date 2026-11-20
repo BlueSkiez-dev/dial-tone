@@ -86,6 +86,178 @@ async function powerOn(h: ReturnType<typeof setup>) {
   await settle();
 }
 
+/** Records every send and start on a fake transport, in place (keeps getters). */
+function recordCalls(fake: ReturnType<typeof createFakeTransport>) {
+  const sends: { wire: Uint8Array; profile: string }[] = [];
+  let starts = 0;
+  const send = fake.send.bind(fake);
+  const start = fake.start.bind(fake);
+  fake.send = (wire) => {
+    sends.push({ wire: wire.slice(), profile: fake.profile });
+    return send(wire);
+  };
+  fake.start = () => {
+    starts++;
+    return start();
+  };
+  return { sends, starts: () => starts };
+}
+
+/** A TEXT frame as heard from another phone, with the given routing. */
+function heardFrame(text: string, hop = 0, ttl = 3, type: 0 | 4 = 0) {
+  const built = buildWire(text);
+  if (!built.ok) throw new Error("build");
+  const decoded = decodeFrame(built.value.wire);
+  if (!decoded.ok) throw new Error("decode");
+  const f = decoded.value;
+  return { ...f, header: { ...f.header, hop, ttl, type } };
+}
+
+async function hearOne(frame: ReturnType<typeof heardFrame>) {
+  const fake = createFakeTransport({ startDelayMs: 0 });
+  const calls = recordCalls(fake);
+  const h = setup(SEEN_ALL, fake);
+  await powerOn(h);
+  const startsBefore = calls.starts();
+  fake.injectFrame(frame, false);
+  return { h, fake, calls, startsBefore };
+}
+
+describe("controller pass-on", () => {
+  it("sends the patched wire once, marks the slip, prints no new slip", async () => {
+    const { h, calls } = await hearOne(heardFrame("relay me", 1, 3));
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    expect(h.c.holdsWire(slip.id)).toBe(true);
+    expect(calls.sends).toHaveLength(0);
+
+    h.c.passOn(slip.id);
+    await settle();
+
+    expect(calls.sends).toHaveLength(1);
+    const sent = decodeFrame(calls.sends[0]?.wire ?? new Uint8Array());
+    if (!sent.ok) throw new Error("decode sent");
+    expect(sent.value.header.hop).toBe(2);
+    expect(sent.value.header.ttl).toBe(2);
+    const s = h.c.getState();
+    expect(s.tape).toHaveLength(1);
+    expect(s.tape[0]).toMatchObject({ kind: "heard", passedOn: true });
+    expect(s.tx.phase).toBe("idle");
+    // The key is recorded: the same message heard again prints nothing.
+    expect(h.c.getState().tape).toHaveLength(1);
+
+    // A second tap on a passed-on slip sends nothing.
+    h.c.passOn(slip.id);
+    await settle();
+    expect(calls.sends).toHaveLength(1);
+  });
+
+  it("shows the sending cues while the pass-on is on air", async () => {
+    const fake = createFakeTransport({ startDelayMs: 0 });
+    const calls = recordCalls(fake);
+    const h = setup(SEEN_ALL, fake);
+    await powerOn(h);
+    fake.injectFrame(heardFrame("cue", 0, 3), false);
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    fake.holdSendsUntilReleased(true);
+    h.c.passOn(slip.id);
+    await settle();
+    expect(calls.sends).toHaveLength(1);
+    expect(h.c.getState().tx.phase).toBe("sending");
+    expect(h.c.getState().tape).toHaveLength(1);
+    fake.holdSendsUntilReleased(false);
+    await settle();
+    expect(h.c.getState().tx.phase).toBe("idle");
+  });
+
+  it("does not call start() for a pass-on", async () => {
+    const { h, calls, startsBefore } = await hearOne(heardFrame("quiet", 0, 3));
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    h.c.passOn(slip.id);
+    await settle();
+    expect(calls.sends).toHaveLength(1);
+    expect(calls.starts()).toBe(startsBefore);
+  });
+
+  it.each(["room", "call", "quiet"] as const)(
+    "sends on the selected channel: %s",
+    async (channel) => {
+      const fake = createFakeTransport({ startDelayMs: 0 });
+      const calls = recordCalls(fake);
+      const h = setup(SEEN_ALL, fake);
+      await powerOn(h);
+      h.c.setChannel(channel);
+      fake.injectFrame(heardFrame(`on ${channel}`, 0, 3), false);
+      const slip = h.c.getState().tape[0];
+      if (!slip) throw new Error("no slip");
+      h.c.passOn(slip.id);
+      await settle();
+      expect(calls.sends).toHaveLength(1);
+      expect(calls.sends[0]?.profile).toBe(channel);
+      expect(h.c.getState().tape[0]).toMatchObject({ passedOn: true });
+    },
+  );
+
+  it("on BUSY keeps the slip open and prints nothing", async () => {
+    const fake = createFakeTransport({ startDelayMs: 0 });
+    const h = setup(SEEN_ALL, fake);
+    await powerOn(h);
+    fake.injectFrame(heardFrame("busy", 0, 3), false);
+    fake.send = async () => ({ ok: false, error: { code: "BUSY" } });
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    h.c.passOn(slip.id);
+    await settle();
+    const s = h.c.getState();
+    expect(s.tape).toHaveLength(1);
+    expect(s.tape[0]).not.toHaveProperty("passedOn", true);
+    expect(s.busyUntil).toBeGreaterThan(h.clock.now());
+    expect(s.errorUntil).toBe(0);
+    expect(h.c.holdsWire(slip.id)).toBe(true);
+  });
+
+  it("on another error prints relay-failed and keeps the action", async () => {
+    const fake = createFakeTransport({ startDelayMs: 0 });
+    const h = setup(SEEN_ALL, fake);
+    await powerOn(h);
+    fake.injectFrame(heardFrame("fail", 0, 3), false);
+    fake.send = async () => ({ ok: false, error: { code: "MODEM_FAILED" } });
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    h.c.passOn(slip.id);
+    await settle();
+    const s = h.c.getState();
+    expect(s.tape.map((x) => x.kind)).toEqual(["heard", "system"]);
+    expect(s.tape[1]).toMatchObject({ noticeKey: "relay-failed" });
+    expect(s.tape[0]).not.toHaveProperty("passedOn", true);
+    expect(h.c.holdsWire(slip.id)).toBe(true);
+  });
+
+  it("never sends for a KEY_OFFER, heard or tapped", async () => {
+    const { h, calls } = await hearOne(
+      heardFrame("sixteen-byte-key-body", 0, 3, 4),
+    );
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    expect(h.c.holdsWire(slip.id)).toBe(false);
+    h.c.passOn(slip.id);
+    await settle();
+    expect(calls.sends).toHaveLength(0);
+    expect(h.c.getState().tape).toHaveLength(1);
+  });
+
+  it("sends nothing when the hops are used up", async () => {
+    const { h, calls } = await hearOne(heardFrame("end", 3, 0));
+    const slip = h.c.getState().tape[0];
+    if (!slip) throw new Error("no slip");
+    h.c.passOn(slip.id);
+    await settle();
+    expect(calls.sends).toHaveLength(0);
+  });
+});
+
 describe("controller", () => {
   it("prints the first power-on notice once", async () => {
     const h = setup(ONBOARDED);

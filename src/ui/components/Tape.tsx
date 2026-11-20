@@ -1,4 +1,5 @@
 import { copy } from "../copy";
+import type { SlipRelayView } from "../model/relay-view";
 import { type Slip as SlipModel, visibleSlips } from "../model/tape";
 import { Slip } from "./Slip";
 import "./Tape.css";
@@ -10,8 +11,10 @@ export interface TapeProps {
   onToggle?: () => void;
   /** Id of the slip that was just added: it prints line by line, and Heard text resolves. */
   freshId?: string | null;
-  /** Hop for "Pass it on" on Heard slips. Omit for no button (the live app until relay exists). */
-  passOn?: (slip: SlipModel) => number | undefined;
+  /** Pass it on state per slip (action, reason, passed or none). Omit for no relay UI. */
+  relay?: (slip: SlipModel) => SlipRelayView | undefined;
+  /** Called with the slip id when the Pass it on action is tapped. */
+  onPassOn?: (id: string) => void;
   onLater?: () => void;
   onRestart?: () => void;
 }
@@ -38,7 +41,8 @@ export function Tape(props: TapeProps) {
             key={slip.id}
             slip={slip}
             fresh={props.freshId === slip.id}
-            passOn={slip.kind === "heard" ? props.passOn?.(slip) : undefined}
+            relay={props.relay?.(slip)}
+            onPassOn={() => props.onPassOn?.(slip.id)}
             onLater={props.onLater}
             onRestart={props.onRestart}
           />

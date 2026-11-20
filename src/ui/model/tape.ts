@@ -1,7 +1,20 @@
 import type { ProfileId } from "../../audio/index";
 
 /** Keys resolved to text in copy.ts. */
-export type NoticeKey = "unsupported" | "mic-again" | "listening-open";
+export type NoticeKey =
+  | "unsupported"
+  | "mic-again"
+  | "listening-open"
+  | "unreadable"
+  | "relay-failed";
+
+/** Routing facts of a heard frame, kept in memory only and never persisted. */
+export interface RelayMeta {
+  readonly hop: number;
+  readonly ttl: number;
+  readonly multi: boolean;
+  readonly keyOffer: boolean;
+}
 
 export type Slip =
   | {
@@ -20,12 +33,16 @@ export type Slip =
       readonly text: string;
       readonly bytes: number;
       readonly hop: number;
+      readonly relay?: RelayMeta;
+      readonly passedOn?: true;
     }
   | {
       readonly kind: "system";
       readonly id: string;
       readonly at: number;
       readonly noticeKey: NoticeKey;
+      readonly relay?: RelayMeta;
+      readonly passedOn?: true;
     }
   | { readonly kind: "update-ready"; readonly id: string; readonly at: number };
 

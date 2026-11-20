@@ -32,6 +32,8 @@ const GALLERY_ACTIONS: ScreenActions = {
   onboardingSkip: noop,
   onboardingDone: noop,
   micRetry: noop,
+  passOn: noop,
+  holdsWire: () => false,
 };
 
 function prefersReducedMotion(): boolean {

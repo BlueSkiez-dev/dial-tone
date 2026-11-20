@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { initialState } from "../model/reducer";
 import { listenState } from "../model/status";
 import { ListenLatch } from "./ListenLatch";
+import { PassOn } from "./slip-parts";
 import { clampProgress, TransmitKey, transmitSubLabel } from "./TransmitKey";
 
 const keyCss = readFileSync("src/ui/styles/transmit-key.css", "utf8");
@@ -51,6 +52,26 @@ describe("TransmitKey", () => {
     expect(renderToString(TransmitKey(props))).toContain("disabled");
     click(TransmitKey(props));
     expect(onTap).not.toHaveBeenCalled();
+  });
+
+  it("disabled Pass it on shares the Transmit disabled rule and keeps its label (relay 4.8)", () => {
+    // One rule per property, listing both buttons: no copied values.
+    const cursor = /([^{}]+){\s*cursor: default;\s*}/.exec(keyCss)?.[1] ?? "";
+    const dim = /([^{}]+){\s*opacity: 0\.4;\s*}/.exec(keyCss)?.[1] ?? "";
+    for (const sel of [cursor, dim]) {
+      expect(sel).toContain('.transmit-key[data-state="disabled"]');
+      expect(sel).toContain(".slip-button:disabled");
+    }
+    expect(keyCss.match(/opacity: 0\.4;/g)).toHaveLength(1);
+    expect(keyCss.match(/cursor: default;/g)).toHaveLength(1);
+
+    const onTap = vi.fn();
+    const html = renderToString(PassOn({ hop: 2, disabled: true, onTap }));
+    expect(html).toMatch(/<button[^>]*class="slip-button"[^>]*disabled/);
+    expect(html).toContain('aria-label="Pass it on, hop 2"');
+    expect(html).toContain("Pass it on → hop 2");
+    // Only the look changes: the shared rule leaves the 44 px hit area (::after) alone.
+    expect(keyCss).not.toMatch(/\.slip-button[^{]*::after/);
   });
 
   it("default tap calls onTap", () => {

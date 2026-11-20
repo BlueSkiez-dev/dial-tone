@@ -3,6 +3,7 @@ import type { Controller } from "../controller";
 import { draftView } from "../model/draft";
 import type { GalleryExtras } from "../model/gallery";
 import type { UiState } from "../model/reducer";
+import { relayView, type SlipRelayView } from "../model/relay-view";
 import { formatKHz, scopeWindow } from "../model/scope-map";
 import {
   listenState,
@@ -52,6 +53,8 @@ export type ScreenActions = Pick<
   | "onboardingSkip"
   | "onboardingDone"
   | "micRetry"
+  | "passOn"
+  | "holdsWire"
 >;
 
 /** Hooks for the PWA runtime (task 5.3). Absent hooks leave the buttons inert or hidden. */
@@ -163,9 +166,17 @@ export function Screen(props: ScreenProps) {
     state.install.available &&
     !state.install.dismissed &&
     !state.install.standalone;
-  const passOn = extras?.passOn
-    ? (slip: SlipModel) => (slip.kind === "heard" ? slip.hop + 1 : undefined)
-    : undefined;
+  // Power on, no fault, nothing on air. The draft does not matter here.
+  const canSendNow = state.power === "on" && state.fault === null && !sending;
+  const relay = (slip: SlipModel): SlipRelayView | undefined =>
+    extras
+      ? extras.passOn && slip.kind === "heard"
+        ? { kind: "action", hop: slip.hop + 1, disabled: false }
+        : undefined
+      : relayView(slip, {
+          held: actions.holdsWire(slip.id),
+          canSendNow,
+        });
   const win = scopeWindow(state.channel);
   const bandLabel = win.bandHz
     ? `${channelCopy.positions[state.channel].name} · ${formatKHz(win.bandHz[0])}-${formatKHz(win.bandHz[1])} kHz`
@@ -256,7 +267,8 @@ export function Screen(props: ScreenProps) {
             expanded={state.tapeExpanded}
             onToggle={actions.tapeToggle}
             freshId={props.freshId}
-            passOn={passOn}
+            relay={relay}
+            onPassOn={actions.passOn}
             onLater={pwa?.onLater}
             onRestart={pwa?.onRestart}
           />

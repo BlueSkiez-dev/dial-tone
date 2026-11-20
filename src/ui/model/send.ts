@@ -8,7 +8,11 @@ import {
 } from "../../protocol/index";
 import { wellLimit } from "./meter";
 
-/** Design parameter, 4 bits allow 0..15. The relay spec owns the real rule. */
+/**
+ * Number of pass-ons a sent message survives. A message sent with TTL 3 can be
+ * relayed three times and no more. The 4-bit field allows 0..15. The relay
+ * spec owns the rule.
+ */
 export const SEND_TTL = 3;
 
 export type BuildError = "EMPTY" | "TOO_LONG" | "ID_FAILED" | "FRAME_FAILED";

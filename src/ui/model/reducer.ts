@@ -97,6 +97,8 @@ export type UiEvent =
   | { type: "airtime"; wireLength: number; ms: number; channel: ProfileId }
   | { type: "carrier"; active: boolean; now: number }
   | { type: "slip"; slip: Slip; now: number }
+  /** Marks the slip with this id as passed on. An unknown id changes nothing. */
+  | { type: "passed-on"; id: string }
   | { type: "tape-toggle" }
   | { type: "legend-toggle" }
   | { type: "sheet-open"; sheet: SheetId }
@@ -355,6 +357,17 @@ export function reduce(s: UiState, e: UiEvent): UiState {
         return { ...s, tape, connectUntil: e.now + CONNECT_HOLD_MS };
       }
       return { ...s, tape };
+    }
+    case "passed-on": {
+      if (!s.tape.some((x) => x.id === e.id)) return s;
+      return {
+        ...s,
+        tape: s.tape.map((x) =>
+          x.id === e.id && (x.kind === "heard" || x.kind === "system")
+            ? { ...x, passedOn: true as const }
+            : x,
+        ),
+      };
     }
     case "tape-toggle":
       return { ...s, tapeExpanded: !s.tapeExpanded };

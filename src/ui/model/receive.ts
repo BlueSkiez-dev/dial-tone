@@ -1,6 +1,13 @@
 import type { Frame } from "../../protocol/index";
-import { frameKey, reassemble } from "../../protocol/index";
-import { type Slip, sanitizeText } from "./tape";
+import {
+  canRelay,
+  frameKey,
+  hasSeen,
+  markSeen,
+  reassemble,
+  SEEN_MAX,
+} from "../../protocol/index";
+import { type RelayMeta, type Slip, sanitizeText } from "./tape";
 
 export interface ReceiveState {
   /** frameKey values, newest last, capped at SEEN_MAX. */
@@ -9,14 +16,14 @@ export interface ReceiveState {
   readonly partial: Readonly<Record<string, readonly Frame[]>>;
 }
 
-/** Design parameter. */
-export const SEEN_MAX = 256;
+export { SEEN_MAX };
 /** Design parameter. */
 export const PARTIAL_MAX = 8;
 
 export const EMPTY_RECEIVE: ReceiveState = { seen: [], partial: {} };
 
 const TYPE_TEXT = 0;
+const TYPE_KEY_OFFER = 4;
 
 function hex(bytes: Uint8Array): string {
   let s = "";
@@ -32,7 +39,7 @@ function heard(
   id: string,
   atMs: number,
   payload: Uint8Array,
-  hop: number,
+  relay: RelayMeta,
 ): Slip {
   return {
     kind: "heard",
@@ -40,7 +47,8 @@ function heard(
     at: atMs,
     text: decodeText(payload),
     bytes: payload.length,
-    hop,
+    hop: relay.hop,
+    relay,
   };
 }
 
@@ -48,31 +56,54 @@ function heard(
 export function receiveFrame(
   rs: ReceiveState,
   ev: { frame: Frame; ownEcho: boolean; atMs: number },
-): { next: ReceiveState; slip: Slip | null } {
-  if (ev.ownEcho) return { next: rs, slip: null };
+): { next: ReceiveState; slip: Slip | null; holdsWire: boolean } {
+  if (ev.ownEcho) return { next: rs, slip: null, holdsWire: false };
   const { frame, atMs } = ev;
   const key = frameKey(frame);
-  if (rs.seen.includes(key)) return { next: rs, slip: null };
+  if (hasSeen(rs.seen, key)) return { next: rs, slip: null, holdsWire: false };
 
-  const seenAll = [...rs.seen, key];
-  const seen =
-    seenAll.length > SEEN_MAX
-      ? seenAll.slice(seenAll.length - SEEN_MAX)
-      : seenAll;
+  const seen = markSeen(rs.seen, key);
   const h = frame.header;
   const msgHex = hex(h.messageId);
 
+  const single = h.total <= 1;
+
   if (h.type !== TYPE_TEXT || h.encrypted) {
+    if (!single) {
+      return {
+        next: { seen, partial: rs.partial },
+        slip: { kind: "system", id: key, at: atMs, noticeKey: "unsupported" },
+        holdsWire: false,
+      };
+    }
     return {
       next: { seen, partial: rs.partial },
-      slip: { kind: "system", id: key, at: atMs, noticeKey: "unsupported" },
+      slip: {
+        kind: "system",
+        id: key,
+        at: atMs,
+        noticeKey: "unreadable",
+        relay: {
+          hop: h.hop,
+          ttl: h.ttl,
+          multi: false,
+          keyOffer: h.type === TYPE_KEY_OFFER,
+        },
+      },
+      holdsWire: canRelay(h),
     };
   }
 
-  if (h.total <= 1) {
+  if (single) {
     return {
       next: { seen, partial: rs.partial },
-      slip: heard(key, atMs, frame.body, h.hop),
+      slip: heard(key, atMs, frame.body, {
+        hop: h.hop,
+        ttl: h.ttl,
+        multi: false,
+        keyOffer: false,
+      }),
+      holdsWire: canRelay(h),
     };
   }
 
@@ -84,7 +115,13 @@ export function receiveFrame(
     const hop = Math.max(...collected.map((f) => f.header.hop));
     return {
       next: { seen, partial: others },
-      slip: heard(msgHex, atMs, result.value.payload, hop),
+      slip: heard(msgHex, atMs, result.value.payload, {
+        hop,
+        ttl: Math.min(...collected.map((f) => f.header.ttl)),
+        multi: true,
+        keyOffer: false,
+      }),
+      holdsWire: false,
     };
   }
 
@@ -98,5 +135,5 @@ export function receiveFrame(
   for (let i = 0; keys.length - i > PARTIAL_MAX; i++) {
     delete partial[keys[i] as string];
   }
-  return { next: { seen, partial }, slip: null };
+  return { next: { seen, partial }, slip: null, holdsWire: false };
 }

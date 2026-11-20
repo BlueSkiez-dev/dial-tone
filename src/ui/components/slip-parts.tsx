@@ -1,5 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { copy } from "../copy";
+// The disabled look of a slip button is the Transmit keycap's disabled rule.
+import "../styles/transmit-key.css";
 
 /** "02:31 PM" from a millisecond timestamp. */
 export function formatSlipTime(at: number): string {
@@ -31,6 +33,8 @@ export interface SlipButtonProps {
    * `later` and `restart`: filled and raised, for the Update ready slip on the grey system paper.
    */
   look?: "outline" | "later" | "restart";
+  disabled?: boolean;
+  ariaLabel?: string;
 }
 
 /** Slip button ("Pass it on", "Later", "Restart now"). */
@@ -41,7 +45,13 @@ export function SlipButton(props: SlipButtonProps) {
       ? "slip-button"
       : `slip-button slip-button-filled slip-button-${look}`;
   return (
-    <button type="button" class={cls} onClick={() => props.onTap?.()}>
+    <button
+      type="button"
+      class={cls}
+      disabled={props.disabled}
+      aria-label={props.ariaLabel}
+      onClick={() => props.onTap?.()}
+    >
       {props.label}
     </button>
   );
@@ -50,13 +60,20 @@ export function SlipButton(props: SlipButtonProps) {
 export interface PassOnProps {
   hop: number;
   onTap?: () => void;
+  /** Keeps the label and the 44 px target, but ignores taps. */
+  disabled?: boolean;
 }
 
 /** "Pass it on → hop N". Rendered only when a caller gives a hop. */
 export function PassOn(props: PassOnProps) {
   return (
     <div class="slip-actions">
-      <SlipButton label={copy.slip.passOn(props.hop)} onTap={props.onTap} />
+      <SlipButton
+        label={copy.slip.passOn(props.hop)}
+        ariaLabel={copy.relay.passOnLabel(props.hop)}
+        disabled={props.disabled}
+        onTap={props.onTap}
+      />
     </div>
   );
 }

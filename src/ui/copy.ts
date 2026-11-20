@@ -66,6 +66,35 @@ export const copy = {
         title: "Microphone",
         text: "The microphone stopped again. Sending still works.",
       },
+      /** Relay spec 5.1: same strings as relay.unreadable and relay.failed. */
+      unreadable: {
+        title: "Cannot read this",
+        text: "Can’t read this message.",
+      },
+      "relay-failed": {
+        title: "Could not pass on",
+        text: "The message was not sent. Try again.",
+      },
+    },
+  },
+  /** Relay strings (relay spec, task 5.1). Names only Room, Call and Quiet. */
+  relay: {
+    via: (n: number) => (n === 1 ? "via 1 hop" : `via ${n} hops`),
+    passedOn: "Passed on",
+    passOnLabel: (hop: number) => `Pass it on, hop ${hop}`,
+    endNoHops: "End of the line. This message has no hops left to pass on.",
+    endHopLimit: "End of the line. This message has gone as far as it can.",
+    endRestart: "Can’t be passed on after the app restarts.",
+    endMulti: "Long messages can’t be passed on yet.",
+    endKeyOffer: "Group keys can’t be passed on. Join in the same room.",
+    unreadable: {
+      title: "Cannot read this",
+      text: "Can’t read this message.",
+      textRelayable: "Can’t read this message. You can still pass it on.",
+    },
+    failed: {
+      title: "Could not pass on",
+      text: "The message was not sent. Try again.",
     },
   },
   /** Rocker, status window and light legend (task 4.2). */

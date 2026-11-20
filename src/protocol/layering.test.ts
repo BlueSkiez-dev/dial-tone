@@ -101,6 +101,8 @@ describe("Protocol_Index", () => {
       "plaintextCapacity",
       "utf8ByteLength",
       "frameOverhead",
+      "canRelay",
+      "relayWire",
     ];
     const api: Record<string, unknown> = { ...protocol };
     for (const name of functions) {

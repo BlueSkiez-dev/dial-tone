@@ -22,6 +22,20 @@ export { decodeFrame, encodeFrame, frameKey, patchRouting } from "./frame";
 export { aadFor, ivFor } from "./frame-crypto-inputs";
 export { newMessageId } from "./message-id";
 export type {
+  RelayError,
+  RelayErrorCode,
+  RelayRefusal,
+  RelayView,
+} from "./relay";
+export {
+  canRelay,
+  checkRelay,
+  hasSeen,
+  markSeen,
+  relayWire,
+  SEEN_MAX,
+} from "./relay";
+export type {
   FrameTemplate,
   MessageInfo,
   Reassembly,

@@ -98,13 +98,16 @@
   box-shadow: 0 0 5.9px var(--green);
 }
 
-/* Disabled: label and sub-label dim to 40%. */
-.transmit-key[data-state="disabled"] {
+/* Disabled: label and sub-label dim to 40%. Shared with the disabled "Pass it on" slip button
+   (relay 4.8), whose label is its only content. The 44 px ::after hit area is unchanged. */
+.transmit-key[data-state="disabled"],
+.slip-button:disabled {
   cursor: default;
 }
 
 .transmit-key[data-state="disabled"] .transmit-key-label,
-.transmit-key[data-state="disabled"] .transmit-key-sub {
+.transmit-key[data-state="disabled"] .transmit-key-sub,
+.slip-button:disabled {
   opacity: 0.4;
 }
 

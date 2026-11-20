@@ -5,6 +5,7 @@
  */
 
 import type { ProfileId, TransportEvent } from "../audio";
+import { decodeFrame, frameKey, markSeen, relayWire } from "../protocol/index";
 import { draftView } from "./model/draft";
 import {
   createStore,
@@ -74,10 +75,22 @@ export interface Controller {
   updateReady(): void;
   /** "Later" on the Update ready slip. */
   updateLater(): void;
+  /** Tap on "Pass it on": sends the patched Held_Wire of the slip once. */
+  passOn(slipId: string): void;
+  /** True while the Held_Wire of this slip is in memory. */
+  holdsWire(slipId: string): boolean;
   /** Writes pending state now (page hide). */
   flush(): void;
   dispose(): void;
 }
+
+/** relayWire refusals: the rule says no, so nothing is sent or printed. */
+const REFUSALS: ReadonlySet<string> = new Set([
+  "MULTI_FRAME",
+  "NOT_RELAYED_TYPE",
+  "NO_HOPS_LEFT",
+  "HOP_LIMIT",
+]);
 
 const VIBRATE_SENT = 30;
 const VIBRATE_HEARD = [40, 60, 40];
@@ -127,6 +140,8 @@ export function createController(deps: ControllerDeps): Controller {
 
   let state = initialState(store?.load() ?? null);
   let receive = EMPTY_RECEIVE;
+  /** Held_Wires of heard slips. Memory only, never in UiState or storage. */
+  const held = new Map<string, Uint8Array>();
   const listeners = new Set<() => void>();
   let powerGen = 0;
   let selfTestTimer: unknown = null;
@@ -185,10 +200,21 @@ export function createController(deps: ControllerDeps): Controller {
     store.save(next);
   }
 
+  /** Drops every Held_Wire whose slip is no longer on the tape (50-slip cap). */
+  function pruneHeld(): void {
+    if (held.size === 0) return;
+    const ids = new Set<string>();
+    for (const s of state.tape) ids.add(s.id);
+    for (const id of [...held.keys()]) {
+      if (!ids.has(id)) held.delete(id);
+    }
+  }
+
   function dispatch(e: UiEvent): void {
     const next = reduce(state, e);
     if (next === state) return;
     state = next;
+    pruneHeld();
     persist();
     notify();
     scheduleTick();
@@ -259,7 +285,12 @@ export function createController(deps: ControllerDeps): Controller {
           atMs: clock.now(),
         });
         receive = r.next;
-        if (r.slip !== null) onSlip(r.slip);
+        if (r.slip !== null) {
+          // Kept before the dispatch so the first render already finds the wire.
+          // Hearing a frame never sends anything.
+          if (r.holdsWire) held.set(r.slip.id, ev.wire);
+          onSlip(r.slip);
+        }
         return;
       }
       case "foreground":
@@ -328,13 +359,18 @@ export function createController(deps: ControllerDeps): Controller {
     void transport.stop();
   }
 
-  async function runSend(
+  /**
+   * Shared send path for a new message and for a relay pass-on. `onOk` builds
+   * the slip printed on success (null prints none). Resolves to the outcome so
+   * callers can add their own follow-up.
+   */
+  async function sendWire(
     wire: Uint8Array,
-    messageId: Uint8Array,
-    text: string,
-    bytes: number,
-    mode: ProfileId,
-  ): Promise<void> {
+    onOk: (
+      airtimeMs: number,
+      now: number,
+    ) => Extract<Parameters<typeof dispatch>[0], { type: "tx-end" }>["slip"],
+  ): Promise<"ok" | "busy" | "failed"> {
     sendInFlight = true;
     try {
       const r = await transport.send(wire);
@@ -351,27 +387,65 @@ export function createController(deps: ControllerDeps): Controller {
           type: "tx-end",
           now,
           ok: true,
-          slip: {
-            kind: "sent",
-            id: hex(messageId),
-            at: now,
-            text,
-            bytes,
-            mode,
-            airtimeMs: r.value.airtimeMs,
-          },
+          slip: onOk(r.value.airtimeMs, now),
         });
         cue(VIBRATE_SENT);
         syncAirtime();
-      } else if (r.error.code === "BUSY") {
-        dispatch({ type: "send-busy", now: clock.now() });
-      } else {
-        dispatch({ type: "tx-end", now: clock.now(), ok: false, slip: null });
+        return "ok";
       }
+      if (r.error.code === "BUSY") {
+        dispatch({ type: "send-busy", now: clock.now() });
+        return "busy";
+      }
+      dispatch({ type: "tx-end", now: clock.now(), ok: false, slip: null });
+      return "failed";
     } catch {
       dispatch({ type: "tx-end", now: clock.now(), ok: false, slip: null });
+      return "failed";
     } finally {
       sendInFlight = false;
+    }
+  }
+
+  function printRelayFailed(slipId: string): void {
+    const at = clock.now();
+    dispatch({
+      type: "slip",
+      slip: {
+        kind: "system",
+        id: `relay-failed:${slipId}:${at}`,
+        at,
+        noticeKey: "relay-failed",
+      },
+      now: at,
+    });
+  }
+
+  async function runSend(
+    wire: Uint8Array,
+    messageId: Uint8Array,
+    text: string,
+    bytes: number,
+    mode: ProfileId,
+  ): Promise<void> {
+    const outcome = await sendWire(wire, (airtimeMs, now) => ({
+      kind: "sent",
+      id: hex(messageId),
+      at: now,
+      text,
+      bytes,
+      mode,
+      airtimeMs,
+    }));
+    // Record the sent frame's Message_Key so a passed-on copy of this message,
+    // whose bytes differ from the direct echo, is ignored as a duplicate (3.12).
+    if (outcome !== "ok") return;
+    const sent = decodeFrame(wire);
+    if (sent.ok) {
+      receive = {
+        ...receive,
+        seen: markSeen(receive.seen, frameKey(sent.value)),
+      };
     }
   }
 
@@ -430,6 +504,41 @@ export function createController(deps: ControllerDeps): Controller {
       );
     },
 
+    holdsWire: (slipId) => held.has(slipId),
+
+    passOn(slipId) {
+      // The draft plays no part: only power, fault and an in-flight send gate it.
+      if (
+        sendInFlight ||
+        state.power !== "on" ||
+        state.fault !== null ||
+        state.tx.phase === "sending"
+      )
+        return;
+      const slip = state.tape.find((s) => s.id === slipId);
+      if (slip === undefined) return;
+      if ((slip.kind === "heard" || slip.kind === "system") && slip.passedOn) {
+        return;
+      }
+      const wire = held.get(slipId);
+      if (wire === undefined) return;
+      const patched = relayWire(wire);
+      if (!patched.ok) {
+        // A refusal sends nothing and prints nothing. A decode error prints a notice.
+        if (!REFUSALS.has(patched.error.code)) printRelayFailed(slipId);
+        return;
+      }
+      void sendWire(patched.value, () => null).then((outcome) => {
+        if (outcome === "ok") {
+          receive = { ...receive, seen: markSeen(receive.seen, slipId) };
+          dispatch({ type: "passed-on", id: slipId });
+        } else if (outcome === "failed") {
+          printRelayFailed(slipId);
+        }
+        // "busy": send-busy was dispatched, nothing else changes.
+      });
+    },
+
     tapeToggle: () => dispatch({ type: "tape-toggle" }),
     legendToggle: () => dispatch({ type: "legend-toggle" }),
     sheetOpen: (sheet) => dispatch({ type: "sheet-open", sheet }),
@@ -459,6 +568,7 @@ export function createController(deps: ControllerDeps): Controller {
       tickTimer = null;
       store?.flush();
       unsubscribe();
+      held.clear();
       listeners.clear();
     },
   };

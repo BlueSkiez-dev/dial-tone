@@ -32,7 +32,18 @@ const NOTICE_KEYS: readonly NoticeKey[] = [
   "unsupported",
   "mic-again",
   "listening-open",
+  "unreadable",
+  "relay-failed",
 ];
+
+/** The shape written to storage: no relay metadata, passedOn only when true. */
+export function storedSlip(slip: Slip): Slip {
+  if (slip.kind !== "heard" && slip.kind !== "system") return slip;
+  const { relay: _relay, passedOn, ...rest } = slip;
+  return passedOn === true
+    ? ({ ...rest, passedOn: true } as Slip)
+    : (rest as Slip);
+}
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -85,12 +96,26 @@ function validSlip(v: unknown): Slip | null {
       )
         return null;
       const text = capText(v.text);
-      return { kind: "heard", id, at, text, bytes: utf8ByteLength(text), hop };
+      return {
+        kind: "heard",
+        id,
+        at,
+        text,
+        bytes: utf8ByteLength(text),
+        hop,
+        ...(v.passedOn === true ? { passedOn: true as const } : {}),
+      };
     }
     case "system": {
       const key = NOTICE_KEYS.find((k) => k === v.noticeKey);
       if (key === undefined) return null;
-      return { kind: "system", id, at, noticeKey: key };
+      return {
+        kind: "system",
+        id,
+        at,
+        noticeKey: key,
+        ...(v.passedOn === true ? { passedOn: true as const } : {}),
+      };
     }
     case "update-ready":
       return { kind: "update-ready", id, at };
@@ -111,7 +136,7 @@ function validFlags(v: unknown): SavedFlags {
 export function serialize(s: SavedState): string {
   return JSON.stringify({
     v: 1,
-    tape: s.tape,
+    tape: s.tape.map(storedSlip),
     draft: s.draft,
     channel: s.channel,
     flags: s.flags,
@@ -198,7 +223,10 @@ export function createStore(
     if (broken) return;
     try {
       if (enabled) {
-        storage.setItem(`${STORAGE_PREFIX}tape`, JSON.stringify(s.tape));
+        storage.setItem(
+          `${STORAGE_PREFIX}tape`,
+          JSON.stringify(s.tape.map(storedSlip)),
+        );
         storage.setItem(`${STORAGE_PREFIX}draft`, JSON.stringify(s.draft));
       }
       storage.setItem(`${STORAGE_PREFIX}channel`, JSON.stringify(s.channel));

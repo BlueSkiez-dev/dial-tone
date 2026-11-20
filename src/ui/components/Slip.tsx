@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { copy } from "../copy";
+import type { SlipRelayView } from "../model/relay-view";
 import type { GallerySlip, Slip as SlipModel } from "../model/tape";
 import { GhostText } from "./GhostText";
 import "./Slip.css";
@@ -22,6 +23,8 @@ export interface SlipProps {
   slip: SlipModel | GallerySlip;
   /** Hop shown on the "Pass it on → hop N" button. The button renders only when this is given. */
   passOn?: number;
+  /** Pass it on state of a Heard slip or an unreadable System slip. */
+  relay?: SlipRelayView;
   onPassOn?: () => void;
   /** Update ready buttons. */
   onLater?: () => void;
@@ -63,6 +66,24 @@ function Stamp(props: { label: string }) {
   );
 }
 
+const REASON_TEXT = {
+  "no-hops": copy.relay.endNoHops,
+  "hop-limit": copy.relay.endHopLimit,
+  restart: copy.relay.endRestart,
+  multi: copy.relay.endMulti,
+  "key-offer": copy.relay.endKeyOffer,
+} as const;
+
+/** The action, the reason line, "Passed on" or nothing. Always text. */
+function RelayPart(props: { view?: SlipRelayView; onPassOn?: () => void }) {
+  const v = props.view;
+  if (!v || v.kind === "none") return null;
+  if (v.kind === "action")
+    return <PassOn hop={v.hop} disabled={v.disabled} onTap={props.onPassOn} />;
+  if (v.kind === "reason") return <p class="slip-note">{REASON_TEXT[v.key]}</p>;
+  return <p class="slip-note">{copy.relay.passedOn}</p>;
+}
+
 function body(props: SlipProps): ComponentChildren {
   const { slip, extra } = props;
   const pass =
@@ -86,24 +107,34 @@ function body(props: SlipProps): ComponentChildren {
         <>
           <Meta>
             <MetaItem>{copy.slip.heard}</MetaItem>
-            <MetaItem tone="hop">{copy.slip.hop(slip.hop)}</MetaItem>
+            {slip.hop > 0 ? (
+              <MetaItem tone="hop">{copy.relay.via(slip.hop)}</MetaItem>
+            ) : null}
             <MetaItem>{formatSlipTime(slip.at)}</MetaItem>
           </Meta>
           <Text>
             <GhostText text={slip.text} active={props.fresh === true} />
           </Text>
-          {pass}
+          <RelayPart view={props.relay} onPassOn={props.onPassOn} />
         </>
       );
     case "system": {
       const n = noticeCopy(slip.noticeKey);
+      const unreadable = slip.noticeKey === "unreadable";
+      const text =
+        unreadable && props.relay?.kind === "action"
+          ? copy.relay.unreadable.textRelayable
+          : n.text;
       return (
         <>
           <Meta>
             <MetaItem tone="ink">{copy.slip.systemTitle(n.title)}</MetaItem>
             <MetaItem tone="ink">{formatSlipTime(slip.at)}</MetaItem>
           </Meta>
-          <Text>{n.text}</Text>
+          <Text>{text}</Text>
+          {unreadable ? (
+            <RelayPart view={props.relay} onPassOn={props.onPassOn} />
+          ) : null}
         </>
       );
     }

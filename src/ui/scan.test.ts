@@ -9,6 +9,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { copy } from "./copy";
 
 const uiDir = resolve(fileURLToPath(new URL(".", import.meta.url)));
 const srcDir = resolve(uiDir, "..");
@@ -74,6 +75,64 @@ function importSpecifiers(code: string): string[] {
 
 /** Counts matches of a global regex. */
 const count = (code: string, re: RegExp) => (code.match(re) ?? []).length;
+
+/** Network facilities and HTML injection (ui-shell 20.5). */
+const FORBIDDEN: [RegExp, string][] = [
+  [/https?:\/\//, "remote URL"],
+  [/@import\s+url\(\s*["']?https?/, "@import url(http"],
+  [/\bfetch\s*\(/, "fetch("],
+  [/\bXMLHttpRequest\b/, "XMLHttpRequest"],
+  [/\bWebSocket\b/, "WebSocket"],
+  [/\bEventSource\b/, "EventSource"],
+  [/\bsendBeacon\b/, "sendBeacon"],
+  [/\binnerHTML\b/, "innerHTML"],
+  [/\bdangerouslySetInnerHTML\b/, "dangerouslySetInnerHTML"],
+];
+
+/** Resolves a relative import to an existing .ts or .tsx file, or null. */
+function resolveImport(fromPath: string, spec: string): string | null {
+  const base = resolve(dirname(fromPath), spec);
+  for (const candidate of [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    join(base, "index.ts"),
+  ]) {
+    if (/\.tsx?$/.test(candidate) && existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+/** The file and every file it reaches through relative imports. */
+function importClosure(entry: string): string[] {
+  const seen = new Set<string>();
+  const queue = [entry];
+  while (queue.length > 0) {
+    const path = queue.pop();
+    if (path === undefined || seen.has(path)) continue;
+    seen.add(path);
+    const code = stripComments(readFileSync(path, "utf8"));
+    for (const spec of importSpecifiers(code)) {
+      if (!spec.startsWith(".")) continue;
+      const target = resolveImport(path, spec);
+      if (target !== null) queue.push(target);
+    }
+  }
+  return [...seen];
+}
+
+/** Every string in a copy object; functions are called with 1 and 2. */
+function copyStrings(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+  if (typeof value === "function") {
+    const fn = value as (n: number) => unknown;
+    return [...copyStrings(fn(1)), ...copyStrings(fn(2))];
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.values(value).flatMap(copyStrings);
+  }
+  return [];
+}
 
 describe("src/ui source scan (Property 10)", () => {
   it("finds the expected files", () => {
@@ -173,19 +232,8 @@ describe("src/ui source scan (Property 10)", () => {
 
   describe("no network and no HTML injection", () => {
     it("has no remote URL, remote import or network API", () => {
-      const forbidden: [RegExp, string][] = [
-        [/https?:\/\//, "remote URL"],
-        [/@import\s+url\(\s*["']?https?/, "@import url(http"],
-        [/\bfetch\s*\(/, "fetch("],
-        [/\bXMLHttpRequest\b/, "XMLHttpRequest"],
-        [/\bWebSocket\b/, "WebSocket"],
-        [/\bEventSource\b/, "EventSource"],
-        [/\bsendBeacon\b/, "sendBeacon"],
-        [/\binnerHTML\b/, "innerHTML"],
-        [/\bdangerouslySetInnerHTML\b/, "dangerouslySetInnerHTML"],
-      ];
       for (const s of ui) {
-        for (const [re, label] of forbidden) {
+        for (const [re, label] of FORBIDDEN) {
           expect(re.test(s.code), `${s.name} contains ${label}`).toBe(false);
         }
       }
@@ -256,6 +304,87 @@ describe("src/ui source scan (Property 10)", () => {
             target.startsWith(`${uiDir}/`);
           expect(inUi, `${s.name} imports ${spec}`).toBe(false);
         }
+      }
+    });
+  });
+
+  describe("relay files (relay spec 5.5, 7.4, 8.2)", () => {
+    const relayEntry = join(protocolDir, "relay.ts");
+
+    it("has no network facility in the relay files or what relay.ts imports", () => {
+      const closure = importClosure(relayEntry);
+      expect(closure).toContain(relayEntry);
+      expect(closure.length).toBeGreaterThan(1);
+      for (const path of closure) {
+        // 8.3: the Relay imports only from src/protocol.
+        expect(
+          path.startsWith(`${protocolDir}\\`) ||
+            path.startsWith(`${protocolDir}/`),
+          `relay.ts reaches ${path}`,
+        ).toBe(true);
+        for (const spec of importSpecifiers(
+          stripComments(readFileSync(path, "utf8")),
+        )) {
+          expect(spec, `${path} imports ${spec}`).toMatch(/^\./);
+        }
+      }
+      const files = [
+        ...closure,
+        join(uiDir, "model", "relay-view.ts"),
+        join(uiDir, "model", "receive.ts"),
+        join(uiDir, "controller.ts"),
+      ];
+      for (const path of files) {
+        expect(existsSync(path), path).toBe(true);
+        const code = stripComments(readFileSync(path, "utf8"));
+        const name = relative(srcDir, path).split("\\").join("/");
+        for (const [re, label] of FORBIDDEN) {
+          expect(re.test(code), `${name} contains ${label}`).toBe(false);
+        }
+      }
+    });
+
+    it("hard-codes no relay string outside copy.ts", () => {
+      const relayCopy = [
+        ...copyStrings(copy.relay),
+        ...copyStrings(copy.slip.notices.unreadable),
+        ...copyStrings(copy.slip.notices["relay-failed"]),
+      ];
+      expect(relayCopy).toContain("Passed on");
+      const fragments: RegExp[] = [
+        /pass(ed)? it on/i,
+        /passed on/i,
+        /end of the line/i,
+        /hops? left/i,
+        /\bvia \d|\bvia \$\{/,
+        /can[’']t (read|be passed)/i,
+        /cannot read this/i,
+        /could not pass on/i,
+      ];
+      for (const s of uiCode) {
+        if (s.name === "copy.ts") continue;
+        for (const text of relayCopy) {
+          expect(s.code.includes(text), `${s.name} hard-codes "${text}"`).toBe(
+            false,
+          );
+        }
+        for (const re of fragments) {
+          expect(s.code, s.name).not.toMatch(re);
+        }
+      }
+    });
+
+    it("names no radio, walkie-talkie or internet call in relay copy", () => {
+      const all = copyStrings(copy);
+      const relayCopy = [
+        ...copyStrings(copy.relay),
+        ...copyStrings(copy.slip.notices.unreadable),
+        ...copyStrings(copy.slip.notices["relay-failed"]),
+        ...all.filter((t) => /pass(ed)? (it )?on|\bhops?\b|relay/i.test(t)),
+      ];
+      expect(relayCopy.length).toBeGreaterThan(10);
+      for (const text of relayCopy) {
+        expect(text).not.toMatch(/\bradio|walkie|internet[\s-]*calls?/i);
       }
     });
   });

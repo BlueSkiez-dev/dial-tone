@@ -19,6 +19,8 @@ const actions: ScreenActions = {
   onboardingSkip: noop,
   onboardingDone: noop,
   micRetry: noop,
+  passOn: noop,
+  holdsWire: () => false,
 };
 
 function html(name: (typeof GALLERY_NAMES)[number]): string {
@@ -52,6 +54,47 @@ describe("Screen", () => {
     expect(html("sos-held")).not.toMatch(empty);
     expect(html("sos-received")).not.toMatch(empty);
     expect(html("ready")).toMatch(empty);
+  });
+
+  it("maps the gallery passOn extra to the action view, and only there", () => {
+    expect(html("received")).toContain("Pass it on → hop 2");
+    expect(html("ready")).not.toContain("Pass it on");
+  });
+
+  it("shows no action in live mode when no wire is held", () => {
+    const { state, now } = galleryFixture("received");
+    const out = renderToString(
+      h(Screen, {
+        state,
+        now,
+        actions,
+        source: null,
+        reducedMotion: true,
+      }),
+    );
+    expect(out).not.toContain("Pass it on →");
+  });
+
+  it("shows the action in live mode when the controller holds the wire", () => {
+    const { state, now } = galleryFixture("received");
+    const tape = state.tape.map((s) =>
+      s.kind === "heard"
+        ? {
+            ...s,
+            relay: { hop: 1, ttl: 3, multi: false, keyOffer: false },
+          }
+        : s,
+    );
+    const out = renderToString(
+      h(Screen, {
+        state: { ...state, tape },
+        now,
+        actions: { ...actions, holdsWire: () => true },
+        source: null,
+        reducedMotion: true,
+      }),
+    );
+    expect(out).toContain("Pass it on → hop 2");
   });
 
   it("shows one Tape caption and the Quiet notice only on Quiet", () => {

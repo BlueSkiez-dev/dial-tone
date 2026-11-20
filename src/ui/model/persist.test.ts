@@ -5,6 +5,7 @@ import {
   type SavedState,
   type StorageLike,
   serialize,
+  storedSlip,
   type Timer,
 } from "./persist";
 import { TAPE_MAX } from "./tape";
@@ -73,6 +74,82 @@ describe("parseSaved", () => {
     expect(parseSaved("not json")).toBeNull();
     expect(parseSaved(null)).toBeNull();
     expect(parseSaved('{"v":2}')).toBeNull();
+  });
+
+  it("accepts the unreadable and relay-failed notice keys", () => {
+    const raw = JSON.stringify({
+      v: 1,
+      tape: [
+        { kind: "system", id: "a", at: 1, noticeKey: "unreadable" },
+        { kind: "system", id: "b", at: 2, noticeKey: "relay-failed" },
+        { kind: "system", id: "c", at: 3, noticeKey: "nope" },
+      ],
+    });
+    expect(parseSaved(raw)?.tape.map((t) => t.id)).toEqual(["a", "b"]);
+  });
+
+  it("keeps passedOn only when it is true and never drops the slip", () => {
+    const mk = (id: string, passedOn: unknown) => ({
+      kind: "heard",
+      id,
+      at: 1,
+      text: "hi",
+      hop: 1,
+      passedOn,
+    });
+    const raw = JSON.stringify({
+      v: 1,
+      tape: [
+        mk("t", true),
+        mk("f", false),
+        mk("s", "true"),
+        mk("n", 1),
+        {
+          kind: "system",
+          id: "y",
+          at: 2,
+          noticeKey: "unreadable",
+          passedOn: true,
+        },
+        {
+          kind: "system",
+          id: "z",
+          at: 3,
+          noticeKey: "unreadable",
+          passedOn: 0,
+        },
+      ],
+    });
+    const tape = parseSaved(raw)?.tape ?? [];
+    expect(tape.map((t) => t.id)).toEqual(["t", "f", "s", "n", "y", "z"]);
+    const flagged = tape.filter((t) => "passedOn" in t).map((t) => t.id);
+    expect(flagged).toEqual(["t", "y"]);
+  });
+
+  it("storedSlip drops relay metadata and a false passedOn", () => {
+    const relay = { hop: 1, ttl: 2, multi: false, keyOffer: false };
+    const heard = {
+      kind: "heard" as const,
+      id: "a",
+      at: 1,
+      text: "hi",
+      bytes: 2,
+      hop: 1,
+      relay,
+    };
+    expect(storedSlip(heard)).toEqual({ ...heard, relay: undefined });
+    expect("relay" in storedSlip(heard)).toBe(false);
+    expect(storedSlip({ ...heard, passedOn: true })).toMatchObject({
+      passedOn: true,
+    });
+    const raw = serialize({
+      tape: [{ ...heard, passedOn: true }],
+      draft: "",
+      channel: "room",
+      flags,
+    });
+    expect(raw).not.toContain("relay");
+    expect(raw).toContain('"passedOn":true');
   });
 
   it("cuts the tape to TAPE_MAX keeping the newest", () => {

@@ -259,3 +259,38 @@ describe("microphone processing hint and mic sheet rules", () => {
     expect(s.tape.map((x) => x.kind)).toEqual(["system"]);
   });
 });
+
+describe("passed-on event", () => {
+  const unreadable: Slip = {
+    kind: "system",
+    id: "u",
+    at: 2,
+    noticeKey: "unreadable",
+  };
+
+  it("marks the matching heard slip and leaves the others alone", () => {
+    const s = run(ready(), [
+      { type: "slip", slip: heard, now: 1 },
+      { type: "slip", slip: unreadable, now: 2 },
+    ]);
+    const next = reduce(s, { type: "passed-on", id: "a" });
+    expect(next.tape.find((x) => x.id === "a")).toMatchObject({
+      passedOn: true,
+    });
+    expect(next.tape.find((x) => x.id === "u")).toEqual(unreadable);
+    expect(s.tape.find((x) => x.id === "a")).toEqual(heard);
+  });
+
+  it("marks a system slip too", () => {
+    const s = run(ready(), [{ type: "slip", slip: unreadable, now: 2 }]);
+    const next = reduce(s, { type: "passed-on", id: "u" });
+    expect(next.tape.find((x) => x.id === "u")).toMatchObject({
+      passedOn: true,
+    });
+  });
+
+  it("returns the same state object for an unknown id", () => {
+    const s = run(ready(), [{ type: "slip", slip: heard, now: 1 }]);
+    expect(reduce(s, { type: "passed-on", id: "nope" })).toBe(s);
+  });
+});

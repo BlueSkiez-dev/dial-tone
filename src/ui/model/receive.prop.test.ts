@@ -1,7 +1,13 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import type { Frame } from "../../protocol/index";
-import { frameKey, makeFrames, splitPayload } from "../../protocol/index";
+import {
+  canRelay,
+  frameKey,
+  hasSeen,
+  makeFrames,
+  splitPayload,
+} from "../../protocol/index";
 import {
   EMPTY_RECEIVE,
   PARTIAL_MAX,
@@ -23,7 +29,9 @@ function single(
   text: string,
   opts: { type?: number; encrypted?: boolean; hop?: number } = {},
 ): Frame {
-  const bodies = splitPayload(enc.encode(text), {
+  // A KEY_OFFER body starts with a 16-byte group key, so pad short text.
+  const payload = opts.type === 4 ? text.padEnd(16, "k") : text;
+  const bodies = splitPayload(enc.encode(payload), {
     encrypted: false,
     utf8Boundaries: true,
   });
@@ -128,24 +136,106 @@ describe("Property 6: Receive path", () => {
     );
   });
 
-  it("non-TEXT or encrypted frames yield a system slip", () => {
+  it("single-frame non-TEXT or encrypted frames yield an unreadable system slip with relay meta", () => {
+    /** **Validates: Requirements 3.1, 4.1, 4.3, 4.13, 4.14** */
     fc.assert(
       fc.property(
         idArb,
         printable,
-        fc.constantFrom("sos", "safe", "enc"),
-        (id, text, which) => {
+        fc.constantFrom("sos", "safe", "enc", "key"),
+        fc.integer({ min: 0, max: 15 }),
+        (id, text, which, hop) => {
           const frame =
             which === "enc"
-              ? single(id, text, { encrypted: true })
-              : single(id, text, { type: which === "sos" ? 3 : 2 });
-          const { slips } = feed([frame]);
-          expect(slips).toHaveLength(1);
-          const s = slips[0] as Slip;
+              ? single(id, text, { encrypted: true, hop })
+              : single(id, text, {
+                  type: which === "sos" ? 3 : which === "safe" ? 2 : 4,
+                  hop,
+                });
+          const r = receiveFrame(EMPTY_RECEIVE, {
+            frame,
+            ownEcho: false,
+            atMs: 0,
+          });
+          const s = r.slip as Slip;
           expect(s.kind).toBe("system");
-          if (s.kind === "system") expect(s.noticeKey).toBe("unsupported");
+          if (s.kind === "system") {
+            expect(s.noticeKey).toBe("unreadable");
+            expect(s.relay).toEqual({
+              hop,
+              ttl: 3,
+              multi: false,
+              keyOffer: which === "key",
+            });
+            expect(s).not.toHaveProperty("text");
+          }
+          expect(r.holdsWire).toBe(which !== "key" && hop < 15);
+          expect(hasSeen(r.next.seen, frameKey(frame))).toBe(true);
         },
       ),
+    );
+  });
+
+  it("a KEY_OFFER never holds a wire, even with hops left", () => {
+    /** **Validates: Requirements 4.1, 4.14** */
+    const id = new Uint8Array(8).fill(7);
+    const r = receiveFrame(EMPTY_RECEIVE, {
+      frame: single(id, "k", { type: 4 }),
+      ownEcho: false,
+      atMs: 0,
+    });
+    expect(r.holdsWire).toBe(false);
+    const s = r.slip as Slip;
+    if (s.kind === "system") expect(s.relay?.keyOffer).toBe(true);
+  });
+
+  it("a TEXT single frame holds a wire only while it can be relayed", () => {
+    /** **Validates: Requirements 4.1** */
+    fc.assert(
+      fc.property(
+        idArb,
+        printable,
+        fc.integer({ min: 0, max: 15 }),
+        (id, text, hop) => {
+          const r = receiveFrame(EMPTY_RECEIVE, {
+            frame: single(id, text, { hop }),
+            ownEcho: false,
+            atMs: 0,
+          });
+          expect(r.holdsWire).toBe(hop < 15);
+          const s = r.slip as Slip;
+          if (s.kind === "heard") {
+            expect(s.relay).toEqual({
+              hop,
+              ttl: 3,
+              multi: false,
+              keyOffer: false,
+            });
+          }
+        },
+      ),
+    );
+  });
+
+  it("an unreadable multi-frame frame still prints unsupported and holds no wire", () => {
+    /** **Validates: Requirements 3.1, 4.3** */
+    fc.assert(
+      fc.property(idArb, printable, (id, text) => {
+        const made = makeFrames(
+          { type: 3, encrypted: false, hop: 0, ttl: 3, messageId: id },
+          [enc.encode(text), enc.encode(text)],
+        );
+        if (!made.ok) throw new Error("makeFrames failed");
+        const r = receiveFrame(EMPTY_RECEIVE, {
+          frame: made.value[0] as Frame,
+          ownEcho: false,
+          atMs: 0,
+        });
+        const s = r.slip as Slip;
+        expect(s.kind).toBe("system");
+        if (s.kind === "system") expect(s.noticeKey).toBe("unsupported");
+        expect(r.holdsWire).toBe(false);
+      }),
     );
   });
 
@@ -239,5 +329,116 @@ describe("Property 6: Receive path", () => {
     }
     expect(rs.seen).toHaveLength(SEEN_MAX);
     expect(rs.seen[SEEN_MAX - 1]).toBe(frameKey(last as Frame));
+  });
+});
+
+describe("Property 11: Each message is shown once", () => {
+  /** **Validates: Requirements 3.1, 3.2, 3.4, 3.5, 9.14** */
+  const evArb = fc.record({
+    idx: fc.integer({ min: 0, max: 3 }),
+    hop: fc.integer({ min: 0, max: 15 }),
+    ttl: fc.integer({ min: 0, max: 15 }),
+    ownEcho: fc.boolean(),
+  });
+
+  function frameOf(idx: number, hop: number, ttl: number): Frame {
+    const id = new Uint8Array(8).fill(idx + 1);
+    const made = makeFrames(
+      { type: 0, encrypted: false, hop, ttl, messageId: id },
+      [enc.encode("hello")],
+    );
+    if (!made.ok) throw new Error(`makeFrames ${made.error.code}`);
+    return made.value[0] as Frame;
+  }
+
+  it("prints at most one slip per key, ignores echoes and other hop/ttl copies, and holds every heard key", () => {
+    fc.assert(
+      fc.property(fc.array(evArb, { maxLength: 30 }), (events) => {
+        let rs: ReceiveState = EMPTY_RECEIVE;
+        const heard = new Set<string>();
+        const printed = new Map<string, number>();
+        events.forEach((e, i) => {
+          const frame = frameOf(e.idx, e.hop, e.ttl);
+          const key = frameKey(frame);
+          const r = receiveFrame(rs, {
+            frame,
+            ownEcho: e.ownEcho,
+            atMs: i,
+          });
+          if (e.ownEcho) {
+            expect(r.slip).toBeNull();
+            expect(r.next).toEqual(rs);
+          } else if (heard.has(key)) {
+            expect(r.slip).toBeNull();
+            expect(r.next.seen).toEqual(rs.seen);
+          } else {
+            expect(r.slip).not.toBeNull();
+            heard.add(key);
+          }
+          if (r.slip) printed.set(key, (printed.get(key) ?? 0) + 1);
+          rs = r.next;
+        });
+        for (const n of printed.values()) expect(n).toBe(1);
+        for (const key of heard) expect(hasSeen(rs.seen, key)).toBe(true);
+        expect(rs.seen.length).toBe(heard.size);
+      }),
+      { verbose: true },
+    );
+  });
+});
+
+describe("Property 13: Held wires and unreadable notices", () => {
+  /** **Validates: Requirements 4.1, 4.3, 4.13, 4.14** */
+  const anyFrameArb = fc
+    .record({
+      type: fc.constantFrom(0, 1, 2, 3, 4, 5),
+      encrypted: fc.boolean(),
+      hop: fc.integer({ min: 0, max: 15 }),
+      ttl: fc.integer({ min: 0, max: 15 }),
+      id: idArb,
+      body: fc.uint8Array({ minLength: 16, maxLength: 100 }),
+    })
+    .map((r) => ({ ...r, encrypted: r.type === 4 ? false : r.encrypted }));
+
+  it("holdsWire iff canRelay accepts the header; non-TEXT or encrypted frames print a bare unreadable notice", () => {
+    fc.assert(
+      fc.property(anyFrameArb, (r) => {
+        const made = makeFrames(
+          {
+            type: r.type as 0,
+            encrypted: r.encrypted,
+            hop: r.hop,
+            ttl: r.ttl,
+            messageId: r.id,
+          },
+          [r.body],
+        );
+        if (!made.ok) throw new Error(`makeFrames ${made.error.code}`);
+        const frame = made.value[0] as Frame;
+        const res = receiveFrame(EMPTY_RECEIVE, {
+          frame,
+          ownEcho: false,
+          atMs: 0,
+        });
+        expect(res.slip).not.toBeNull();
+        expect(res.holdsWire).toBe(canRelay(frame.header));
+        if (r.type === 4) expect(res.holdsWire).toBe(false);
+
+        const s = res.slip as Slip;
+        if (r.type === 0 && !r.encrypted) {
+          expect(s.kind).toBe("heard");
+        } else {
+          expect(s.kind).toBe("system");
+          if (s.kind === "system") {
+            expect(s.noticeKey).toBe("unreadable");
+            expect(s.relay?.keyOffer).toBe(r.type === 4);
+            expect(Object.keys(s).sort()).toEqual(
+              ["at", "id", "kind", "noticeKey", "relay"].sort(),
+            );
+          }
+        }
+      }),
+      { verbose: true },
+    );
   });
 });
