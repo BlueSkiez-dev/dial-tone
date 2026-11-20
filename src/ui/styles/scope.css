@@ -1,8 +1,9 @@
-/* Scope: CRT glass, 304 x 198 with a 184 px screen (Figma State 03, 273:2). Tokens only. */
+/* Scope: CRT glass, 304 x 198 with a 290 x 184 screen at a 390 px viewport (Figma State 03, 273:2).
+   The width follows the faceplate (requirement 22.4); the canvas buffer follows the rendered size (22.8). Tokens only. */
 
 .scope {
   box-sizing: border-box;
-  width: 304px;
+  width: 100%;
   height: 198px;
   padding: 7px 7px;
   border-radius: var(--radius-14);
@@ -12,7 +13,7 @@
 
 .scope-screen {
   position: relative;
-  width: 290px;
+  width: 100%;
   height: 184px;
   overflow: hidden;
   border-radius: var(--radius-10);
@@ -22,8 +23,8 @@
 
 .scope-canvas {
   display: block;
-  width: 290px;
-  height: 184px;
+  width: 100%;
+  height: 100%;
 }
 .scope[data-mode="static"] .scope-canvas {
   opacity: 0.55;
@@ -55,8 +56,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 0;
-  border-top: 1px solid var(--scope-band);
+  /* Colour and weight follow the Figma "Band lines" layer (light/led-amber at 60%, 1.5 px, see
+     tokens.css). Drawn as a filled box, not a border, as the user approved: Chromium snaps border
+     widths down to whole device pixels (1.5px renders as 1 px at 1x), heights are not snapped. */
+  height: var(--scope-band-weight);
+  background: var(--scope-band);
 }
 .scope-band-caption {
   position: absolute;

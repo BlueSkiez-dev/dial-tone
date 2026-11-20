@@ -4,7 +4,11 @@ import { renderToString } from "preact-render-to-string";
 import { describe, expect, it } from "vitest";
 import { Slip } from "../components/Slip";
 
-/** Requirements 21.14, 21.15: system slip ink reaches 4.5:1 on --paper-system; no stripe layer. */
+/**
+ * Requirements 21.14, 21.15: system slip ink reaches 4.5:1 on --paper-system; no stripe layer.
+ * Requirement 21.6 (Property 17): the title fill reaches 3:1 on the faceplate.
+ * Requirements 21.28 to 21.31 (Property 18): Update ready buttons are filled, label 4.5:1, boundary 3:1.
+ */
 
 const css = readFileSync("src/ui/styles/tokens.css", "utf8");
 
@@ -61,6 +65,130 @@ const modes = {
   Ghost: (n: string) => token(root, n),
   "Beige 96": (n: string) => token(beige, n) ?? token(root, n),
 };
+
+type Lookup = (n: string) => string | undefined;
+
+/**
+ * Colour of a Token in one mode, following documented aliases (`--a: var(--b)`). Both rules sit on
+ * the root element (data-theme is set on <html>), so an alias resolves with the same mode's values.
+ */
+function colour(get: Lookup, name: string): [number, number, number] {
+  let current = name;
+  for (let hops = 0; hops < 8; hops++) {
+    const value = get(current);
+    const alias =
+      value === undefined ? null : /^var\((--[\w-]+)\)$/.exec(value);
+    if (!alias?.[1]) return hex(current, value);
+    current = alias[1];
+  }
+  throw new Error(`${name} has an alias loop`);
+}
+
+/**
+ * Token pairs checked below (design.md "Contrast tests"). A renamed Token fails with "missing --name".
+ * The faceplate behind the title is a gradient from --plate-hi (top) to --plate (55%); the title sits
+ * between them, so both ends are checked.
+ */
+const CONTRAST_PAIRS = {
+  title: {
+    fill: "--title-fill",
+    backgrounds: ["--plate", "--plate-hi"],
+    min: 3,
+  },
+  slipButtons: [
+    {
+      label: "Later",
+      fill: "--slip-button-later-fill",
+      ink: "--slip-button-later-ink",
+    },
+    {
+      label: "Restart now",
+      fill: "--slip-button-restart-fill",
+      ink: "--slip-button-restart-ink",
+    },
+  ],
+  paper: "--paper-system",
+} as const;
+
+const read = (f: string) => readFileSync(f, "utf8");
+const ruleOf = (src: string, selector: string) =>
+  new RegExp(`${selector}\\s*\\{([^}]*)\\}`).exec(src)?.[1] ?? "";
+
+describe("Faceplate_Title contrast (21.6, Property 17)", () => {
+  it("the title uses the fill Token and keeps the deboss Token", () => {
+    const h1 = ruleOf(read("src/ui/styles/device.css"), "\\.wordmark h1");
+    expect(h1).toMatch(
+      new RegExp(`color: var\\(${CONTRAST_PAIRS.title.fill}\\)`),
+    );
+    expect(h1).toMatch(/text-shadow: var\(--shadow-title-deboss\)/);
+  });
+
+  for (const [mode, get] of Object.entries(modes)) {
+    for (const bg of CONTRAST_PAIRS.title.backgrounds) {
+      it(`${mode}: ${CONTRAST_PAIRS.title.fill} on ${bg} is at least 3:1`, () => {
+        const ratio = contrastRatio(
+          colour(get, CONTRAST_PAIRS.title.fill),
+          colour(get, bg),
+        );
+        expect(ratio).toBeGreaterThanOrEqual(CONTRAST_PAIRS.title.min);
+      });
+    }
+  }
+});
+
+describe("Update ready slip buttons (21.28 to 21.31, Property 18)", () => {
+  for (const [mode, get] of Object.entries(modes)) {
+    for (const b of CONTRAST_PAIRS.slipButtons) {
+      it(`${mode}: ${b.label} label is at least 4.5:1 on its fill`, () => {
+        const ratio = contrastRatio(colour(get, b.ink), colour(get, b.fill));
+        expect(ratio).toBeGreaterThanOrEqual(4.5);
+      });
+      it(`${mode}: ${b.label} boundary (its fill, no border) is at least 3:1 on ${CONTRAST_PAIRS.paper}`, () => {
+        const fill = colour(get, b.fill);
+        const paper = colour(get, CONTRAST_PAIRS.paper);
+        expect(fill).not.toEqual(paper);
+        expect(contrastRatio(fill, paper)).toBeGreaterThanOrEqual(3);
+      });
+    }
+  }
+
+  it("draws each button filled from the Tokens, with no border and a Token shadow", () => {
+    const slipCss = read("src/ui/components/Slip.css");
+    const filled = ruleOf(slipCss, "\\.slip-button-filled");
+    expect(filled).toMatch(/border: 0;/);
+    expect(filled).toMatch(/box-shadow: var\(--shadow-slip-button\)/);
+    for (const [look, b] of [
+      ["later", CONTRAST_PAIRS.slipButtons[0]],
+      ["restart", CONTRAST_PAIRS.slipButtons[1]],
+    ] as const) {
+      const rule = ruleOf(slipCss, `\\.slip-button-${look}`);
+      expect(rule).toMatch(new RegExp(`background: var\\(${b.fill}\\)`));
+      expect(rule).toMatch(new RegExp(`color: var\\(${b.ink}\\)`));
+    }
+    expect(token(root, "--shadow-slip-button")).toBe(
+      "var(--shadow-keycap-lift)",
+    );
+  });
+
+  it("renders both Update ready buttons with the filled class", () => {
+    const html = renderToString(
+      h(Slip, { slip: { kind: "update-ready", id: "u", at: 0 } }),
+    );
+    const buttons = html.match(/<button[^>]*>/g) ?? [];
+    expect(buttons).toHaveLength(2);
+    for (const b of buttons) expect(b).toMatch(/slip-button-filled/);
+  });
+
+  it("follows aliases and reports a broken one clearly", () => {
+    expect(colour(modes.Ghost, "--title-fill")).toEqual(
+      colour(modes.Ghost, "--ink-2"),
+    );
+    expect(() => colour(() => "var(--nope)", "--x")).toThrow(/alias loop/);
+    expect(() =>
+      colour((n) => (n === "--x" ? "var(--y)" : undefined), "--x"),
+    ).toThrow(/missing --y/);
+  });
+});
 
 describe("System_Slip contrast", () => {
   for (const [mode, get] of Object.entries(modes)) {

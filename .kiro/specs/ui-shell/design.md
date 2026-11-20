@@ -157,7 +157,7 @@ Figma file `VDyiOLNBAavxsBHP15j1Sj`. The map lives in `docs/figma-source-map.md`
 | 15 | Light legend open | `285:2` | `legend` |
 | 16 | Beige case | `286:2` | `beige` |
 
-Each state frame holds `Page > Device > (Circuit board, Shell (frosted), Faceplate)`. Faceplate is 340 px wide inside a 370 px device.
+Each state frame holds `Page > Device > (Circuit board, Shell (frosted), Faceplate)`. Faceplate is 340 px wide inside a 370 px device. These are the sizes at the 390 px Figma viewport; the app scales them with the viewport (see "Fluid layout").
 
 ### Components page (`191:3`)
 
@@ -411,6 +411,8 @@ export function binRange(sampleRate: number, fftSize: number, loHz: number, hiHz
 export function formatKHz(hz: number): string;
 /** Self-test warm-up geometry. One bright line that widens from one row to the full height. */
 export function warmUpFrame(progress: number, height: number): { readonly centerRow: number; readonly halfHeight: number; readonly top: number; readonly bottom: number };
+/** Canvas drawing-buffer size for a rendered CSS size and device pixel ratio. Whole pixels, at least 1 x 1 (see "Fluid layout"). */
+export function canvasBuffer(cssWidth: number, cssHeight: number, dpr: number): { readonly width: number; readonly height: number };
 ```
 
 `warmUpFrame` clamps `progress` to 0..1 and `height` to at least 1. It describes exactly one contiguous region, `top..bottom`, inside `0..height-1`. At progress 0 the region is one row, at progress 1 it is the full height, and its height never shrinks as progress grows. `Scope.tsx` only paints the region it returns.
@@ -534,14 +536,14 @@ One file per Figma component in `src/ui/components/`, each with props that are p
 | `ByteMeter` | `MeterView` | 24 `<i>` segments with `data-color`. Count label "41 / 128 B", "Too long" when over. |
 | `TransmitKey` | `state`, `airtimeMs`, `progress`, `onTap` | Strip fills for the airtime while sending. |
 | `ListenLatch` | `state`, `onTap` | Four states. |
-| `Tape`, `Slip` | `visibleSlips`, `expanded`, `onToggle` | Slip implements all ten Figma types. Torn bottom edge by CSS mask (10 px teeth, 5 px deep). System paper is `--paper-system` plus grain, with no stripe layer. |
+| `Tape`, `Slip` | `visibleSlips`, `expanded`, `onToggle` | Slip implements all ten Figma types. Torn bottom edge by CSS mask (10 px teeth, 5 px deep). System paper is `--paper-system` plus grain, with no stripe layer. The Update ready slip buttons are filled or raised (see "Update ready slip buttons"). |
 | `Chassis` | none (parts: `CornerScrews`, `PowerLabel`, `SideRail`, `BottomGrille`, `GrilleTicks`, `Screw`) | Decorative parts of Figma_Main. Static, Tokens only. See "Visual fidelity". |
 | `Sheet` | `type`, `onPrimary`, `onSecondary` | Grip, two screws (13 px, rotated, slotted, from the `Chassis` screw part), kicker, title, body, two buttons. Focus trap, Escape closes, scrim at 45% with 3 px blur. |
 | `Notice` | `type`, `onKey` | Install plate with an amber LED. |
 | `AppIcon` | none | 92 px, radius 24. Also exported as PNG for the manifest. |
 | `SosButton`, `QuickKeys`, `GroupKeyBar` | gallery props | Built to the Figma variants. In the live app their slots stay empty. |
 | `CircuitBoard` | none | SVG drawn in code under the frosted shell. Its crop differs from Figma_Main and is intentionally left unchanged for now (requirement 21.23). |
-| `Device`, `App` | | Layout (370 device, 340 faceplate) and the Sheet host. |
+| `Device`, `App` | | Fluid layout (370 device and 340 faceplate at a 390 px viewport, see "Fluid layout") and the Sheet host. |
 
 **Reserved slots.** The live `Device` renders three containers with no content: the group key bar slot under the status window, the quick keys slot under the message well, and the SOS slot beside Listen. While empty they collapse to a computed 0 x 0 px with no margin, padding or layout gap, so each contributes 0 px of size and spacing, and the visible neighbours keep their Figma spacing (requirement 21.1). They are not hidden with `display: none`, so a later spec can mount into them. Mounting content sets a modifier class that restores the slot to the width and height of its Figma frame from `docs/figma-source-map.md` (21.3). The gallery mounts all three only for `sos-held` and `sos-received`. Details are in "Visual fidelity".
 
@@ -573,11 +575,11 @@ ALGORITHM drawScopeFrame(ctx, source, window, state)
 END
 ```
 
-The band lines use `--scope-band`, whose value is the amber of Figma_Main. They are drawn in every power state in which the Scope shows static or live data, including `off` (requirement 21.20), and are not drawn during the self-test warm-up line. The loop uses `requestAnimationFrame`, pauses when the document is hidden, and reads CSS colours once at mount through `getComputedStyle`, so there is no literal colour in the code. Under reduced motion the warm-up is skipped and the spectrogram still draws (it is data, not decoration).
+The band lines use the `--scope-band` colour Token and the `--scope-band-weight` weight Token (`--amber` at 60% opacity, 1.5 px, matching the Figma "Band lines" layer, see "Scope band and warm-up"). They are drawn in every power state in which the Scope shows static or live data, including `off` (requirement 21.20), and are not drawn during the self-test warm-up line. The loop uses `requestAnimationFrame`, pauses when the document is hidden, and reads CSS colours once at mount through `getComputedStyle`, so there is no literal colour in the code. Under reduced motion the warm-up is skipped and the spectrogram still draws (it is data, not decoration).
 
 ### Visual fidelity (requirement 21)
 
-Figma_Main (node `0:1`) is the source of truth. Every measurement is read through the Figma MCP and recorded in `docs/figma-source-map.md` under "Chassis details (Figma_Main)". The Prototype_Reference (`../dial-tone/prototype/index.html`, relative to the repository root) is read for CSS values only, never copied as code. Where it disagrees with Figma, Figma wins, except for two approved exceptions: the faceplate title deboss and the channel key grille ticks (requirements 21.6, 21.7 and 21.22). Two known differences are left unchanged on purpose: the circuit board crop and the darker left gutter of the Scope (requirement 21.23).
+Figma_Main (node `0:1`) is the source of truth. Every measurement is read through the Figma MCP and recorded in `docs/figma-source-map.md` under "Chassis details (Figma_Main)". Visual comparisons and colour or stroke samples use Figma_Screenshots (`get_screenshot` at 2x or higher), never PNG exports or inspection by eye. The Prototype_Reference (`../dial-tone/prototype/index.html`, relative to the repository root) is read for CSS values only, never copied as code. Where it disagrees with Figma, Figma wins, except for these approved exceptions: the faceplate title deboss with its darker fill (requirement 21.6), the channel key grille ticks (21.7, 21.22), and the filled or raised Update ready slip buttons when Figma draws them as outlines (21.28, 21.32). The Scope band lines are not an exception: they match the "Band lines" layer that every scope in Figma has (21.12). Figma positions and sizes in this section hold at the 390 px Figma viewport; at other widths the layout is fluid (see "Fluid layout"). Two known differences are left unchanged on purpose: the circuit board crop and the darker left gutter of the Scope (requirement 21.23).
 
 **Collapsed slots and full-width Transmit (21.1 to 21.3, 15).** Each Reserved_Slot has two states, set by whether its feature is mounted:
 
@@ -596,18 +598,38 @@ The row uses flex, with Transmit as `flex: 1 1 auto` and the SOS slot sized only
 |---|---|
 | Corner screws | Four, one per corner of the chassis, at the Figma position and size (1 px) |
 | POWER label | The text "POWER" under the rocker, in the Figma position and type style |
-| Title deboss | Approved exception to Figma_Main (requirement 21.6). The faceplate title uses the two-line debossed `text-shadow` of the Prototype_Reference, one light line below and one dark line above, with every colour mapped to a Token. Figma_Main has no such shadow, and Design QA does not report the difference. |
+| Title deboss | Approved exception to Figma_Main (requirement 21.6). The Faceplate_Title keeps the two-line debossed `text-shadow` of the Prototype_Reference, one light line below and one dark line above, with every colour mapped to a Token. Its fill Token (`--emboss` today) must reach a Contrast_Ratio of at least 3:1 against the faceplate Token behind the title. When it does not, the fill moves to a darker Token or alias, the deboss is strengthened, or both. `contrast.test.ts` computes the fill ratio from the Token values (Property 17). Figma_Main has neither the shadow nor the darker fill, and Design QA does not report the difference. |
 | Grille ticks | Approved addition from the Prototype_Reference (requirement 21.7). Figma_Main has no grille ticks. Count, spacing and position are read from the Prototype_Reference. Drawn on the selected channel key only, none on the other two keys. They follow the selection for Room, Call and Quiet. Design QA does not report them. |
 | Message well count and divider | Byte count placement and the divider line at the positions and sizes of their Figma_Main nodes in the Source_Map, 1 px tolerance (requirement 21.21). |
-| Side rail | Rail with dimple and slot at the Figma position and size (1 px) |
+| Side rail | Figma_Main holds the Side_Rail only as pixels of the raster board node `182:5`, so the Figma_Screenshot of `182:5` decides (requirements 21.8, 21.27). If it shows a rail, the app draws the rail, dimple and slot to match it in position, size and shape (1 px), with only the strokes and shapes the screenshot shows, so the rail never reads as a stray line with a hook. If it shows no rail, the app draws no rail, dimple or slot, and the Source_Map marks the Side_Rail rows as removed. |
 | Bottom grille | Slot count, spacing and position from Figma |
 | Sheet screws | 13 px diameter, rotated and slotted, on every Sheet. Replace the earlier 10 px screws. |
 
 The Sheet screw nodes are `270:3` (left) and `270:6` (right) in Onboarding 1 `270:41`. The other Sheets carry the same screws: Onboarding 2 `270:43` and `270:46`, Onboarding 3 `270:81` and `270:84`, Microphone `270:129` and `270:132`, Install `270:304` and `270:307`. Node `270:136` is a kicker container, not a screw. Requirement 21.10 cites these nodes, and the Source_Map records them.
 
-**Scope band and warm-up (21.12, 21.13).** `--scope-band` takes the amber of the Figma Scope node (an existing amber Token value when it matches). The warm-up is `warmUpFrame` (see `scope-map.ts`), one widening line and no stripes. `Scope.tsx` holds no warm-up arithmetic.
+**Scope band and warm-up (21.12, 21.13).** Every scope in Figma has a "Band lines" layer: 1.5 px high, Figma variable `light/led-amber` at 60%. The app draws the band lines of the active channel the same way, in `--amber` (the Token for `light/led-amber`) at 60% opacity and 1.5 px high, so they match Figma and are not an exception. `tokens.css` defines the two Tokens without a new hex literal, in Ghost and Beige 96 alike:
+
+```css
+--scope-band: color-mix(in srgb, var(--amber) 60%, transparent);
+--scope-band-weight: 1.5px;
+```
+
+The band caption keeps `--scope-band-caption`. The band lines are the `.scope-band-line` elements over the canvas, each drawn as a filled box: `height: var(--scope-band-weight); background: var(--scope-band);` with no border. A border is not used because Chromium rounds border widths to whole device pixels, so a 1.5 px border renders as 1 px at a device pixel ratio of 1. The user approved this drawing method (21.12). A unit test in `Scope.test.ts` reads `tokens.css` and checks that `--scope-band` resolves to `--amber` at 60% opacity and that `--scope-band-weight` is `1.5px` (Property 19). An e2e check in `e2e/chassis.spec.ts` reads the computed `background-color` and `height` of a rendered `.scope-band-line` and fails when the colour differs from `--amber` at 60% opacity or the height differs from 1.5 px. Design QA records the colour and weight read by that e2e check (21.34). The warm-up is `warmUpFrame` (see `scope-map.ts`), one widening line and no stripes. `Scope.tsx` holds no warm-up arithmetic.
 
 **System slip paper and ink (21.14, 21.15).** The system paper layers are `--paper-system` and the paper grain texture only. The earlier stripe layer, and any stripe Token or alias it added, is removed. The ink Token (or alias) used by system and update-ready slip text and meta is darkened to the nearest value with Contrast_Ratio of at least 4.5:1 against `--paper-system`, in both Ghost and Beige 96. `src/ui/styles/contrast.test.ts` runs in Node, parses `tokens.css` for both themes, computes the WCAG 2.x ratio (relative luminance `0.2126 R + 0.7152 G + 0.0722 B` after sRGB linearisation, ratio `(L1 + 0.05) / (L2 + 0.05)`), fails below 4.5, and fails with a clear message for a missing Token or an unsupported colour format. A second check renders a `system` and an `update-ready` slip with `preact-render-to-string` and finds no stripe class.
+
+**Update ready slip buttons (21.28 to 21.32).** The Slip_Buttons "Later" and "Restart now" on the Update_Ready_Slip are drawn filled or raised, never as an outline alone. Filled means a background fill Token whose value differs from `--paper-system`. Raised means a Token-based shadow under the button. Fill, label, border and shadow colours are Tokens (new slip-button Tokens or aliases in `tokens.css`, defined for Ghost and Beige 96). The label reaches at least 4.5:1 against the fill. The Button_Boundary reaches at least 3:1 against `--paper-system` (WCAG non-text contrast). The Button_Boundary is the border Token where the button has a border, otherwise the fill Token. The slip body text keeps its 4.5:1 ratio from 21.15. If the Figma_Screenshot of node `270:462` shows outline-only buttons, Design QA records the filled or raised style as an approved exception and does not report it (21.32).
+
+**Contrast tests.** `src/ui/styles/contrast.test.ts` grows from one group to three (the existing System_Slip ink group plus two new ones), each run for Ghost and Beige 96 and using the existing token parser and `contrastRatio`:
+
+| Group | Pair | Threshold | Requirement |
+|---|---|---|---|
+| System_Slip ink (existing) | `--print-system` on `--paper-system` | 4.5:1 | 21.15 |
+| Faceplate title | title fill Token on the faceplate Token behind the title | 3:1 | 21.6 |
+| Update ready buttons | Slip_Button label on Slip_Button fill | 4.5:1 | 21.29 |
+| Update ready buttons | Button_Boundary on `--paper-system` | 3:1 | 21.30 |
+
+The test reads which Tokens the title and the buttons use from a small exported map (for example `CONTRAST_PAIRS` in the test or a shared constant), so a renamed Token fails with "missing --name" instead of passing silently. A missing Token or an unsupported colour format (such as an `rgba` fill) fails with a clear message, as today. The markup check is extended: the rendered `update-ready` slip has a fill class or a raised-shadow class on each Slip_Button, and the fill Token differs from `--paper-system`.
 
 **Design QA flow (21.16 to 21.19).**
 
@@ -624,10 +646,50 @@ sequenceDiagram
     Q->>D: prototype used for CSS values only, with each value and its Token or rule
     Q->>D: open items for missing or differing Chassis_Details with node ids
     Q->>D: title deboss and grille ticks recorded as approved exceptions from the prototype (21.22)
+    Q->>D: Scope band lines compared with the Figma "Band lines" layer (light/led-amber at 60%, 1.5 px), drawn as a filled box (21.12)
     Q->>D: circuit board crop and Scope left gutter recorded as known differences, not open items (21.23)
+    Note over Q,D: Second pass after the refinement of 21.6, 21.8, 21.12 and 21.27 to 21.32
+    Q->>F: get_screenshot (2x or higher) of Figma_Main off, on, on with draft, and Update ready slip 270:462
+    Q->>P: screenshot at 390x844 of the same three states and ?state=update-ready
+    Q->>Q: compare each of the four pairs
+    Q->>D: row per screen: Figma node id, differences, fix or reason left (21.34)
+    Q->>D: rendered band line colour and height (the 1.5 px weight) read by the e2e check (21.12)
+    Q->>D: computed ratios: title fill (21.6), button label (21.29), button boundary (21.30)
+    Q->>D: outline-only Figma buttons, if so, recorded as approved exception (21.32)
 ```
 
 Screenshots go under `test-results` or `docs/qa-shots` and are not committed. Differences under requirement 21 are fixed in `src/ui`. The document also updates Decision 7 (stripe removed, ratios recorded) and the 10 px screw note (now 13 px).
+
+### Fluid layout (Requirement 22)
+
+The device fills the phone's width instead of sitting at a fixed 370 px. The model is the `#device` and `#plate` rules of the Prototype_Reference, read for values only and not copied. Figma frames are drawn at a 390 px viewport, so at 390 px the fluid layout gives exactly the Figma sizes and every Figma position of requirement 21 still holds (22.5).
+
+| Box | Width | Padding | At a 390 px viewport |
+|---|---|---|---|
+| Device | `min(100vw - 20px, 430px)`, centred, a 10 px page gutter on each side | 15 px | 370 px |
+| Faceplate | fills the device minus its padding (`width: 100%`, `box-sizing: border-box`) | 18 px | 340 px |
+| Faceplate content | the faceplate minus its padding | none | 304 px |
+| Parts inside the faceplate | stretch to the faceplate content width | as in Figma | 304 px |
+
+```css
+.device {
+  box-sizing: border-box;
+  width: min(calc(100% - 20px), 430px);   /* 100% of the page box, equal to 100vw - 20px with no classic scrollbar */
+  margin-inline: auto;
+  padding: 15px;
+}
+.faceplate { box-sizing: border-box; width: 100%; padding: 18px; }
+.faceplate > * { align-self: stretch; width: 100%; min-width: 0; }
+```
+
+Rules:
+- **No fixed widths.** The fixed 370, 340 and 304 px widths are removed from `src/ui` CSS. The Status_Window, Scope, channel switch, message well, actions row, Tape and any mounted Reserved_Slot row use `width: 100%` or flex stretch (22.4). `min-width: 0` lets a flex child shrink below its content width at 360 px.
+- **Rows with a fixed-size slot.** A mounted Reserved_Slot keeps its Figma width from the Source_Map, and the stretching part in that row takes the remaining width. The Transmit key is already `flex: 1 1 auto` beside the SOS slot, so with the SOS button mounted Transmit gets the row width minus the slot width, and with the slot collapsed it gets the full row (21.2, 22.4).
+- **Page box.** `html` and `body` have no margin. The device width is written against the page box (`100%`) rather than `100vw`, because on a desktop browser with a classic vertical scrollbar `100vw` includes the scrollbar and would push the page wider than the viewport. On phones, where scrollbars overlay the page, the two are equal. The page does not use `overflow-x: hidden`, so a real overflow still shows up in the `scrollWidth` check.
+- **Right-edge anchors.** Chassis_Details that sit against the right edge of the device (the Side_Rail with its dimple and slot, and the two right corner screws) are positioned with `right` offsets, not `left` offsets. Each offset is computed from the Figma frame at 390 px as `370 - x - width`, where `x` and `width` come from the Source_Map. Left-edge parts keep `left` offsets. At 390 px both give the Figma position (21.4, 21.8), and at other widths the right-edge parts follow the right edge.
+- **Canvas buffers.** The Scope, and any other canvas-based part, sizes its drawing buffer from its rendered size (22.8). A `ResizeObserver` on the canvas reads the CSS content size and `window.devicePixelRatio` on every callback, sets `canvas.width = round(cssWidth * dpr)` and `canvas.height = round(cssHeight * dpr)`, and scales the context by `dpr`. A resize clears the spectrogram history and drawing continues from the next column. The arithmetic is a pure helper, `canvasBuffer(cssWidth, cssHeight, dpr)` in `model/scope-map.ts`, which rounds to whole pixels and never returns less than 1 by 1. The observer is disconnected on unmount.
+
+Requirement 21 tolerances and the `slots.spec.ts` and `chassis.spec.ts` checks are measured at a 390 x 844 viewport, where the fluid layout equals Figma.
 
 ### Pure-module and glue file list
 
@@ -906,8 +968,24 @@ The Contrast_Ratio between the system slip ink and `--paper-system` is at least 
 **Validates: Requirements 21.14, 21.15**
 
 ### Property 16: Slots and chassis geometry (DOM level)
-In the live app each Reserved_Slot measures 0 x 0 px and Transmit equals its row width within 1 px. The well-to-Transmit gap is greater than 0 px and equals the Source_Map gap within 1 px, and the Transmit-to-Tape gap equals the Source_Map gap within 1 px. In `sos-held` and `sos-received` each slot and Transmit match the Source_Map within 1 px. Chassis parts match their Source_Map positions and sizes within 1 px, the selected channel key alone has grille ticks, and the Sheet screw is 13 px.
-**Validates: Requirements 21.1, 21.2, 21.3, 21.4, 21.7, 21.8, 21.10, 21.21, 21.24, 15.1, 15.2**
+In the live app each Reserved_Slot measures 0 x 0 px and Transmit equals its row width within 1 px. The well-to-Transmit gap is greater than 0 px and equals the Source_Map gap within 1 px, and the Transmit-to-Tape gap equals the Source_Map gap within 1 px. In `sos-held` and `sos-received` each slot and Transmit match the Source_Map within 1 px. Chassis parts match their Source_Map positions and sizes within 1 px, the selected channel key alone has grille ticks, and the Sheet screw is 13 px. The Side_Rail matches the Source_Map rows taken from the Figma_Screenshot of `182:5` within 1 px, or, when the Source_Map marks those rows as removed, no Side_Rail, dimple or slot element exists.
+**Validates: Requirements 21.1, 21.2, 21.3, 21.4, 21.7, 21.8, 21.10, 21.21, 21.24, 21.27, 15.1, 15.2**
+
+### Property 17: Faceplate title contrast
+In Ghost and in Beige 96, the Contrast_Ratio between the Faceplate_Title fill Token and the faceplate Token behind the title is at least 3:1, computed from the Token values in `tokens.css`. The title still uses the two-line deboss shadow Token.
+**Validates: Requirements 21.6**
+
+### Property 18: Update ready slip buttons
+In Ghost and in Beige 96, for each Slip_Button on the Update_Ready_Slip: the label Token on the fill Token is at least 4.5:1, the Button_Boundary (border Token if the button has a border, else the fill Token) on `--paper-system` is at least 3:1, and the button is filled (fill Token value differs from `--paper-system`) or raised (a Token-based shadow). All four colours are Tokens. The ratios are computed from the Token values in `tokens.css`, and the rendered markup has no outline-only Slip_Button.
+**Validates: Requirements 21.28, 21.29, 21.30, 21.31**
+
+### Property 19: Scope band Tokens
+In Ghost and in Beige 96, `--scope-band` in `tokens.css` is `color-mix(in srgb, var(--amber) 60%, transparent)` and `--scope-band-weight` is `1.5px`, with no hex literal added. In the rendered app (e2e), every `.scope-band-line` is a filled box with no border: its computed `background-color` equals `--amber` at 60% opacity, its computed `height` is 1.5 px, and its computed border width is 0. The band caption uses `--scope-band-caption`.
+**Validates: Requirements 21.12**
+
+### Property 20: Fluid layout
+For every viewport width in {360, 375, 390, 430} px (e2e, height 844 px): the left and right page gutters (device left edge, and viewport width minus device right edge) differ by at most 1 px; `document.documentElement.scrollWidth` equals the viewport width; and no part inside the faceplate has a bounding box outside the faceplate content box. At 390 px the device is 370 px wide and the faceplate 340 px wide. The message well is wider at 430 px than at 375 px. For every `cssWidth` and `cssHeight` in 1..2000 and `dpr` in 1..4, `canvasBuffer` returns whole numbers of at least 1 that equal the rounded products, and in the rendered app each canvas buffer equals its rendered CSS size times `devicePixelRatio`, rounded.
+**Validates: Requirements 22.1, 22.5, 22.6, 22.7, 22.8**
 
 ## Testing Strategy
 
@@ -924,10 +1002,11 @@ All of `src/ui/model` and `src/ui/fake-transport.ts`. `*.test.ts` for fixed case
 - Offline: load once, go offline, reload, power on, decode the fixture (13.1).
 - Real audio is verified on `npm run build` plus `npm run preview`, never `vite dev`.
 - WebKit and iOS cannot be tested this way. They are checked on two real phones over the GitHub Pages URL (manual, listed in the tasks).
+- Fluid layout: `e2e/fluid.spec.ts` loads the live app on the FakeTransport at viewport widths 360, 375, 390 and 430 px (height 844), powered on with a draft so the well and meter render. At each width it checks equal gutters within 1 px, `scrollWidth` equal to the viewport width, and every faceplate part inside the faceplate content box. At 390 px it checks the 370 px device and 340 px faceplate, and it compares the well width at 430 px with 375 px. It also reads each canvas's `width` and `height` against its rendered size times `devicePixelRatio` (Property 20, requirement 22.9). It waits on DOM attributes, not timers (21.26). The pure `canvasBuffer` part of Property 20 runs in `scope-map.prop.test.ts`.
 
 ### Design QA against Figma
 
-A task compares each gallery state with its Figma screenshot (`get_screenshot`) and records differences. A second pass compares the main screen with Figma_Main in three states (see "Visual fidelity"). `e2e/slots.spec.ts` and `e2e/chassis.spec.ts` check geometry, `Chassis.test.ts` checks the markup, and `contrast.test.ts` checks the system slip ink. State 03 must show 8 lit segments and State 11 all 24 amber with the glow.
+A task compares each gallery state with its Figma screenshot (`get_screenshot`) and records differences. A second pass compares the main screen with Figma_Main in three states (see "Visual fidelity"). After the visual refinement, a further pass compares the same three states plus the Update ready slip (`270:462`, `?state=update-ready`) using Figma_Screenshots at 2x or higher, and records the rendered band line colour and height (the 1.5 px weight) read by the e2e check of 21.12 and the computed ratios (21.33, 21.34). `e2e/slots.spec.ts` and `e2e/chassis.spec.ts` check geometry (including the Side_Rail or its absence), `Chassis.test.ts` checks the markup, and `contrast.test.ts` checks the system slip ink, the faceplate title fill and the Update ready slip buttons (Properties 15, 17 and 18). State 03 must show 8 lit segments and State 11 all 24 amber with the glow.
 
 ## Performance Considerations
 

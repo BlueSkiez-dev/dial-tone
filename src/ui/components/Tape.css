@@ -3,10 +3,10 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 304px;
+  width: 100%;
 }
 
-/* The printer slit the slips come out of. Figma State 03 and 14: 304 wide, dark glass. */
+/* The printer slit the slips come out of. Figma State 03 and 14: 304 wide at 390, dark glass. */
 .tape-slot {
   box-sizing: border-box;
   width: 100%;

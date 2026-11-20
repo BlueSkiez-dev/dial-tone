@@ -41,10 +41,12 @@ export function Device(props: DeviceProps) {
     <div class="device">
       <div class="device-board">
         <CircuitBoard />
-        <SideRail />
         <BottomGrille />
       </div>
       <div class="device-shell" aria-hidden="true" />
+      {/* Above the shell: under its 6 px backdrop blur the 1.3 px rail strokes vanished, while the
+          Figma_Screenshot of 182:5 shows them crisp (task 9.9). */}
+      <SideRail />
       <div class="faceplate">
         <div class="faceplate-grain" aria-hidden="true" />
         <CornerScrews />

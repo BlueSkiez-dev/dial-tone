@@ -44,8 +44,11 @@ describe("Chassis details (Figma_Main)", () => {
     expect(deviceCss).toMatch(/\.power-slot\s*{[^}]*gap: 6px/);
   });
 
-  it("draws the title with the --emboss fill and the two-line Prototype_Reference deboss from Tokens (21.6)", () => {
-    expect(deviceCss).toMatch(/\.wordmark h1\s*{[^}]*color: var\(--emboss\)/);
+  it("draws the title with the --title-fill Token and the two-line Prototype_Reference deboss from Tokens (21.6)", () => {
+    expect(deviceCss).toMatch(
+      /\.wordmark h1\s*{[^}]*color: var\(--title-fill\)/,
+    );
+    expect(deviceCss).not.toMatch(/\.wordmark h1\s*{[^}]*var\(--emboss\)/);
     expect(deviceCss).toMatch(
       /\.wordmark h1\s*{[^}]*text-shadow: var\(--shadow-title-deboss\)/,
     );
@@ -65,9 +68,30 @@ describe("Chassis details (Figma_Main)", () => {
     );
   });
 
-  it("renders the side rail with its dimple and slot", () => {
+  it("renders the side rail with only its dimple and slot, above the frosted shell (21.8)", () => {
+    expect(count(device, /chassis-side-rail/g)).toBe(1);
     expect(count(device, /chassis-rail-dimple/g)).toBe(1);
     expect(count(device, /chassis-rail-slot/g)).toBe(1);
+    // Not inside the blurred board layer: it follows the shell, so the shell blur cannot erase it.
+    const shell = device.indexOf('class="device-shell"');
+    const rail = device.indexOf('class="chassis-side-rail"');
+    const plate = device.indexOf('class="faceplate"');
+    expect(shell).toBeGreaterThan(-1);
+    expect(rail).toBeGreaterThan(shell);
+    expect(rail).toBeLessThan(plate);
+    const rail0 = device.slice(rail, device.indexOf("</div>", rail));
+    expect(count(rail0, /<span/g)).toBe(2);
+    // Source_Map values, checked on the Figma_Screenshot of 182:5. Anchored to the right edge
+    // (requirement 22.4): right = 370 - x - width, so x is 357.25 and 357.35 on the 370 px chassis.
+    expect(chassisCss).toMatch(
+      /\.chassis-rail-dimple\s*{[^}]*right: 4\.25px;[^}]*top: calc\(30% - 4\.25px\);[^}]*width: 8\.5px;[^}]*height: 8\.5px;[^}]*border: 1\.3px solid var\(--board-ink-rail\)/,
+    );
+    expect(chassisCss).toMatch(
+      /\.chassis-rail-slot\s*{[^}]*right: 4\.35px;[^}]*top: calc\(34% - 0\.65px\);[^}]*width: 8\.3px;[^}]*height: 79\.3px;[^}]*border: 1\.3px solid var\(--board-ink-rail\)/,
+    );
+    expect(chassisCss).not.toMatch(
+      /\.chassis-rail-(dimple|slot)\s*{[^}]*left:/,
+    );
   });
 
   it("renders the bottom grille with the Source_Map slot count", () => {

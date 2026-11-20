@@ -38,6 +38,12 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 - **System_Slip**: A Slip of kind `system` or `update-ready`, printed on the grey system paper.
 - **Contrast_Ratio**: The WCAG 2.x relative-luminance contrast ratio between two colours.
 - **Main_Screen_Shots**: The Figma_Main screenshots and the Playwright screenshots at 390 x 844 of the Device_Screen in the states off, on and on with a draft.
+- **Figma_Screenshot**: An image of a Figma node captured through the Figma MCP `get_screenshot` at a scale of 2x or higher. Visual comparisons in requirement 21 use Figma_Screenshots, not inspection by eye and not PNG exports.
+- **Faceplate_Title**: The "DIAL TONE" title in the faceplate header, Figma nodes `182:25` and `182:26` in Header `182:16`.
+- **Side_Rail**: The rail on the right edge of the chassis, with its dimple and slot, that Figma_Main holds only as pixels of the raster board node `182:5`.
+- **Update_Ready_Slip**: The System_Slip of kind `update-ready`, Figma Slip variant `270:462`, with the buttons "Later" and "Restart now".
+- **Slip_Button**: One of the buttons "Later" and "Restart now" on the Update_Ready_Slip.
+- **Button_Boundary**: The colour that forms the visible edge of a Slip_Button against the System_Slip paper: the border Token where the Slip_Button has a border, otherwise the fill Token.
 
 ## Requirements
 
@@ -346,13 +352,13 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 3. WHEN a later spec mounts the group key bar, the quick keys or the SOS button, THE Device_Screen SHALL restore the matching slot to the width and height of its Figma frame recorded in the Source_Map, with a tolerance of 1 px, and THE Transmit key SHALL return to the width of its Figma frame in the Source_Map, with a tolerance of 1 px.
 4. THE Device_Screen SHALL draw the four chassis corner screws of Figma_Main, one in each corner, at the position and size of their Figma nodes in the Source_Map, with a tolerance of 1 px.
 5. THE Device_Screen SHALL show the text "POWER" under the rocker switch, in the position and type style of its Figma node in the Source_Map.
-6. THE Device_Screen SHALL draw the faceplate title with the two-line debossed text shadow of the Prototype_Reference, so that the title reads clearly, using Tokens for every colour. This is a deliberate exception to "Figma wins", and the Design QA task SHALL NOT report the difference from Figma_Main as a failure.
+6. THE Device_Screen SHALL draw the Faceplate_Title with the two-line debossed text shadow of the Prototype_Reference and with a fill Token whose Contrast_Ratio against the faceplate colour behind the Faceplate_Title is at least 3:1 (the WCAG large-text threshold), reached by a darker fill Token, a stronger deboss, or both, using Tokens for every colour, AND a test SHALL compute the ratio from the Token values and fail when the ratio is below 3:1. The deboss and the darker fill are a deliberate exception to "Figma wins", and the Design QA task SHALL NOT report the difference from Figma_Main as a failure.
 7. WHEN a channel key is selected, THE channel switch SHALL draw the grille ticks on that key, with the tick count, spacing and position taken from the Prototype_Reference, and SHALL draw no grille ticks on the two unselected keys. Figma_Main has no grille ticks, and this is an approved addition from the Prototype_Reference that the Design QA task SHALL NOT report as a failure.
-8. THE Device_Screen SHALL draw the side rail with its dimple and its slot, at the position and size of their Figma nodes in the Source_Map, with a tolerance of 1 px.
+8. WHERE the Figma_Screenshot of the raster board node `182:5` shows a Side_Rail, THE Device_Screen SHALL draw the Side_Rail, its dimple and its slot to match that Figma_Screenshot in position, size and shape, with a tolerance of 1 px, and SHALL draw only the strokes and shapes that the Figma_Screenshot shows, so that the Side_Rail does not read as a stray line with a hook.
 9. THE Device_Screen SHALL draw the bottom grille of Figma_Main, with the slot count, spacing and position of its Figma node in the Source_Map.
 10. THE Sheet SHALL draw its screws at a diameter of 13 px, rotated and slotted as in nodes `270:3` (left) and `270:6` (right) of Onboarding 1 `270:41`, and SHALL draw the same screws on every other Sheet node of Figma_Main: Onboarding 2 `270:43` and `270:46`, Onboarding 3 `270:81` and `270:84`, Microphone `270:129` and `270:132`, Install `270:304` and `270:307`.
 11. THE `src/ui` Chassis_Detail files SHALL read every colour from Tokens, and SHALL contain no hex colour literal other than `#040504`, so that requirement 3.2 still holds.
-12. THE Scope SHALL draw the band lines of the active channel in amber, using the `--scope-band` Token whose value is the amber of Figma_Main.
+12. THE Scope SHALL draw the band lines of the active channel as in the Figma_Main "Band lines" layer: in the `--amber` Token (matching Figma variable `light/led-amber`) at 60% opacity, 1.5 px high, through the `--scope-band` Token (colour) and the `--scope-band-weight` Token (weight), AND THE band caption SHALL keep the `--scope-band-caption` Token. Each band line SHALL be drawn as a filled box of that height (a height plus a background, with no border), because Chromium rounds border widths to whole device pixels; the user approved this drawing method. A unit test SHALL check that `--scope-band` resolves to `--amber` at 60% opacity and that `--scope-band-weight` is 1.5 px, AND an e2e check SHALL read the computed colour and width of a rendered band line and fail when either differs from those values.
 13. WHEN the self-test warm-up runs, THE Scope SHALL draw one bright horizontal line whose height widens from the line to the full Scope height over the warm-up, and SHALL NOT draw solid green stripes at any frame of the warm-up.
 14. THE System_Slip paper SHALL consist of the `--paper-system` base colour and the paper grain only, and SHALL contain no stripe layer, because Figma_Main has none.
 15. THE System_Slip ink SHALL reach a Contrast_Ratio of at least 4.5:1 against the System_Slip paper, AND a test SHALL compute the ratio from the Token values and fail when the ratio is below 4.5:1.
@@ -362,8 +368,34 @@ Evidence rule: a number in these requirements is taken from Figma, from `src/pro
 19. IF a Chassis_Detail of requirement 21 is still missing or differs from Figma_Main after the comparison, THEN THE Design QA task SHALL list it in `docs/ui-design-qa.md` as an open item with its Figma node id and a description of the difference.
 20. WHILE the power is off, THE Scope SHALL draw the band lines of the active channel in the `--scope-band` Token, as Figma_Main does for the off state.
 21. THE message well SHALL place the byte count and draw the divider line at the positions and sizes of their Figma_Main nodes recorded in the Source_Map, with a tolerance of 1 px.
-22. THE Design QA task SHALL record in `docs/ui-design-qa.md` that the Prototype_Reference was the source of the faceplate title deboss (criterion 6) and the channel key grille ticks (criterion 7), as approved exceptions to Figma_Main.
+22. THE Design QA task SHALL record in `docs/ui-design-qa.md` that the Prototype_Reference was the source of the faceplate title deboss (criterion 6) and the channel key grille ticks (criterion 7), as approved exceptions to Figma_Main, AND SHALL record the filled or raised Slip_Button style of criterion 28 as an approved exception to Figma_Main under the condition of criterion 32.
 23. THE Design QA task SHALL list the circuit board crop and the darker left gutter of the Scope in `docs/ui-design-qa.md` as known differences that are intentionally left unchanged for now, and SHALL NOT treat them as open items under criterion 19 or as failures.
 24. WHILE the Reserved_Slots are collapsed, THE gap between the message well and the Transmit key SHALL equal the Figma_Main gap, with a tolerance of 1 px, and SHALL be greater than 0 px, AND the gap between the Transmit key and the Tape SHALL equal the Figma_Main gap, with a tolerance of 1 px.
 25. THE gap between the MESSAGE caption row and the message well SHALL equal the Figma_Main gap (well top at 30 px in State 03 node `273:155` versus 22 px in the app, i.e. 8 px), within 1 px.
 26. THE e2e tests SHALL wait for an observable app state (a DOM attribute, text or event) and SHALL NOT rely on fixed timers or timing thresholds to decide when a state has been reached.
+27. IF the Figma_Screenshot of the raster board node `182:5` shows no Side_Rail, THEN THE Device_Screen SHALL draw no Side_Rail, no dimple and no slot, and the Source_Map SHALL mark the Side_Rail rows as removed.
+28. THE Update_Ready_Slip SHALL draw each Slip_Button in a filled or raised style, where filled means a background fill Token whose value differs from `--paper-system` and raised means a Token-based shadow under the Slip_Button, so that no Slip_Button is drawn as an outline alone.
+29. THE Slip_Button label SHALL reach a Contrast_Ratio of at least 4.5:1 against the Slip_Button fill.
+30. THE Button_Boundary SHALL reach a Contrast_Ratio of at least 3:1 against the System_Slip paper (WCAG non-text contrast).
+31. THE Update_Ready_Slip SHALL read the Slip_Button fill, label, border and shadow colours from Tokens, AND a test SHALL compute the ratios of criteria 29 and 30 from the Token values and fail when either ratio is below its threshold. The Update_Ready_Slip body text keeps the 4.5:1 ratio of criterion 15.
+32. IF the Figma_Screenshot of the Update_Ready_Slip node `270:462` shows outline-only buttons, THEN THE Design QA task SHALL record the filled or raised Slip_Button style of criterion 28 in `docs/ui-design-qa.md` as an approved exception to Figma_Main, and SHALL NOT report the difference as a failure.
+33. WHEN the visual refinement of criteria 6, 8, 12 and 27 to 32 is complete, THE Design QA task SHALL capture a Figma_Screenshot and a Playwright screenshot at 390 x 844 px of each of the Device_Screen states off, on and on with a draft, and of the Update_Ready_Slip (node `270:462`, Gallery `?state=update-ready`).
+34. WHEN the screenshots of criterion 33 have been compared, THE Design QA task SHALL record in `docs/ui-design-qa.md`, for each of the four screens, the compared Figma node id, each difference found, and either the fix or the reason it was left, together with the rendered band line colour and stroke weight read by the e2e check of criterion 12 and the computed Contrast_Ratios of criteria 6, 29 and 30.
+
+### Requirement 22: Fluid layout
+
+**User Story:** As a user on any phone width, I want the device to fill my screen without overflow, so that it looks centred and nothing is clipped.
+
+The Prototype_Reference (its `#device` and `#plate` rules) is the model for this behaviour. Figma frames are drawn at a 390 px viewport, so the Figma_Main sizes of Requirement 21 apply at that width.
+
+#### Acceptance Criteria
+
+1. THE Device_Screen SHALL be as wide as the viewport minus a 10 px page gutter on each side, up to a maximum width of 430 px, and SHALL be centred horizontally in the viewport.
+2. THE faceplate SHALL fill the Device_Screen width minus the device padding.
+3. THE Device_Screen SHALL keep a device padding of 15 px and a faceplate padding of 18 px at every viewport width.
+4. THE Device_Screen SHALL stretch every part inside the faceplate (Status_Window, Scope, channel switch, message well, actions row, Tape, and any mounted Reserved_Slot row) to the faceplate content width, AND in a row that holds a fixed-size mounted Reserved_Slot, the stretching part (for example the Transmit key beside the SOS button) SHALL take the remaining width.
+5. WHEN the viewport is 390 px wide, THE Device_Screen SHALL be 370 px wide and the faceplate 340 px wide, so that all Figma_Main sizes and positions of Requirement 21 still hold at 390 px.
+6. WHEN the viewport is 360, 375, 390 or 430 px wide, THE Device_Screen SHALL keep the left and right page gutters equal within 1 px, the document `scrollWidth` SHALL equal the viewport width, and no part SHALL extend beyond the faceplate content box.
+7. WHEN the viewport is 430 px wide, THE message well SHALL be wider than at a viewport 375 px wide.
+8. THE Scope and every other canvas-based part SHALL size the canvas drawing buffer to the rendered CSS size of the canvas, so that the drawing does not stretch or blur at any viewport width.
+9. THE e2e tests SHALL check criteria 6 and 7 at viewport widths of 360, 375, 390 and 430 px.

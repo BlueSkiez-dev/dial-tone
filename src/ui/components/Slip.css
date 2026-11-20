@@ -1,5 +1,6 @@
+/* 280 px on the 304 px Tape at a 390 px viewport (12 px each side); follows the Tape width (22.4). */
 .slip {
-  width: 280px;
+  width: calc(100% - 24px);
   max-width: 100%;
   box-sizing: border-box;
   /* A mask clips box-shadow, so the shadow is a filter on the wrapper. Same recipe as --shadow-slip. */
@@ -129,6 +130,23 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Update ready buttons (task 9.9, requirements 21.28 to 21.31): filled and raised, no border, so the
+   fill is the visible edge on the grey paper. The 1.5 px of the old border moves into the padding,
+   so the size stays the same. Approved exception: Figma 270:462 draws them as outlines. */
+.slip-button-filled {
+  padding: 9.5px 12.5px;
+  border: 0;
+  box-shadow: var(--shadow-slip-button);
+}
+.slip-button-later {
+  background: var(--slip-button-later-fill);
+  color: var(--slip-button-later-ink);
+}
+.slip-button-restart {
+  background: var(--slip-button-restart-fill);
+  color: var(--slip-button-restart-ink);
+}
+
 /* Grow the hit area to at least 44 px without changing the look. */
 .slip-button::after {
   content: "";
@@ -193,12 +211,13 @@
   );
 }
 
+/* 248 and 228 px inside the 280 px slip at 390: the full text width, and 20 px short of it. */
 .slip-redacted-bar[data-bar="1"] {
-  width: 248px;
+  width: 100%;
 }
 
 .slip-redacted-bar[data-bar="2"] {
-  width: 228px;
+  width: calc(100% - 20px);
 }
 
 /* Line-by-line printing: the paper is revealed from the top in steps. */

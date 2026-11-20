@@ -3,6 +3,7 @@ import type { SpectrumSource } from "../../audio/index";
 import { copy } from "../copy";
 import {
   binRange,
+  canvasBuffer,
   formatKHz,
   type ScopeWindow,
   warmUpFrame,
@@ -57,10 +58,15 @@ export function Scope(props: ScopeProps) {
       readRgb(canvas, "--screen", FALLBACK_DARK),
       readRgb(canvas, "--phosphor", FALLBACK_BRIGHT),
     );
-    const w = SCOPE_WIDTH;
-    const h = SCOPE_HEIGHT;
-    const column = ctx.createImageData(1, h);
-    const frame = ctx.createImageData(w, h);
+    // Drawing-buffer size in device pixels. Starts at the Figma size and follows the rendered size
+    // (requirement 22.8). All drawing is ImageData in buffer pixels, so the context keeps the
+    // identity transform; the devicePixelRatio is applied through the buffer size instead.
+    let w = canvas.width;
+    let h = canvas.height;
+    // One spectrogram step is one CSS pixel wide, so history scrolls at the same speed at any ratio.
+    let step = 1;
+    let column = ctx.createImageData(step, h);
+    let frame = ctx.createImageData(w, h);
     let buf = new Uint8Array(0);
     let raf = 0;
     let warmStart: number | null = null;
@@ -101,12 +107,37 @@ export function Scope(props: ScopeProps) {
         win.loHz,
         win.hiHz,
       );
-      ctx.drawImage(canvas, -1, 0);
+      ctx.drawImage(canvas, -step, 0);
       for (let row = 0; row < h; row++) {
-        putIndex(column.data, row, buf[binForRow(row, h, range)] ?? 0);
+        const idx = buf[binForRow(row, h, range)] ?? 0;
+        for (let x = 0; x < step; x++)
+          putIndex(column.data, row * step + x, idx);
       }
-      ctx.putImageData(column, w - 1, 0);
+      ctx.putImageData(column, w - step, 0);
     };
+
+    // Resizing clears the canvas (and the spectrogram history); drawing continues from the next frame.
+    const resize = (cssWidth: number, cssHeight: number) => {
+      const dpr = window.devicePixelRatio || 1;
+      const size = canvasBuffer(cssWidth, cssHeight, dpr);
+      if (size.width === w && size.height === h) return;
+      canvas.width = size.width;
+      canvas.height = size.height;
+      w = size.width;
+      h = size.height;
+      step = Math.max(1, Math.min(w, Math.round(dpr)));
+      column = ctx.createImageData(step, h);
+      frame = ctx.createImageData(w, h);
+      lastMode = null;
+    };
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver((entries) => {
+            const box = entries[entries.length - 1]?.contentRect;
+            if (box) resize(box.width, box.height);
+          });
+    observer?.observe(canvas);
 
     const tick = (now: number) => {
       raf = 0;
@@ -131,6 +162,7 @@ export function Scope(props: ScopeProps) {
     document.addEventListener("visibilitychange", onVisibility);
     onVisibility();
     return () => {
+      observer?.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       if (raf) cancelAnimationFrame(raf);
     };

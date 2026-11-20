@@ -26,12 +26,22 @@ export function MetaItem(props: MetaItemProps) {
 export interface SlipButtonProps {
   label: string;
   onTap?: () => void;
+  /**
+   * `outline` (default): the Figma outline on white paper ("Pass it on").
+   * `later` and `restart`: filled and raised, for the Update ready slip on the grey system paper.
+   */
+  look?: "outline" | "later" | "restart";
 }
 
-/** Outlined slip button ("Pass it on", "Later", "Restart now"). */
+/** Slip button ("Pass it on", "Later", "Restart now"). */
 export function SlipButton(props: SlipButtonProps) {
+  const look = props.look ?? "outline";
+  const cls =
+    look === "outline"
+      ? "slip-button"
+      : `slip-button slip-button-filled slip-button-${look}`;
   return (
-    <button type="button" class="slip-button" onClick={() => props.onTap?.()}>
+    <button type="button" class={cls} onClick={() => props.onTap?.()}>
       {props.label}
     </button>
   );

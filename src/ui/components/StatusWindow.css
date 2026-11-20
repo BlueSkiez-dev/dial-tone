@@ -1,9 +1,9 @@
-/* Status window (Figma 213:195): 304 x 113, smoked glass. Tokens only. */
+/* Status window (Figma 213:195): 304 x 113 at a 390 px viewport, smoked glass. Fluid width (22.4). Tokens only. */
 
 .status-window {
   position: relative;
   box-sizing: border-box;
-  width: 304px;
+  width: 100%;
   min-height: 113px;
   overflow: hidden;
   padding: 14px 14px 12px;
@@ -23,7 +23,8 @@
 
 .status-leds {
   display: grid;
-  grid-template-columns: repeat(6, 44.33px);
+  /* Six equal LED cells: 44.33 px each at 390 (276 px row, 2 px gaps). */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 2px;
   width: 100%;
   height: 39px;
@@ -68,7 +69,8 @@
 
 .status-legend {
   display: grid;
-  grid-template-columns: 131px 131px;
+  /* Two equal columns: 131 px each at 390. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 5px 14px;
   margin: 10px 0 0;
   padding: 10px 0 0;

@@ -1,8 +1,11 @@
 /* Channel switch, mode note and Quiet notice. Tokens only. Sizes from Figma 213:252 and State 10 (280:2). */
 
+/* Fluid (requirement 22.4): the switch fills the row, and each of the three keys is a third of the
+   track inside the 5 px rim, (100% - 10px) / 3. At 304 px that is the Figma 98 px key at 5, 103 and 201. */
 .channel-switch {
+  --channel-key: calc((100% - 10px) / 3);
   position: relative;
-  width: 304px;
+  width: 100%;
   height: 69.992px;
   border-radius: var(--radius-15);
   background: linear-gradient(to bottom, var(--plate-lo), var(--plate));
@@ -28,7 +31,7 @@
   position: absolute;
   top: 5px;
   left: 5px;
-  width: 98px;
+  width: var(--channel-key);
   height: 60px;
   border-radius: var(--radius-11);
   background: linear-gradient(
@@ -46,22 +49,23 @@
   transition: transform 340ms cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: none;
 }
+/* Translate percentages are of the thumb's own width: one and two key widths. */
 .channel-switch[data-value="call"] .channel-thumb {
-  transform: translateX(98px);
+  transform: translateX(100%);
 }
 .channel-switch[data-value="quiet"] .channel-thumb {
-  transform: translateX(196px);
+  transform: translateX(200%);
 }
 
 .channel-position {
   position: absolute;
   top: 5px;
-  width: 98px;
+  width: var(--channel-key);
   height: 60px;
   padding: 17px 4px 9px;
   border-radius: var(--radius-11);
   display: grid;
-  grid-template-columns: 90px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 18.7px 14.3px;
   gap: 1px;
   justify-items: center;
@@ -72,10 +76,10 @@
   left: 5px;
 }
 .channel-position:nth-of-type(2) {
-  left: 103px;
+  left: calc(5px + var(--channel-key));
 }
 .channel-position:nth-of-type(3) {
-  left: 201px;
+  left: calc(5px + 2 * var(--channel-key));
 }
 .channel-name {
   font: var(--type-channel-label);
@@ -105,7 +109,7 @@
 
 .channel-note {
   margin: 0;
-  width: 304px;
+  width: 100%;
   padding: 8px 4px 0;
   font: var(--type-mode-description);
   color: var(--ink-2);
@@ -116,7 +120,7 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  width: 304px;
+  width: 100%;
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 12px;

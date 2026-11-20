@@ -37,7 +37,7 @@ Method: Figma screenshots from the MCP `get_screenshot` (file `VDyiOLNBAavxsBHP1
 | New 06 Mic reset `248:2` | `mic-reset` | Differences: title was "Microphone is off", Figma "Microphone access was reset" (fixed); body was two paragraphs, Figma has one: "Your phone forgot the permission. iPhones do this after a while. Allow it again to keep hearing messages." (fixed in `SheetContent.tsx` and `sheet-copy.ts`; `Sheet.test.ts` assertion updated to the new text). After the fix the screenshot matches Figma in title wrap, body and button positions. Sheet is 399 px high, the Figma screenshot shows about 411 px. | Fixed. 12 px height gap not traced. |
 | New 15 Install sheet `257:2` | `install-sheet` | After fixes it matches Figma in order and spacing: title, app icon on the plate without a glass panel, body, list. Differences: the app adds an "iPhone: tap Share..." line that Figma's frame does not show; Figma's two list items are spaced further apart; screws. | Icon panel and order fixed. iPhone line kept (iOS needs it; requirement text). |
 | New 16 Install notice `258:2` | `install-notice` | Difference: the Notice sat above the Tape header and crowded it, Figma puts it below the Tape, after the empty-tape text (fixed in `Screen.tsx`, 16 px gap in `Notice.css`). Plate, amber LED, text and INSTALL key look the same. | Fixed. |
-| New 17 Update ready `259:2` | `update-ready` | Differences: Figma paper is the dark striped system paper, the app uses the light paper; Figma shows the Sent slip under it, the gallery has only the update slip. Text, meta line, Later and Restart now buttons match (node `270:462`: 280 wide, buttons 7 px radius, 12.5 px labels). | **Resolved (decision 7, updated in task 9.4):** system slips (first power-on, Update ready, and the notice keys unsupported, mic-again, listening-open) use CSS-only grey paper: `--paper-system` `#7c7d7f` plus the paper grain, and nothing else. The stripe first added by Decision 7 is removed (`--paper-system-stripe` deleted), because the Figma file has no stripe layer: the paper vectors `261:9` and `246:231` have only the grain tile as a fill and Figma draws the empty base as `#7c7d7f`. The ink is `--print-system` `#121314`: 4.51:1 on the paper (the old `--print` `#1d1e21` gave 4.05:1), in Ghost and in Beige 96 (Beige overrides neither Token). Slip height 179 against 178.4. |
+| New 17 Update ready `259:2` | `update-ready` | Differences: Figma paper is the dark striped system paper, the app uses the light paper; Figma shows the Sent slip under it, the gallery has only the update slip. Text, meta line, Later and Restart now buttons match (node `270:462`: 280 wide, buttons 7 px radius, 12.5 px labels). Task 9.9: the buttons are now filled and raised instead of Figma's outlines, an approved exception (requirement 21.32, see "Visual refinement pass"). | **Resolved (decision 7, updated in task 9.4):** system slips (first power-on, Update ready, and the notice keys unsupported, mic-again, listening-open) use CSS-only grey paper: `--paper-system` `#7c7d7f` plus the paper grain, and nothing else. The stripe first added by Decision 7 is removed (`--paper-system-stripe` deleted), because the Figma file has no stripe layer: the paper vectors `261:9` and `246:231` have only the grain tile as a fill and Figma draws the empty base as `#7c7d7f`. The ink is `--print-system` `#121314`: 4.51:1 on the paper (the old `--print` `#1d1e21` gave 4.05:1), in Ghost and in Beige 96 (Beige overrides neither Token). Slip height 179 against 178.4. |
 
 ## Component sizes (node properties against the app)
 
@@ -101,18 +101,18 @@ Method: Figma `get_screenshot` of `0:1` (the Main page; its one frame is `182:2`
 
 | State | Figma node | Differences found | Fix or reason left |
 |---|---|---|---|
-| Off | `271:2` (and `182:2` for header, status window and chassis) | Corner screws, POWER label, rail, dimple and bottom grille match in position and look. The rocker has an amber ring in the app (the first-use rocker hint after onboarding), Figma has none. Figma draws the Room band lines on the dark scope while off; the app now draws them too (task 9.6, requirement 21.20). The title deboss is the Prototype_Reference two-line shadow, an approved exception (requirement 21.6), not a difference. Figma shows the dimmed full content (group key bar, quick keys, SOS); the app collapses the reserved slots (requirement 21.1). The circuit board shows less around the shell than the Figma raster `182:5`. | Rocker ring kept: it tells a new user to tap it. Band lines while off: fixed in task 9.6 (`--scope-band`, faint static and STANDBY kept). Collapsed slots: by requirement. Board: known difference left unchanged (requirement 21.23).|
-| On (after the self-test) | `273:2` (`182:2` for status window and scope) | OK row and MR, AA lit match. The band line is amber and solid in `--scope-band`, caption "ROOM · 1.9-6.4 KHZ" as in Figma; the app scope has a darker left gutter behind the axis labels where Figma has none. Figma ends with an empty Tape; the live app prints the "Dial Tone · Listening while open" system slip on first power-on (grey paper, no stripe). The hint is longer than Figma's. The group key bar, quick keys and SOS are collapsed in the app. | System slip: first-power flow. Hint kept (State 03 row above). Gutter: open item 3. |
+| Off | `271:2` (and `182:2` for header, status window and chassis) | Corner screws, POWER label, rail, dimple and bottom grille match in position. The rail and dimple did not match in look: they sat under the shell blur and did not show (found and fixed in task 9.9, see below). The rocker has an amber ring in the app (the first-use rocker hint after onboarding), Figma has none. Figma draws the Room band lines on the dark scope while off; the app now draws them too (task 9.6, requirement 21.20). The title deboss is the Prototype_Reference two-line shadow, an approved exception (requirement 21.6), not a difference. Figma shows the dimmed full content (group key bar, quick keys, SOS); the app collapses the reserved slots (requirement 21.1). The circuit board shows less around the shell than the Figma raster `182:5`. | Rocker ring kept: it tells a new user to tap it. Band lines while off: fixed in task 9.6 (`--scope-band`, faint static and STANDBY kept); 60% `--amber`, 1.5 px since task 9.10, the values of the Figma "Band lines" layer `308:2` (checked in task 9.11). Collapsed slots: by requirement. Board: known difference left unchanged (requirement 21.23).|
+| On (after the self-test) | `273:2` (`182:2` for status window and scope) | OK row and MR, AA lit match. The band line is amber and solid in `--scope-band` (60% `--amber`, 1.5 px since task 9.10, as the Figma "Band lines" layer `308:8`), caption "ROOM · 1.9-6.4 KHZ" as in Figma; the app scope has a darker left gutter behind the axis labels where Figma has none. Figma ends with an empty Tape; the live app prints the "Dial Tone · Listening while open" system slip on first power-on (grey paper, no stripe). The hint is longer than Figma's. The group key bar, quick keys and SOS are collapsed in the app. | System slip: first-power flow. Hint kept (State 03 row above). Gutter: open item 3. |
 | On with a draft | `273:2` and `182:2` (Message well, Transmit key) | Figma puts "41 / 128 B" in the MESSAGE caption row and the meter and airtime row inside the well. The app had the count next to the meter. Figma_Main has no divider line between text and meter, and the app draws none (checked in the browser: no border, rule or separator in the well). Transmit is full width in the app (SOS slot collapsed), 210 wide in Figma. The textarea shows a dark focus ring. The QA draft differs from Figma's ("39 / 128 B", about 5.1 s). | Count moved to the caption row in task 9.6 (requirement 21.21), the meter row now matches 213:258. The well sat 8 px too high (top 22 px in the Message block, Figma `273:155` at 30); fixed in task 9.8, the well now starts 8 px below the caption row `273:150`. Full-width Transmit: requirement 21.2. Focus ring is the focus cue, kept. |
 
 No difference under requirement 21 needed a change in `src/ui` in this pass: tasks 9.1 to 9.4 had already built the chassis details, the scope band, the warm-up and the system slip.
 
 ### Known items carried from earlier tasks
 
-- Grille ticks, the side rail and the bottom grille are not Figma nodes. Figma_Main draws the rail and grille in the raster board `182:5`, and the ticks do not appear at all. Their values were read from the Prototype_Reference and the rail and grille were checked on the Figma screenshot.
+- Grille ticks, the side rail and the bottom grille are not Figma nodes. Figma_Main draws the rail and grille in the raster board `182:5`, and the ticks do not appear at all. Their values were read from the Prototype_Reference and the rail and grille were checked on the Figma screenshot. Task 9.9 re-measured the rail on the `182:5` screenshot (within 1 px) and moved it above the shell blur so it shows.
 - `270:136` is not a screw. It is the content container (it holds the kicker) of the Onboarding 3 and Microphone sheets. The real Sheet screws are `270:3` and `270:6` (Onboarding 1), `270:43` and `270:46`, `270:81` and `270:84`, `270:129` and `270:132`, `270:304` and `270:307`. The New 03 row now says so.
 - Figma's own system slip ink fails 4.5:1 on its paper, so the Token `--print-system` (`#121314`, 4.51:1) was added instead of using Figma's value.
-- `--scope-band` is `#6a4c0e`, and `--scope-band-caption` (`#6b8d77`) was added for the caption text. The band line is drawn solid.
+- `--scope-band` was `#6a4c0e`, and `--scope-band-caption` (`#6b8d77`) was added for the caption text. The band line is drawn solid. Task 9.9 re-sampled it on Figma MCP screenshots (not a PNG export) and kept it with a 1 px `--scope-band-weight` (past values). Task 9.10 changed both to `--amber` at 60% opacity, 1.5 px, and task 9.11 confirmed that every Figma "Band lines" layer now has these values (see "Band lines follow Figma (task 9.11)" below). The caption Token is unchanged.
 
 ### Screw and stripe notes (updated)
 
@@ -141,7 +141,7 @@ Sheet screws are 13 px, rotated and slotted, and the chassis corner screws match
 ### Visual decisions (task 9.6, requirements 21.6, 21.7, 21.20 to 21.23)
 
 - Approved exceptions to Figma_Main, sourced from the Prototype_Reference: the faceplate title deboss and the channel key grille ticks. Neither is reported as a failure.
-- Title deboss value taken from `../dial-tone/prototype/index.html` line 109 (`.mark`): `text-shadow: 0 1px 0 rgba(255,255,255,.85), 0 -1px 0 rgba(0,0,0,.3)`. Received by Tokens `--title-deboss-light`, `--title-deboss-dark` and `--shadow-title-deboss`, used by `.wordmark h1`.
+- Title deboss value taken from `../dial-tone/prototype/index.html` line 109 (`.mark`): `text-shadow: 0 1px 0 rgba(255,255,255,.85), 0 -1px 0 rgba(0,0,0,.3)`. Received by Tokens `--title-deboss-light`, `--title-deboss-dark` and `--shadow-title-deboss`, used by `.wordmark h1`. Task 9.9 kept this shadow and changed the fill from `--emboss` to `--title-fill` (`--ink-2`) for contrast (see below).
 - Known differences intentionally left unchanged: the circuit board crop (the app draws the board in code and shows less of it than the raster `182:5`) and the darker left gutter behind the Scope axis labels. They are not open items and not failures.
 - Off-state band lines: the Scope draws the active channel's two band lines in `--scope-band` while the power is off, with the faint static and the STANDBY tag kept. They are DOM lines over the canvas, so the e2e check reads their computed colour, width and position rather than canvas pixels.
 - Message well: the byte count "41 / 128 B" sits in the MESSAGE caption row (Figma `182:135`), and the meter row matches `213:258`. Figma_Main has no divider node in the well, so none is drawn; the e2e check asserts there is none.
@@ -174,3 +174,150 @@ Sheet screws are 13 px, rotated and slotted, and the chassis corner screws match
 ### Strings written by the implementer in this task
 
 None. The QA draft typed for the screenshot is not in the app.
+
+## Visual refinement pass (task 9.9, requirements 21.6, 21.8, 21.12, 21.27 to 21.34)
+
+Method: Figma MCP `get_screenshot` of `0:1` (Figma_Main), `182:5` (raster board), `271:2` (State 01 Off), `273:2` (State 03 Ready), `279:8` (State 09 Call faceplate) and `270:462` (Slip Update ready). Playwright (Chromium, 390 x 844, device scale 2, `npm run dev`) of the live app off, on after the self-test, on with a draft (real controls), and `?state=update-ready`, before and after the changes. Shots are in `test-results/qa-9.9` (git-ignored, not committed). Pixels were read by decoding the PNGs in Chromium (row and column samples), not by eye.
+
+Screenshot scale: `get_screenshot` never renders above the node's natural size. With `maxDimension` 3240 on `182:5` it returned 370 x 1616 (`original_width` 370), with 1400 on `270:462` it returned 308 x 208, and with 4000 on `0:1` it returned 430 x 1722. So 1x (1 image px per CSS px at the 390 px frame) was the highest scale the MCP produced, below the 2x that requirement 21.12 asks for. The band line samples are still exact (see below), because the line falls on pixel rows.
+
+| Screen | Figma node | Differences found | Fix or reason left |
+|---|---|---|---|
+| Off | `271:2`, `182:5`, `0:1` | Title fill `--emboss` was hard to read (1.43:1). The Side_Rail ring and slot show on the shell in `271:2` and `182:5` but not in the app (centre to stroke difference about 0 grey levels: the rail sat under the shell's 6 px backdrop blur). The white raised signal line with its bends at the status window and the Tape is present in both Figma and the app at the same place. Band lines: same colour and weight as the Figma sample in task 9.9. | Title: `--title-fill`. Rail: drawn above the shell; the e2e check now measures a stroke difference above 15 levels. Signal line: matches Figma, kept. Band lines: changed in task 9.10 to 60% `--amber`, 1.5 px, which the updated Figma "Band lines" layer matches (task 9.11). |
+| On (after the self-test) | `273:2`, `0:1` | Title and rail as above. The Figma_Main spectrogram has no band line; State 03 and the app draw them. The first-power system slip in the app (grey paper) is not in Figma. | Title and rail fixed. Band lines: requirement 21.20 and 21.12. System slip: first-power flow, as in the 9.5 rows. |
+| On with a draft | `273:2`, `0:1` | Title and rail as above. Message well, count and Transmit unchanged from tasks 9.6 to 9.8. The dev-only "Fake transport" badge overlaps the well corner in the dev build. | Title and rail fixed. Badge is dev only. |
+| Update ready slip | `270:462` (Gallery `?state=update-ready`) | Figma draws "Later" and "Restart now" as 1.5 px outlines on the grey system paper, which read as dark text in dark boxes. | Approved exception (requirement 21.32): both buttons are filled and raised. Later is the light secondary (`--cap` fill, `--ink` label), Restart now the dark primary (`--key` fill, `--ink-on-key` label), both with the keycap lift shadow, no border, as in the Sheet button row. Size unchanged: 31.5 px high, hit area 45.5 px high (Later 71 px, Restart now 118 px wide). The `canRestartNow` guard in `pwa.ts` is unchanged. |
+
+Side_Rail branch (21.8): the screenshot of `182:5` shows the rail, so it was kept and matched, not removed. Measured on that screenshot: ring centre (361.1, 484.0 of 1615), stroke-centre radius 3.5; slot stroke centres x 357.7 to 364.6, y 548.7 to 626.5. The CSS gives centre 361.5 and radius 3.6, slot x 358 to 365, top 34%, 78 high, all within 1 px, so only the layer changed. Only the ring and the slot are drawn. The dashed traces next to them in `182:5` are part of the raster board (circuit board crop, a known difference under 21.23).
+
+Scope band (21.12): sampled at the line centre on `279:8` (x 180 and 250, y 382) and `271:2` (x 200, y 431): rgb(106, 76, 14) = `#6a4c0e`. The other line in each frame falls on two rows at half strength (rgb(53, 41, 11) and rgb(57, 43, 12)), which adds up to 1 px. Stroke weight 1 px. The earlier `#6a4c0e` passes (difference 0 per channel), so it was kept, and the weight moved into the Token `--scope-band-weight: 1px`. The app drew exactly rgb(106, 76, 14) over one CSS px (two device rows at 2x). So the band lines looked as faint in Figma as in the app. These are past values. Task 9.10 changed the band lines to 60% `--amber`, 1.5 px, Figma was then updated to the same values, and task 9.11 confirmed them on every "Band lines" layer (see below).
+
+Contrast ratios (WCAG 2.x, from the Token values, checked by `src/ui/styles/contrast.test.ts`):
+
+| Pair | Ghost | Beige 96 | Threshold |
+|---|---|---|---|
+| Title, old `--emboss` on `--plate` / `--plate-hi` | 1.43 / 1.71 | 1.34 / 1.54 | 3 |
+| Title, new `--title-fill` (`--ink-2`) on `--plate` / `--plate-hi` | 5.40 / 6.47 | 5.74 / 6.60 | 3 |
+| Later label `--ink` on `--cap` | 13.16 | 13.83 | 4.5 |
+| Restart now label `--ink-on-key` on `--key` | 12.21 | 12.21 | 4.5 |
+| Later boundary `--cap` on `--paper-system` | 3.36 | 3.31 | 3 |
+| Restart now boundary `--key` on `--paper-system` | 3.39 | 3.39 | 3 |
+| Slip body `--print-system` on `--paper-system` (21.15, unchanged) | 4.51 | 4.51 | 4.5 |
+
+The title is checked against both ends of the faceplate gradient behind it (`--plate-hi` at the top, `--plate` at 55%).
+
+New Tokens (documented aliases in `tokens.css`, no new colour literal): `--title-fill: var(--ink-2)`, `--slip-button-later-fill: var(--cap)`, `--slip-button-later-ink: var(--ink)`, `--slip-button-restart-fill: var(--key)`, `--slip-button-restart-ink: var(--ink-on-key)`, `--shadow-slip-button: var(--shadow-keycap-lift)`, `--scope-band-weight: 1px` (now `1.5px`, task 9.10).
+
+Approved exceptions added in this pass: the darker title fill (21.6) and the filled, raised Update ready buttons (21.32).
+
+Checks (task 9.9): `npm.cmd run typecheck` passed. `npm.cmd run lint` 0 errors, 7 warnings (unchanged). `npm.cmd test` 87 files, 630 tests passed. `npm.cmd run test:e2e` 48 passed, with Playwright starting both servers and `workers: 1`.
+
+Strings written by the implementer in this task: none in the app. The button labels "Later" and "Restart now" are unchanged Figma copy.
+
+## Scope band lines (task 9.10, requirements 21.12, 21.20, 21.22, 21.34)
+
+History of the change. Figma was later updated to the new values, so the band lines are not an exception (task 9.11 below).
+
+| | Old (task 9.9, sampled from Figma) | New (task 9.10) |
+|---|---|---|
+| `--scope-band` | `#6a4c0e` (about `--amber` at 40% on `--screen`) | `color-mix(in srgb, var(--amber) 60%, transparent)` |
+| `--scope-band-weight` | `1px` | `1.5px` |
+| `--scope-band-caption` | `#6b8d77` | unchanged |
+
+- Both Tokens sit in the same-in-both-modes group of `tokens.css`, and Beige 96 overrides neither, so one definition covers Ghost and Beige 96. No hex literal was added.
+- Drawing change: `.scope-band-line` is now a filled box (`height: var(--scope-band-weight); background: var(--scope-band)`) instead of `border-top: var(--scope-band-weight) solid var(--scope-band)`. Chromium snaps border widths down to whole device pixels, so a 1.5px border rendered as 1 px at device scale 1 (and 1.33 px at 3x). Heights are not snapped. The user chose this change when the first e2e run read `border-top-width: 1px`.
+- Rendered values read by the e2e check in `e2e/chassis.spec.ts` (Chromium, 390 x 844, device scale 1, built app), the same with the power off (21.20) and on (`?state=ready`), for both lines: background colour `color(srgb 1 0.698039 0.101961 / 0.6)`, which is rgb(255, 178, 26) (`--amber`) at alpha 0.6; computed height `1.5px`, box height 1.5 px; border width 0px. The expected colour comes from a probe styled with the same `color-mix`, and the test also checks that the probe's channels equal `--amber` and its alpha is 0.6.
+- The signal line is unchanged and still matches Figma.
+- `Scope.test.ts` checks the Token values, that the caption Token is still `#6b8d77`, that Beige 96 does not override them, and that `.scope-band-line` draws through both Tokens with no border.
+
+Checks (task 9.10): `npm.cmd run typecheck` passed. `npm.cmd run lint` 0 errors, 7 warnings (unchanged). `npm.cmd test` 87 files, 630 tests passed. `npm.cmd run test:e2e` 49 passed (the band line test now runs for off and on, one more than before), with Playwright starting both servers and `workers: 1`.
+
+Strings written by the implementer in this task: none in the app.
+## Band lines follow Figma (task 9.11, requirements 21.12, 21.22)
+
+The band lines follow Figma and are not an exception. Read through the Figma MCP (`use_figma`, read only) on file `VDyiOLNBAavxsBHP15j1Sj`, every layer named "Band lines" on every page:
+
+| Page | "Band lines" frames | Rectangles |
+|---|---|---|
+| Main (`0:1`) | `308:101` in Dial Tone `182:2` | `308:102`, `308:103` |
+| States (`191:2`) | `308:2` (State 01) to `308:47` (State 16), every third id | `308:3`, `308:4` to `308:48`, `308:49` |
+| New screens (`219:2`) | `308:50` (Screen 01) to `308:98` (Screen 17), every third id | `308:51`, `308:52` to `308:99`, `308:100` |
+| Components (`191:3`) | none: the page has no Scope component | none |
+
+- 34 frames, 68 rectangles ("Band edge · high" and "Band edge · low" in each frame). Every rectangle is 290 x 1.5, layer opacity 1, no stroke, one visible solid fill at opacity 0.6 (stored as 0.6000000238) bound to `light/led-amber` (`VariableID:211:40`, collection "Dial Tone"). No rectangle differs.
+- `light/led-amber` is rgb(255, 178, 26) in both modes ("Ghost (clear)" and "Beige 96"). That is `#ffb21a`, the value of `--amber` in Ghost and Beige 96, so `--scope-band` keeps `color-mix(in srgb, var(--amber) 60%, transparent)` and `--scope-band-weight` keeps `1.5px`. No Token changed.
+- Drawing method: the user approved, in a question card during task 9.10, drawing each band line as a filled box (`height: var(--scope-band-weight); background: var(--scope-band)`, no border), because Chromium rounds border widths to whole device pixels. `scope.css` draws them this way, `Scope.test.ts` checks the rule (height and background, no border), and `e2e/chassis.spec.ts` reads the computed `height` and `background-color`.
+- Rendered values read by `e2e/chassis.spec.ts` (Chromium, built app), off and on: background colour `color(srgb 1 0.698039 0.101961 / 0.6)`, height `1.5px`, box height 1.5 px.
+- The comments in `tokens.css`, `scope.css`, `Scope.test.ts` and `e2e/chassis.spec.ts`, and the Scope band row in `docs/figma-source-map.md`, now say the band lines follow Figma. The task 9.9 and 9.10 notes above stay as past values only.
+
+Checks (task 9.11): `npm.cmd run typecheck` passed. `npm.cmd run lint` 0 errors, 7 warnings (unchanged). `npm.cmd test` 87 files, 630 tests passed. Band line e2e check (`npx.cmd playwright test e2e/chassis.spec.ts -g "band lines"`, Playwright starting its own servers, `workers: 1`) 2 passed, off and on.
+
+Strings written by the implementer in this task: none in the app.
+
+## Fluid layout (task 10.1, requirement 22)
+
+The device now fills the phone width instead of sitting at a fixed 370 px. At a 390 px viewport the fluid rules give exactly the Figma sizes (device 370, faceplate 340, parts 304), so every Figma position check of requirement 21 still runs unchanged at 390. Those specs (`chassis.spec.ts`, `slots.spec.ts`, `gallery.spec.ts`) already run at 390 x 844 through the shared `viewport` in `playwright.config.ts`, so no spec needed pinning and no tolerance was loosened.
+
+### Prototype_Reference values used (read only, nothing copied)
+
+`../dial-tone/prototype/index.html`, rules `body`, `.device` (`#device`) and `.plate` (`#plate`):
+
+| Value | Prototype location | Received by |
+|---|---|---|
+| Page side gutter `max(10px, env(safe-area-inset-left/right))`, top `max(16px, env(safe-area-inset-top))`, bottom `max(40px, env(safe-area-inset-bottom))` | `body` padding, line 50 | `.page` padding in `device.css` |
+| `html, body { margin: 0 }` | line 45 | already in `base.css` (`body { margin: 0 }`) |
+| Device `width: 100%; max-width: 430px` | `.device`, line 63 | `.device` (`width: 100%; max-width: 430px`) |
+| Device padding `17px 15px` | `.device`, line 64 | `.device` padding (unchanged, 15 px sides) |
+| Faceplate padding `26px 18px 28px` | `.plate`, line 80 | `.faceplate` padding (unchanged, 18 px sides) |
+| Bottom grille x = W/2 - 80 | `drawPCB`, line 513 (already listed above) | `.chassis-bottom-grille` `left: calc(50% - 80px)` |
+| Corner screws 8 px from each corner, right ones with `right` | `.screw.tr`, `.screw.br`, lines 93 and 94 | `.chassis-corner-tr`, `-br` (already `right: 8px`, unchanged) |
+
+The prototype's faceplate fills the device by being a block child of it; the app does the same with `.faceplate { width: 100% }`. The device width is written against the padded page box (`width: 100%` inside the `.page` gutter) rather than `100vw - 20px`, so a classic vertical scrollbar cannot make the page wider than the viewport.
+
+### Fixed widths replaced
+
+| File | Was | Now |
+|---|---|---|
+| `styles/device.css` `.page` | `max-width: 390px`, `padding: 16px 10px 40px` | no max-width, safe-area padding above |
+| `styles/device.css` `.device` | `width: 370px` | `width: 100%; max-width: 430px; min-width: 0` |
+| `styles/device.css` `.faceplate` | `width: 340px`, gradient centre `170px` | `width: 100%`, gradient centre `50%` |
+| `styles/device.css` faceplate children | none | `align-self: stretch; width: 100%; min-width: 0` (not on slots, grain, chassis layer, signal line) |
+| `styles/device.css` `.faceplate-header` | columns `22px 214px 40px` | `22px minmax(0, 1fr) 40px` |
+| `styles/device.css` `.slot-group-key`, `.slot-quick-keys` | `width: 304px` | `width: 100%` (collapsed still 0 x 0 through `.slot.slot-empty`) |
+| `styles/device.css` `.message-block` | `width: 304px` | `width: 100%` |
+| `styles/device.css` `.part-transmit` | `width: 210px`, row `justify-content: space-between` | `flex: 1 1 0; min-width: 0`, row `gap: 16px` (0 when solo); 304 - 78 - 16 = 210 at 390 |
+| `styles/device.css` `.signal-line`, `.signal-vias` | `left: 94.71%; width: 2.64%`, `left: 96.35%; width: 2%` | `right: 9.01px; width: 8.98px`, `right: 5.61px; width: 6.8px` (the same values on the 340 px faceplate) |
+| `styles/scope.css` `.scope`, `.scope-screen`, `.scope-canvas` | `304px`, `290px`, `290 x 184px` | `100%`, `100%`, `100% x 100%` |
+| `styles/channel-switch.css` `.channel-switch`, `.channel-note`, `.quiet-notice` | `width: 304px` | `width: 100%` |
+| `styles/channel-switch.css` thumb and keys | `98px` wide, keys at `5/103/201px`, thumb `translateX(98px/196px)`, label column `90px` | `--channel-key: calc((100% - 10px) / 3)`, keys at `5px + n * key`, thumb `translateX(100%/200%)`, label column `minmax(0, 1fr)` |
+| `components/StatusWindow.css` | `width: 304px`, LEDs `repeat(6, 44.33px)`, legend `131px 131px` | `100%`, `repeat(6, minmax(0, 1fr))`, `repeat(2, minmax(0, 1fr))` |
+| `components/Led.css` | cell `44.33px` | `width: 100%`, column `minmax(0, 1fr)` |
+| `components/MessageWell.css`, `Tape.css`, `Notice.css`, `QuickKeys.css`, `GroupKeyBar.css`, `styles/listen-latch.css` | `width: 304px` | `width: 100%` |
+| `components/Slip.css` | slip `280px`, redacted bars `248px`, `228px` | `calc(100% - 24px)`, `100%`, `calc(100% - 20px)` (280, 248, 228 at 390) |
+| `components/Chassis.css` side rail | `left: 357.25px`, `left: 357.35px` | `right: 4.25px`, `right: 4.35px` (370 - x - width) |
+| `components/Chassis.css` bottom grille | `left: 105px` | `left: calc(50% - 80px)` (105 on the 370 px chassis) |
+
+Left unchanged on purpose: fixed sizes of small parts that keep their Figma size at every width (rocker 40, vent 22, LED lens 12, screws 13, SOS 78 x 95, latch button, airtime box 94, group key button 56, sheet art 280 x 110), the Sheet (`width: 390px; max-width: 100%`, an overlay outside the faceplate) and the dev panel.
+
+Canvas (22.8): the Scope is the only canvas. A `ResizeObserver` on it reads the content size and `devicePixelRatio`, sets `canvas.width` and `canvas.height` through the pure `canvasBuffer` in `model/scope-map.ts` (unit test in `scope-map.test.ts`, Property 20 in `scope-map.prop.test.ts`), and is disconnected on unmount. A resize clears the history. All Scope drawing is `ImageData` in buffer pixels (`putImageData` ignores the context transform), so instead of scaling the context the spectrogram step is `round(dpr)` buffer pixels wide, which keeps the scroll speed at one CSS pixel per frame.
+
+### Measured (Chromium, `e2e/fluid.spec.ts`, live app on the FakeTransport, powered on with a draft, height 844, devicePixelRatio 1)
+
+| Viewport | Device | Faceplate | Content | Message well | Gutters left / right | `scrollWidth` |
+|---|---|---|---|---|---|---|
+| 360 | 340 | 310 | 274 | 274 | 10 / 10 | 360 |
+| 375 | 355 | 325 | 289 | 289 | 10 / 10 | 375 |
+| 390 | 370 | 340 | 304 | 304 | 10 / 10 | 390 |
+| 430 | 410 | 380 | 344 | 344 | 10 / 10 | 430 |
+
+At every width every part (and every element drawn inside it) stays inside the faceplate content box, the corner screws and signal line stay inside the faceplate, the side rail and bottom grille stay inside the device, the rail slot stays 4.35 px from the device right edge, and the Scope buffer equals its rendered size times `devicePixelRatio` within 1 px. The well is 344 px at 430 against 289 px at 375. The 430 px maximum is reached from a 450 px viewport up.
+
+### Rows made stale by a fixed width
+
+- Task 9.9 Side_Rail paragraph: "The CSS gives centre 361.5 … slot x 358 to 365" still holds at 390, but the boxes now come from `right` offsets, so at other widths the rail follows the right edge rather than sitting at a fixed x. `Chassis.test.ts` checks the `right` rules.
+- Prototype_Reference table above, bottom grille: the prototype formula W/2 - 80 is now used literally (`calc(50% - 80px)`), where the app had the fixed 105 px.
+- Component sizes table and the task 7.1 rows (Transmit 210 x 72, quick keys 304 x 40, group key bar 304 x 54, status window 304, LEDs 44.33): these are the sizes at 390 only. They still match there.
+- `Device.test.ts` "uses the Figma sizes for device and faceplate" asserted `width: 370px` and `width: 340px`; it now asserts the fluid rules, and the 370 and 340 px results are checked in the browser by `fluid.spec.ts`.
+
+Checks (task 10.1): `npm.cmd run typecheck` passed. `npm.cmd run lint` 0 errors, 7 warnings (unchanged). `npm.cmd test` 87 files, 634 tests passed. `npm.cmd run test:e2e` 54 passed (5 new in `fluid.spec.ts`, which runs in the `dev` project), with Playwright starting both servers and `workers: 1`.
+Strings written by the implementer in this task: none in the app.

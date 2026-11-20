@@ -150,3 +150,22 @@ Fixed Transmit touching the message well after slot collapse: well-to-Transmit g
 ## 2026-11-20 - ui-shell 9.8
 Caption-to-well gap 0 to 8 px (Figma 273:150/273:155). Playwright webServer uses npm.cmd on Windows. Removed e2e timers (page.clock, carrierRearmed hook, hold-sends control), workers set to 1. Two full runs pass: typecheck, 613 unit, 48 e2e. Finding: fake-mic failed because parallel Chromium decoders overran the worker (up to 356 dropped chunks).
 
+
+## 2026-11-20 - ui-shell 9.9
+Title fill now --ink-2 (5.40:1 on plate, was 1.43:1). Update ready buttons filled and raised (labels 12-13:1, edges 3.4:1). Side rail moved above the blurred shell so it shows. Band line kept at #6a4c0e 1 px, which matches Figma exactly. typecheck, 630 unit, 48 e2e pass. Finding: Figma get_screenshot caps at 1x natural size.
+
+
+## 2026-11-20 - ui-shell 9.10
+Scope band lines now --amber at 60% (color-mix), 1.5 px, approved exception pending a Figma update. Drawn as a filled 1.5 px box, not border-top. typecheck, 630 unit, 49 e2e pass. Finding: Chromium rounds border widths down to whole device pixels, so a 1.5 px border rendered as 1 px at scale 1.
+
+
+## 2026-11-20 - ui-shell 9.11
+Confirmed in Figma: 68 band-line rectangles in 34 frames, 290 x 1.5 px, fill opacity 0.6, bound to light/led-amber (#ffb21a = --amber). Band lines no longer an exception; comments and docs updated, height + background drawing recorded as user-approved. typecheck, 630 unit tests and band-line e2e (off and on) pass. No token change.
+
+
+## 2026-11-20 - ui-shell 10.1
+Device and faceplate now fluid: device fills page minus 10 px gutters up to 430 px, faceplate fills device; parts stretch, Transmit takes the row minus SOS. Scope buffer follows rendered size x dpr (canvasBuffer). New e2e/fluid.spec.ts at 360/375/390/430. typecheck, 634 unit, 54 e2e pass. Measured well width 274/289/304/344 px; at 390 device 370, faceplate 340.
+
+
+## 2026-11-20 - ui-shell 8.1 (re-run after 9.9 to 10.1)
+Final checkpoint re-run. typecheck pass, lint exit 0 (7 old warnings), 634 unit (87 files), 164 property (36 files), 60 slow (505 s) and 54 e2e (workers 1, Playwright started its own servers) all pass. No code changes. No 134 in src/ui or design-system.md, State 03 has 8 lit segments, scan test 16/16. Audio-transport 14.1 already ticked, 13.2 left open.

@@ -70,3 +70,20 @@ export function warmUpFrame(progress: number, height: number): WarmUpFrame {
 export function formatKHz(hz: number): string {
   return (hz / 1000).toFixed(1).replace(/\.0$/, "");
 }
+
+/**
+ * Canvas drawing-buffer size for a rendered CSS size and device pixel ratio (requirement 22.8).
+ * Whole pixels, the rounded products, never less than 1 x 1. Non-finite or negative input gives 1.
+ */
+export function canvasBuffer(
+  cssWidth: number,
+  cssHeight: number,
+  dpr: number,
+): { width: number; height: number } {
+  const ratio = Number.isFinite(dpr) && dpr > 0 ? dpr : 1;
+  const px = (css: number): number => {
+    const n = Math.round((Number.isFinite(css) ? css : 0) * ratio);
+    return Math.max(1, n);
+  };
+  return { width: px(cssWidth), height: px(cssHeight) };
+}

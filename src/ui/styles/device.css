@@ -1,19 +1,27 @@
-/* Device frame, circuit board and reserved slots. Tokens only. Sizes from Figma State 03 (273:2). */
+/* Device frame, circuit board and reserved slots. Tokens only. Sizes from Figma State 03 (273:2).
+   Fluid layout (requirement 22): Figma sizes hold at a 390 px viewport (device 370, faceplate 340,
+   parts 304). At other widths the device fills the page minus a 10 px gutter on each side, up to 430 px. */
 
+/* The 10 px side gutter is page padding, so the device width is 100% of the padded page box rather
+   than 100vw, which would include a classic vertical scrollbar and overflow (Prototype_Reference body). */
 .page {
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 390px;
   min-height: 844px;
   margin: 0 auto;
-  padding: 16px 10px 40px;
+  padding: max(16px, env(safe-area-inset-top))
+    max(10px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
 }
 
 .device {
   position: relative;
-  width: 370px;
+  box-sizing: border-box;
+  flex: 0 1 auto;
+  width: 100%;
   max-width: 430px;
+  min-width: 0;
   overflow: hidden;
   border-radius: 50px;
   background: var(--shell);
@@ -95,12 +103,15 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 340px;
+  box-sizing: border-box;
+  /* Fills the device content box: 340 px at a 390 px viewport. */
+  width: 100%;
+  min-width: 0;
   overflow: hidden;
   padding: 26px 18px 28px;
   border-radius: var(--radius-35);
   background: radial-gradient(
-    ellipse 476px 727px at 170px -97px,
+    ellipse 476px 727px at 50% -97px,
     var(--plate-hi) 0,
     var(--plate) 55%,
     var(--plate-lo) 100%
@@ -124,22 +135,37 @@
   position: relative;
 }
 
-/* Raised signal line on the right edge (Figma insets, as percentages of the faceplate). */
+/* Raised signal line on the right edge. Vertical Figma insets stay percentages of the faceplate.
+   Horizontally it is anchored to the right edge: the Figma insets on the 340 px faceplate (left 94.71%,
+   width 2.64%; vias left 96.35%, width 2%) as right offsets, so it follows the edge at every width. */
 .signal-line {
   position: absolute;
   top: 11.79%;
-  left: 94.71%;
-  width: 2.64%;
+  right: 9.01px;
+  width: 8.98px;
   height: 78.6%;
   pointer-events: none;
 }
 .signal-vias {
   position: absolute;
   top: 28.5%;
-  left: 96.35%;
-  width: 2%;
+  right: 5.61px;
+  width: 6.8px;
   height: 52.98%;
   pointer-events: none;
+}
+
+/* Every part stretches to the faceplate content width (304 px at a 390 px viewport). Collapsed
+   Reserved_Slots keep 0 x 0 through the more specific .slot.slot-empty rule. */
+.faceplate
+  > :where(
+    :not(.faceplate-grain):not(.chassis-layer):not(.signal-line):not(
+      .signal-vias
+    ):not(.slot)
+  ) {
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
 }
 
 /* 20 px between parts, as a top margin on each part (not flex gap), so a collapsed Reserved_Slot adds no extra gap. */
@@ -154,7 +180,8 @@
 
 .faceplate-header {
   display: grid;
-  grid-template-columns: 22px 214px 40px;
+  /* Vent and rocker keep their Figma widths; the wordmark takes the rest (214 px at 390). */
+  grid-template-columns: 22px minmax(0, 1fr) 40px;
   grid-template-rows: 71px;
   gap: 14px;
   align-items: center;
@@ -177,7 +204,7 @@
   font: var(--type-device-title);
   letter-spacing: var(--type-device-title-tracking);
   text-transform: uppercase;
-  color: var(--emboss);
+  color: var(--title-fill);
   text-shadow: var(--shadow-title-deboss);
   white-space: nowrap;
 }
@@ -201,12 +228,13 @@
   display: block;
   flex: none;
 }
+/* Full-row slots stretch to the faceplate content width (304 px at 390). The SOS slot keeps its Figma size. */
 .slot-group-key {
-  width: 304px;
+  width: 100%;
   height: 76px;
 }
 .slot-quick-keys {
-  width: 304px;
+  width: 100%;
   height: 40px;
 }
 .slot-sos {
@@ -249,7 +277,7 @@
 .message-block {
   display: flex;
   flex-direction: column;
-  width: 304px;
+  width: 100%;
 }
 /* Spacing lives on the visible neighbours, never on the slots (requirement 21.24). The 8 px is the Figma Message grid gap (node 273:149). A collapsed quick keys slot adds no margin, so the well and the Actions row keep one 8 px gap; a mounted one gets its own 8 px above it. */
 .slot-quick-keys:not(.slot-empty) {
@@ -263,18 +291,21 @@
   margin-top: 8px;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  /* 16 px between Transmit and the 78 px SOS slot: 304 - 78 - 16 = 210, the Figma Transmit width at 390. */
+  gap: 16px;
   height: 101px;
   padding-top: 6px;
 }
 
-/* Transmit sits centred on the 95 px SOS slot (Figma 273:2), 210 px wide. */
+/* Transmit sits centred on the 95 px SOS slot (Figma 273:2) and takes the row width the slot leaves. */
 .part-transmit {
   align-self: center;
-  width: 210px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 /* SOS slot collapsed: the row hugs Transmit and Transmit fills it. */
 .actions-row-solo {
+  gap: 0;
   height: auto;
   padding-top: 0;
 }

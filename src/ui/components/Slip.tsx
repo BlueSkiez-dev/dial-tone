@@ -116,8 +116,16 @@ function body(props: SlipProps): ComponentChildren {
           </Meta>
           <Text>{copy.slip.updateText}</Text>
           <div class="slip-actions">
-            <SlipButton label={copy.slip.later} onTap={props.onLater} />
-            <SlipButton label={copy.slip.restartNow} onTap={props.onRestart} />
+            <SlipButton
+              label={copy.slip.later}
+              onTap={props.onLater}
+              look="later"
+            />
+            <SlipButton
+              label={copy.slip.restartNow}
+              onTap={props.onRestart}
+              look="restart"
+            />
           </div>
         </>
       );

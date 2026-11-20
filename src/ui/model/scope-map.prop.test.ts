@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { describe, it } from "vitest";
 import { PROFILES, type ProfileId } from "../../audio/index";
-import { binRange, scopeWindow, warmUpFrame } from "./scope-map";
+import { binRange, canvasBuffer, scopeWindow, warmUpFrame } from "./scope-map";
 
 const ids = Object.keys(PROFILES) as ProfileId[];
 
@@ -66,6 +66,30 @@ describe("Property 14: Warm-up frame", () => {
             rows(g) >= rows(f) &&
             rows(warmUpFrame(0, height)) === 1 &&
             rows(warmUpFrame(1, height)) === height
+          );
+        },
+      ),
+    );
+  });
+});
+
+describe("Property 20: Fluid layout (canvasBuffer)", () => {
+  /** **Validates: Requirements 22.8** */
+  it("returns whole numbers of at least 1 equal to the rounded products", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 2000 }),
+        fc.integer({ min: 1, max: 2000 }),
+        fc.double({ min: 1, max: 4, noNaN: true }),
+        (cssWidth, cssHeight, dpr) => {
+          const b = canvasBuffer(cssWidth, cssHeight, dpr);
+          return (
+            Number.isInteger(b.width) &&
+            Number.isInteger(b.height) &&
+            b.width >= 1 &&
+            b.height >= 1 &&
+            b.width === Math.round(cssWidth * dpr) &&
+            b.height === Math.round(cssHeight * dpr)
           );
         },
       ),

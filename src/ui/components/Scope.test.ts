@@ -131,9 +131,31 @@ describe("Scope markup", () => {
       new URL("../styles/scope.css", import.meta.url),
       "utf8",
     );
-    expect(css).toMatch(
-      /\.scope-band-line\s*{[^}]*border-top: 1px solid var\(--scope-band\)/,
+    // Filled box, not a border: Chromium snaps border widths to whole device pixels.
+    const rule = (/\.scope-band-line\s*{([^}]*)}/.exec(css)?.[1] ?? "").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
     );
+    expect(rule).toMatch(/height: var\(--scope-band-weight\);/);
+    expect(rule).toMatch(/background: var\(--scope-band\);/);
+    expect(rule).not.toMatch(/border/);
+    // Figma "Band lines" layer: light/led-amber (= --amber) at 60%, 1.5 px high.
+    const tokens = readFileSync(
+      new URL("../styles/tokens.css", import.meta.url),
+      "utf8",
+    );
+    const decls = (name: string) =>
+      [...tokens.matchAll(new RegExp(`--${name}:\\s*([^;]+);`, "g"))].map((m) =>
+        m[1]?.trim(),
+      );
+    // One definition each, in the same-in-both-modes group, so Beige 96 cannot override it.
+    expect(decls("scope-band")).toEqual([
+      "color-mix(in srgb, var(--amber) 60%, transparent)",
+    ]);
+    expect(decls("scope-band-weight")).toEqual(["1.5px"]);
+    expect(decls("scope-band-caption")).toEqual(["#6b8d77"]);
+    const beige = tokens.slice(tokens.indexOf('[data-theme="beige"]'));
+    expect(beige).not.toMatch(/--scope-band|--amber:/);
   });
   it("suppresses the warm-up when off and uses it in the self-test", () => {
     expect(render({ power: "selftest" })).toContain('data-mode="warmup"');

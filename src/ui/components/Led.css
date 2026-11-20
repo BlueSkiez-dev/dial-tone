@@ -1,13 +1,15 @@
-/* LED (Figma 213:40): 44.33 x 39, lens 12 high, label 11. The bezel ring #040504 is the only literal colour. */
+/* LED (Figma 213:40): 44.33 x 39 at a 390 px viewport, lens 12 high, label 11. The cell fills its
+   Status window grid column (requirement 22.4). The bezel ring #040504 is the only literal colour. */
 
 .led {
   display: grid;
-  grid-template-columns: 44.33px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 12px 11px;
   gap: 8px;
   justify-items: center;
   box-sizing: border-box;
-  width: 44.33px;
+  width: 100%;
+  min-width: 0;
   height: 39px;
   padding: 4px 0;
   border-radius: var(--radius-8);

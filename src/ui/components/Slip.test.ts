@@ -84,6 +84,22 @@ describe("Slip", () => {
     expect(html).toContain("Restart now");
   });
 
+  it("draws the Update ready buttons filled, never as an outline alone (21.28)", () => {
+    const html = renderToString(
+      h(Slip, { slip: { kind: "update-ready", id: "u", at: 0 } }),
+    );
+    expect(html).toMatch(
+      /class="slip-button slip-button-filled slip-button-later"[^>]*>Later</,
+    );
+    expect(html).toMatch(
+      /class="slip-button slip-button-filled slip-button-restart"[^>]*>Restart now</,
+    );
+    // Pass it on keeps the Figma outline on white paper.
+    const pass = renderToString(h(Slip, { slip: heard("p"), passOn: 2 }));
+    expect(pass).toContain('class="slip-button"');
+    expect(pass).not.toContain("slip-button-filled");
+  });
+
   it("keeps red Tokens in the SOS slip files only", () => {
     const red = /--sos|--print-sos|--ink-on-sos/;
     expect(read("Slip.css")).not.toMatch(red);

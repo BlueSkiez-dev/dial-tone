@@ -1,9 +1,9 @@
-/* Group key bar. Figma 270:376: Open 304 x 54, Locked 304 x 66. */
+/* Group key bar. Figma 270:376: Open 304 x 54, Locked 304 x 66 at a 390 px viewport; fills its slot row (22.4). */
 .group-key-bar {
   display: flex;
   align-items: stretch;
   gap: 8px;
-  width: 304px;
+  width: 100%;
 }
 
 .group-key-bar[data-state="open"] {

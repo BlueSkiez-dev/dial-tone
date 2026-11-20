@@ -2,7 +2,7 @@
   position: relative;
   box-sizing: border-box;
   display: block;
-  width: 100%; /* fills .part-transmit: 210 px beside the SOS slot, the full row without it */
+  width: 100%; /* fills .part-transmit: the row minus the SOS slot (210 px at 390), the full row without it */
   height: 72px;
   min-height: 72px;
   padding: 0;

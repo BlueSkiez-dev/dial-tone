@@ -43,9 +43,18 @@ describe("Device frame", () => {
     expect(css).toMatch(/\.slot-sos\s*{[^}]*height: 95px/);
   });
 
-  it("uses the Figma sizes for device and faceplate", () => {
-    expect(css).toMatch(/\.device\s*{[^}]*width: 370px/);
-    expect(css).toMatch(/\.faceplate\s*{[^}]*width: 340px/);
+  it("is fluid: 10 px page gutter, device up to 430 px, paddings 15 and 18 (requirement 22)", () => {
+    // 370 and 340 px at a 390 px viewport come from these rules (checked in e2e/fluid.spec.ts).
+    expect(css).toMatch(
+      /\.page\s*{[^}]*max\(10px, env\(safe-area-inset-right\)\)/,
+    );
+    expect(css).toMatch(/\.device\s*{[^}]*width: 100%;[^}]*max-width: 430px/);
+    expect(css).toMatch(/\.device\s*{[^}]*padding: 17px 15px/);
+    expect(css).toMatch(
+      /\.faceplate\s*{[^}]*width: 100%;[^}]*padding: 26px 18px 28px/,
+    );
+    // No fixed Figma widths remain for the device, faceplate or parts.
+    expect(css).not.toMatch(/\bwidth: (370|340|304|210)px/);
   });
 
   it("hard-codes no hex colour", () => {

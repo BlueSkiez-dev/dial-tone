@@ -1,5 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { binRange, formatKHz, scopeWindow, warmUpFrame } from "./scope-map";
+import {
+  binRange,
+  canvasBuffer,
+  formatKHz,
+  scopeWindow,
+  warmUpFrame,
+} from "./scope-map";
+
+describe("canvasBuffer", () => {
+  it("is the Figma screen at 1x and 3x, at 390 px", () => {
+    expect(canvasBuffer(290, 184, 1)).toEqual({ width: 290, height: 184 });
+    expect(canvasBuffer(290, 184, 3)).toEqual({ width: 870, height: 552 });
+  });
+  it("rounds fractional sizes and ratios to whole pixels", () => {
+    expect(canvasBuffer(256.5, 184, 2.625)).toEqual({
+      width: 673,
+      height: 483,
+    });
+  });
+  it("never returns less than 1 x 1, even for a hidden or bad size", () => {
+    expect(canvasBuffer(0, 0, 2)).toEqual({ width: 1, height: 1 });
+    expect(canvasBuffer(Number.NaN, -5, Number.NaN)).toEqual({
+      width: 1,
+      height: 1,
+    });
+  });
+});
 
 describe("formatKHz", () => {
   it("rounds to one decimal", () => {

@@ -45,7 +45,14 @@
   --ink-on-glass-strong: #dfe4de;
   --ink-legend: #c3c8c2;
   --scope-axis: #55735f;
-  --scope-band: #6a4c0e;
+  /*
+   * Scope band lines (requirement 21.12). Follow the Figma "Band lines" layer of every scope
+   * (Figma_Main 308:101, States 308:2 to 308:47, New screens 308:50 to 308:98, read in task
+   * 9.11): 1.5 px high, variable light/led-amber (= --amber) at 60% fill opacity.
+   * Same in Ghost and Beige 96.
+   */
+  --scope-band: color-mix(in srgb, var(--amber) 60%, transparent);
+  --scope-band-weight: 1.5px;
   --scope-band-caption: #6b8d77;
 
   /* Rocker, LEDs, latch */
@@ -115,6 +122,18 @@
   --title-deboss-dark: rgba(0, 0, 0, 0.3);
   --shadow-title-deboss:
     0 1px 0 var(--title-deboss-light), 0 -1px 0 var(--title-deboss-dark);
+  /* Faceplate title fill (requirement 21.6, task 9.9). Was --emboss: 1.43:1 on --plate (Ghost),
+     1.34:1 (Beige 96). --ink-2 gives 5.40:1 (Ghost) and 5.74:1 (Beige 96) on --plate, the darker
+     end of the faceplate gradient behind the title. Checked by contrast.test.ts. */
+  --title-fill: var(--ink-2);
+  /* Update ready slip buttons (requirements 21.28 to 21.31, task 9.9). Filled and raised, like the
+     Sheet button row: light secondary (Later) and dark primary (Restart now). No border, so the
+     fill is the Button_Boundary. Ratios are checked by contrast.test.ts. */
+  --slip-button-later-fill: var(--cap);
+  --slip-button-later-ink: var(--ink);
+  --slip-button-restart-fill: var(--key);
+  --slip-button-restart-ink: var(--ink-on-key);
+  --shadow-slip-button: var(--shadow-keycap-lift);
   /* Sheet glass panel (Figma 270:16): outer ring and the gloss over the top. */
   --shadow-glass-ring:
     0 0 0 1px rgba(0, 0, 0, 0.6), 0 1px 0 1.5px rgba(255, 255, 255, 0.6);

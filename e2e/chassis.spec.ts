@@ -80,6 +80,41 @@ test("chassis: corner screws, side rail, bottom grille and the POWER label sit w
   expect(Math.abs(dimple.x + dimple.w / 2 - device.x - 361.5)).toBeLessThanOrEqual(TOL);
   expect(Math.abs(dimple.y + dimple.h / 2 - device.y - 0.3 * device.h)).toBeLessThanOrEqual(TOL);
   expect(Math.abs(dimple.w - 8.5)).toBeLessThanOrEqual(TOL);
+  // Task 9.9: the rail is drawn above the frosted shell, so its blur cannot erase the strokes, and
+  // only the dimple and the slot are drawn.
+  const layer = await page.evaluate(() => {
+    const rail = document.querySelector(".chassis-side-rail");
+    const shell = document.querySelector(".device-shell");
+    return {
+      inBoard: !!rail?.closest(".device-board"),
+      afterShell:
+        !!rail &&
+        !!shell &&
+        (shell.compareDocumentPosition(rail) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      parts: rail?.children.length,
+    };
+  });
+  expect(layer).toEqual({ inBoard: false, afterShell: true, parts: 2 });
+  // The dimple ring shows on screen: its stroke is darker than the shell at its centre.
+  const shot = await page.screenshot({
+    clip: { x: dimple.x, y: dimple.y + dimple.h / 2 - 0.5, width: dimple.w, height: 1 },
+  });
+  const row = await page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement("canvas");
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("no 2d context");
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, img.width, 1).data;
+    const g = Array.from({ length: img.width }, (_, x) => d[x * 4 + 1] ?? 0);
+    return { edge: Math.min(...g.slice(0, 3)), centre: g[Math.floor(g.length / 2)] ?? 0 };
+  }, shot.toString("base64"));
+  // Under the shell blur this difference was grain-level (about 0); drawn above the shell it is about 40.
+  expect(row.centre - row.edge).toBeGreaterThan(15);
 
   // Bottom grille: 18 slots, 9 px apart, starting 105 px from the left, 4 px above the bottom edge.
   const grille = m.grille;
@@ -186,52 +221,92 @@ test("scope: the self-test warm-up is one contiguous bright region, never stripe
   expect(samples[2]?.lit ?? 0).toBeGreaterThanOrEqual(samples[0]?.lit ?? 0);
 });
 
-test("scope: the active band lines show in --scope-band while the power is off", async ({
-  page,
-}) => {
-  await openGallery(page, "off");
-  const m = await page.evaluate(() => {
-    const token = getComputedStyle(document.documentElement)
-      .getPropertyValue("--scope-band")
-      .trim();
-    // Resolve the Token to the rgb() string the browser reports for a border colour.
-    const probe = document.createElement("i");
-    probe.style.color = token;
-    document.body.append(probe);
-    const rgb = getComputedStyle(probe).color;
-    probe.remove();
-    const screen = document.querySelector(".scope-screen")?.getBoundingClientRect();
-    const lines = Array.from(document.querySelectorAll(".scope-band-line")).map(
-      (el) => {
+/** Parses "rgb(r, g, b)", "rgba(r, g, b, a)" or "color(srgb r g b / a)" into 0-255 channels and alpha. */
+function parseColor(s: string): { r: number; g: number; b: number; a: number } {
+  const srgb = /^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)(?: \/ ([\d.e-]+))?\)$/.exec(s);
+  if (srgb) {
+    const [r, g, b] = [srgb[1], srgb[2], srgb[3]].map((v) => Number(v) * 255);
+    return { r: r ?? Number.NaN, g: g ?? Number.NaN, b: b ?? Number.NaN, a: Number(srgb[4] ?? 1) };
+  }
+  const rgb = /^rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?\)$/.exec(s);
+  if (rgb) {
+    return { r: Number(rgb[1]), g: Number(rgb[2]), b: Number(rgb[3]), a: Number(rgb[4] ?? 1) };
+  }
+  throw new Error(`unsupported colour format: ${s}`);
+}
+
+// Requirement 21.12: the band lines follow the Figma "Band lines" layer, light/led-amber
+// (= --amber) at 60% opacity, 1.5 px high. Checked while off (21.20) and with the power on.
+for (const state of ["off", "ready"] as const) {
+  test(`scope: the active band lines are --amber at 60% and 1.5 px (${state})`, async ({
+    page,
+  }) => {
+    await openGallery(page, state);
+    const m = await page.evaluate(() => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const weight = rootStyle.getPropertyValue("--scope-band-weight").trim();
+      // Resolve the expected colours through probes, so the comparison uses the browser's own
+      // serialisation of the same color-mix.
+      const resolve = (value: string) => {
+        const probe = document.createElement("i");
+        probe.style.color = value;
+        document.body.append(probe);
+        const c = getComputedStyle(probe).color;
+        probe.remove();
+        return c;
+      };
+      const expected = resolve("color-mix(in srgb, var(--amber) 60%, transparent)");
+      const amber = resolve("var(--amber)");
+      const screen = document.querySelector(".scope-screen")?.getBoundingClientRect();
+      const lines = Array.from(document.querySelectorAll(".scope-band-line")).map((el) => {
         const b = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         return {
-          color: cs.borderTopColor,
-          width: cs.borderTopWidth,
+          // Drawn as a filled box (Chromium snaps border widths to whole device pixels).
+          color: cs.backgroundColor,
+          width: cs.height,
+          boxHeight: b.height,
+          border: cs.borderTopWidth,
           opacity: cs.opacity,
           visibility: cs.visibility,
           y: b.y,
           inside: !!screen && b.y >= screen.y && b.y <= screen.y + screen.height,
         };
-      },
+      });
+      return {
+        expected,
+        amber,
+        weight,
+        lines,
+        standby: !!document.querySelector(".scope-standby"),
+      };
+    });
+    // Rendered values, recorded in docs/ui-design-qa.md (21.34).
+    console.log(
+      `[band lines ${state}] background-color=${m.lines[0]?.color} height=${m.lines[0]?.width} box=${m.lines[0]?.boxHeight}`,
     );
-    return {
-      rgb,
-      lines,
-      standby: !!document.querySelector(".scope-standby"),
-    };
+    const want = parseColor(m.expected);
+    const amber = parseColor(m.amber);
+    expect(Math.abs(want.r - amber.r)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(want.g - amber.g)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(want.b - amber.b)).toBeLessThanOrEqual(0.5);
+    expect(amber.a).toBe(1);
+    expect(want.a).toBeCloseTo(0.6, 3);
+    expect(m.weight).toBe("1.5px");
+    expect(m.standby).toBe(state === "off");
+    expect(m.lines).toHaveLength(2);
+    for (const l of m.lines) {
+      expect(l.color).toBe(m.expected);
+      expect(l.width).toBe("1.5px");
+      expect(l.boxHeight).toBeCloseTo(1.5, 3);
+      expect(l.border).toBe("0px");
+      expect(l.opacity).toBe("1");
+      expect(l.visibility).toBe("visible");
+      expect(l.inside).toBe(true);
+    }
+    expect(m.lines[0]?.y).toBeLessThan(m.lines[1]?.y ?? 0);
   });
-  expect(m.standby).toBe(true);
-  expect(m.lines).toHaveLength(2);
-  for (const l of m.lines) {
-    expect(l.color).toBe(m.rgb);
-    expect(l.width).toBe("1px");
-    expect(l.opacity).toBe("1");
-    expect(l.visibility).toBe("visible");
-    expect(l.inside).toBe(true);
-  }
-  expect(m.lines[0]?.y).toBeLessThan(m.lines[1]?.y ?? 0);
-});
+}
 
 // Source_Map "Message well count and divider (Figma_Main)": positions relative to the Message
 // block (Figma Section 182:130), whose first 22 px are the caption row 182:131.
